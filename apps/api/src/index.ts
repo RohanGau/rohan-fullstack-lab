@@ -8,7 +8,7 @@ import express from 'express';
 import todoRoutes from './routes/todoRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
-import { ERROR_MESSAGES, globalErrorHandler, jsonErrorHandler } from './utils';
+import { globalErrorHandler, jsonErrorHandler } from './utils';
 import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
 
@@ -43,9 +43,10 @@ app.use('/api/todos', todoRoutes);
 app.use(globalErrorHandler);
 
 app.use(helmet());
+
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
 });
 
 app.use(limiter);
