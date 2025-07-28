@@ -13,6 +13,21 @@ export const ERROR_MESSAGES = {
   TODO_NOT_FOUND: 'Todo not found',
   INVALID_ID_FOND: 'Invalid ID found',
   INTERNAL_SERVER_ERROR: 'Internal Server Error',
+  BLOG_NOT_FOUND: 'Blog not found',
+  PROFILE_NOT_FOUND: 'Profile not found',
+};
+
+export const CMS_ERROR_MESSAGES = {
+  VALIDATION_ERROR: 'Validation failed',
+  CREATE_FAILED: 'Resource creation failed',
+  UPDATE_FAILED: 'Update failed',
+  DELETE_FAILED: 'Delete failed',
+  FETCH_FAILED: 'Fetching data failed',
+  BLOG_NOT_FOUND: 'Blog not found',
+  PROFILE_NOT_FOUND: 'Profile not found',
+  TODO_NOT_FOUND: 'Todo not found',
+  INVALID_ID_FOND: 'Invalid MongoDB ID received',
+  TITLE_EXISTS: 'Title already exists',
 };
 
 export const jsonErrorHandler: ErrorRequestHandler = (err, _, res, next) => {

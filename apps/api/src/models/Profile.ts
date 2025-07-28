@@ -1,0 +1,24 @@
+import { Schema, model, Document } from 'mongoose';
+import { IProfile } from '../types/profile.js';
+
+export interface ProfileDocument extends IProfile, Document {}
+
+const ProfileSchema = new Schema<ProfileDocument>(
+  {
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    bio: { type: String },
+    avatarUrl: { type: String },
+    title: { type: String, required: true, trim: true },
+    yearsOfExperience: { type: Number, required: true, min: 5 },
+    skills: { type: [String], required: true },
+    githubUrl: { type: String },
+    linkedinUrl: { type: String },
+    location: { type: String },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export default model<ProfileDocument>('Profile', ProfileSchema);

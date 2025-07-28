@@ -5,7 +5,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Todo API',
+      title: 'API Documentation',
       version: '1.0.0',
       description: 'API documentation for your Todo backend',
     },

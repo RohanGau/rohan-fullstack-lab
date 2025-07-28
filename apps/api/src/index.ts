@@ -6,6 +6,8 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import express from 'express';
 import todoRoutes from './routes/todoRoutes';
+import blogRoutes from './routes/blogRoutes';
+import profileRoutes from './routes/profileRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
@@ -21,8 +23,9 @@ const PORT = process.env.PORT || 5050;
 app.use(
   cors({
     origin: process.env.FRONTEND_ORIGIN || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
+    exposedHeaders: ['X-Total-Count', 'Content-Range'],
   })
 );
 
@@ -39,6 +42,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/todos', todoRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/profiles', profileRoutes);
 
 app.use(globalErrorHandler);
 
