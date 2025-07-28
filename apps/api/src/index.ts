@@ -8,7 +8,7 @@ import express from 'express';
 import todoRoutes from './routes/todoRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
-import { ERROR_MESSAGES, jsonErrorHandler } from './utils';
+import { ERROR_MESSAGES, globalErrorHandler, jsonErrorHandler } from './utils';
 import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
 
@@ -40,13 +40,7 @@ app.get('/health', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/todos', todoRoutes);
 
-app.use((err: any, req: express.Request, res: express.Response) => {
-  logger.error({ err }, 'Global error :');
-  const status = err.status || 500;
-  res.status(status).json({
-    error: err.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
-  });
-});
+app.use(globalErrorHandler);
 
 app.use(helmet());
 const limiter = rateLimit({
