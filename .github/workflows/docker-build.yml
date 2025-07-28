@@ -41,7 +41,12 @@ jobs:
 
       - name: 🚧 Build Docker Image with Tag
         run: |
-          IMAGE_TAG=node-backend:${NODE_ENV}-${SHORT_SHA}
+          if [ "$NODE_ENV" = "stage" ]; then
+            IMAGE_TAG=node-backend:stage-latest
+          else
+            IMAGE_TAG=node-backend:${NODE_ENV}-${SHORT_SHA}
+          fi
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Building Image: $IMAGE_TAG"
           docker build -t $IMAGE_TAG ./apps/api
 
@@ -53,7 +58,6 @@ jobs:
 
       - name: 📦 Push Tagged Image
         run: |
-          IMAGE_TAG=node-backend:${NODE_ENV}-${SHORT_SHA}
           echo "Pushing: ${{ secrets.DOCKER_USERNAME }}/$IMAGE_TAG"
           docker tag $IMAGE_TAG ${{ secrets.DOCKER_USERNAME }}/$IMAGE_TAG
           docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_TAG
