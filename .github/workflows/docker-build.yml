@@ -41,15 +41,37 @@ jobs:
 
       - name: 🚧 Build Docker Image with Tag
         run: |
-          if [ "$NODE_ENV" = "stage" ]; then
+          if [ "$NODE_ENV" = "production" ]; then
+            IMAGE_TAG=node-backend:production-latest
+          elif [ "$NODE_ENV" = "stage" ]; then
             IMAGE_TAG=node-backend:stage-latest
           else
             IMAGE_TAG=node-backend:${NODE_ENV}-${SHORT_SHA}
           fi
+
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Building Image: $IMAGE_TAG"
           docker build -t $IMAGE_TAG ./apps/api
-
+      - name: 📝 Write API URL env for React Admin
+        run: |
+          if [ "$NODE_ENV" = "production" ]; then
+            echo "REACT_APP_API_URL=https://node-backend-production-e30ea62.onrender.com" > ./apps/admin/.env
+          else
+            echo "REACT_APP_API_URL=https://node-backend-stage-latest.onrender.com" > ./apps/admin/.env
+          fi
+      - name: 🚧 Build Docker Image for React Admin
+        run: |
+          if [ "$NODE_ENV" = "production" ]; then
+            IMAGE_TAG=react-admin:production
+          elif [ "$NODE_ENV" = "stage" ]; then
+            IMAGE_TAG=react-admin:stage
+          else
+            IMAGE_TAG=react-admin:latest
+          fi
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "Building React Admin Image: $IMAGE_TAG"
+          docker build -t $IMAGE_TAG ./apps/admin
+          
       - name: 🌐 Login to DockerHub
         uses: docker/login-action@v3
         with:

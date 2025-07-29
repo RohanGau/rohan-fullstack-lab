@@ -1,3 +1,5 @@
+import process from 'process';
+
 export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Validation Error',
   INVALID_JSON: 'Invalid JSON in request body',
@@ -8,3 +10,8 @@ export const ERROR_MESSAGES = {
   DELETE_FAILED: 'Failed to delete todo',
   TODO_NOT_FOUND: 'Todo not found',
 };
+
+export const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN, // Main
+  'http://localhost:3000', // Local dev
+];

@@ -13,6 +13,7 @@ import { connectDB } from './db';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
 import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
+import { allowedOrigins } from './utils/constant';
 
 const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';
 dotenv.config({ path: envFile });
@@ -22,7 +23,12 @@ const PORT = process.env.PORT || 5050;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN || '*',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
     exposedHeaders: ['X-Total-Count', 'Content-Range'],
