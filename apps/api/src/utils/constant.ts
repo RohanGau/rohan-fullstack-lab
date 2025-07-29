@@ -11,7 +11,6 @@ export const ERROR_MESSAGES = {
   TODO_NOT_FOUND: 'Todo not found',
 };
 
-export const allowedOrigins = [
-  process.env.FRONTEND_ORIGIN, // Main
-  'http://localhost:3000', // Local dev
-];
+export const allowedOrigins = [process.env.FRONTEND_ORIGIN, 'http://localhost:3000'].filter(
+  Boolean
+);
