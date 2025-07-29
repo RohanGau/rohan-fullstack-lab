@@ -56,9 +56,9 @@ jobs:
       - name: 📝 Write API URL env for React Admin
         run: |
           if [ "$NODE_ENV" = "production" ]; then
-            echo "REACT_APP_API_URL=https://node-backend-production-e30ea62.onrender.com" > ./apps/admin/.env
+            echo "REACT_APP_API_URL=https://rohan-backend-api.fly.dev" > ./apps/admin/.env
           else
-            echo "REACT_APP_API_URL=https://node-backend-stage-latest.onrender.com" > ./apps/admin/.env
+            echo "REACT_APP_API_URL=https://rohan-backend-api-stage.fly.dev" > ./apps/admin/.env
           fi
       - name: 🚧 Build Docker Image for React Admin
         run: |
