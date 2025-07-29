@@ -31,27 +31,28 @@ jobs:
             echo "env_file=.env" >> $GITHUB_ENV
           fi
 
-      - name: 🐛 Print Environment
-        run: |
-          echo "NODE_ENV = $NODE_ENV"
-          echo "env_file = $env_file"
+      - name: 🐛 Print resolved environment
+        run: echo "Deploying to ${{ steps.env.outputs.env_name }} environment"
 
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🚧 Build Docker Image with Tag
-        run: |
-          if [ "$NODE_ENV" = "production" ]; then
-            IMAGE_TAG=node-backend:production-latest
-          elif [ "$NODE_ENV" = "stage" ]; then
-            IMAGE_TAG=node-backend:stage-latest
-          else
-            IMAGE_TAG=node-backend:${NODE_ENV}-${SHORT_SHA}
-          fi
+      - name: 🚀 Deploy to Fly.io (Production)
+        if: steps.env.outputs.env_name == 'production'
+        uses: superfly/flyctl-actions@1.4
+        with:
+          args: deploy --config fly.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          echo "Building Image: $IMAGE_TAG"
-          docker build -t $IMAGE_TAG ./apps/api
+      - name: 🚀 Deploy to Fly.io (Staging)
+        if: steps.env.outputs.env_name == 'stage'
+        uses: superfly/flyctl-actions@1.4
+        with:
+          args: deploy --config fly.stage.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: 📝 Write API URL env for React Admin
         run: |
           if [ "$NODE_ENV" = "production" ]; then

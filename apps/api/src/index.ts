@@ -24,6 +24,8 @@ logger.info(`🌍 Loading environment variables from: ${envFile}`);
 // This will load .env, .env.stage, or .env.production
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
+logger.info(`🌍 rate limit: ${process.env.RATE_LIMIT_WINDOW_MS}`);
+
 const app = express();
 const PORT = process.env.PORT || 5050;
 
