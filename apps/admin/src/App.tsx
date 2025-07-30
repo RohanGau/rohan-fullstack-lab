@@ -12,8 +12,7 @@ import ProfileEdit from './pages/profile/ProfileEdit';
 import ProfileShow from './pages/profile/ProfileShow';
 
 // Replace with backend URL if deployed
-const apiUrl = 'http://localhost:5050';
-// const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
+const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
 const dataProvider = simpleRestProvider(`${apiUrl}/api`);
 
 
