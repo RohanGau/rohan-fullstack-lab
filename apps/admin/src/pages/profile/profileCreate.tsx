@@ -14,11 +14,15 @@ const ProfileCreate: React.FC = () => (
       <TextInput source="email" required />
       <TextInput source="title" required />
       <NumberInput source="yearsOfExperience" required />
+
       <ArrayInput source="skills" label="Skills">
         <SimpleFormIterator>
-          <TextInput source={''} />
+          <TextInput source="name" label="Skill Name" required />
+          <NumberInput source="rating" label="Rating (1–10)" min={1} max={10} required />
+          <NumberInput source="yearsOfExperience" label="Yrs of Exp" min={0} required />
         </SimpleFormIterator>
       </ArrayInput>
+
       <TextInput source="bio" multiline />
       <TextInput source="avatarUrl" />
       <TextInput source="githubUrl" />

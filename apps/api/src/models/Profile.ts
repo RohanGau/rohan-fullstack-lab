@@ -3,6 +3,15 @@ import { IProfile } from '../types/profile.js';
 
 export interface ProfileDocument extends IProfile, Document {}
 
+const SkillSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 10 },
+    yearsOfExperience: { type: Number, required: true, min: 0 },
+  },
+  { _id: false }
+);
+
 const ProfileSchema = new Schema<ProfileDocument>(
   {
     name: { type: String, required: true, trim: true },
@@ -11,7 +20,10 @@ const ProfileSchema = new Schema<ProfileDocument>(
     avatarUrl: { type: String },
     title: { type: String, required: true, trim: true },
     yearsOfExperience: { type: Number, required: true, min: 5 },
-    skills: { type: [String], required: true },
+    skills: {
+      type: [SkillSchema],
+      required: true,
+    },
     githubUrl: { type: String },
     linkedinUrl: { type: String },
     location: { type: String },

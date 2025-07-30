@@ -1,3 +1,9 @@
+export interface Skills {
+  name: string;
+  rating: number;
+  yearsOfExperience: number;
+}
+
 export interface IProfile {
   name: string;
   email: string;
@@ -5,7 +11,7 @@ export interface IProfile {
   avatarUrl?: string;
   title: string;
   yearsOfExperience: number;
-  skills: string[];
+  skills: Skills[];
   githubUrl?: string;
   linkedinUrl?: string;
   location?: string;

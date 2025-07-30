@@ -4,7 +4,8 @@ import {
   TextField,
   NumberField,
   ArrayField,
-  ChipField,
+  Datagrid,
+  FunctionField,
 } from 'react-admin';
 
 const ProfileShow: React.FC = () => (
@@ -14,9 +15,15 @@ const ProfileShow: React.FC = () => (
       <TextField source="email" />
       <TextField source="title" />
       <NumberField source="yearsOfExperience" />
-      <ArrayField source="skills">
-        <ChipField source="" />
+
+      <ArrayField source="skills" label="Skills">
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="name" />
+          <NumberField source="rating" />
+          <NumberField source="yearsOfExperience" label="Years of Exp" />
+        </Datagrid>
       </ArrayField>
+
       <TextField source="bio" />
       <TextField source="location" />
       <TextField source="githubUrl" />
