@@ -30,6 +30,12 @@ export const CMS_ERROR_MESSAGES = {
   TITLE_EXISTS: 'Title already exists',
 };
 
+export const CONTACT_ERROR_MESSAGES = {
+  CREATION_FAILED: 'Contact creation failed',
+  FETCH_FAILED: 'Failed to fetch contacts',
+  DELETE_FAILED: 'Failed to delete contact',
+};
+
 export const jsonErrorHandler: ErrorRequestHandler = (err, _, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ msg: ERROR_MESSAGES.INVALID_JSON });

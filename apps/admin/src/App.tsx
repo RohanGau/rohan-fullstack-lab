@@ -10,8 +10,10 @@ import ProfileCreate from './pages/profile/profileCreate';
 import ProfileList from './pages/profile/ProfileList';
 import ProfileEdit from './pages/profile/ProfileEdit';
 import ProfileShow from './pages/profile/ProfileShow';
+import ContactList from './pages/contact/Contact';
 
 // Replace with backend URL if deployed
+// const apiUrl = 'http://localhost:5050';
 const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
 const dataProvider = simpleRestProvider(`${apiUrl}/api`);
 
@@ -33,6 +35,7 @@ function App() {
         edit={ProfileEdit}
         show={ProfileShow}
       />
+      <Resource name="contact" list={ContactList} />
     </Admin>
   );
 }

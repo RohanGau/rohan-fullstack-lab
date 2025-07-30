@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import express from 'express';
 import todoRoutes from './routes/todoRoutes';
 import blogRoutes from './routes/blogRoutes';
+import contactRoutes from './routes/contactRoutes';
 import profileRoutes from './routes/profileRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
@@ -65,6 +66,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/todos', todoRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/profiles', profileRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.use(globalErrorHandler);
 
