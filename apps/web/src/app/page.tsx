@@ -1,14 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useProfile } from '@/hooks/useProfile';
 import { SkillsSection } from '@/components/custom/Skills';
 import { HomeSkeleton } from '@/components/custom/HomeSkeleton';
-import { Github, Linkedin } from 'lucide-react';
 import { ProjectsPreview } from '@/components/custom/ProjectsPreview';
 import { BlogsPreview } from '@/components/custom/BlogsPreview';
+import { SocialLinks } from '@/components/custom/SocialLinks';
+import { CONTACTS } from '@/lib/constant';
 
 export default function Home() {
   const { profile, loading, error } = useProfile();
@@ -36,23 +36,21 @@ export default function Home() {
           <p className="text-muted-foreground text-pretty text-sm leading-relaxed">
             {user.bio}
           </p>
-          <div className="flex gap-4 justify-center md:justify-start">
-            <Button>View Projects</Button>
-            <Button variant="outline" asChild>
-              <a href="/resume.pdf" target="_blank">Download Resume</a>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3 pt-6">
+            <SocialLinks user={{
+              ...user,
+              ...CONTACTS
+            }} />
+
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              asChild
+            >
+              <a href="/resume.pdf" target="_blank">
+                Download Resume
+              </a>
             </Button>
-          </div>
-          <div className="flex gap-4 justify-center md:justify-start pt-4">
-            {user.githubUrl && (
-              <a href={user.githubUrl} target="_blank" rel="noreferrer" aria-label="GitHub">
-                <Github className="w-5 h-5 text-muted-foreground hover:text-foreground" />
-              </a>
-            )}
-            {user.linkedinUrl && (
-              <a href={user.linkedinUrl} target="_blank" rel="noreferrer" aria-label="LinkedIn">
-                <Linkedin className="w-5 h-5 text-muted-foreground hover:text-foreground" />
-              </a>
-            )}
           </div>
         </div>
       </section>

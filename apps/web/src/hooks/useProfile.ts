@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProfileStore } from '@/lib/store';
+import { apiFetch } from '@/lib/apiClient';
+import { API } from '@/lib/constant';
 
 export function useProfile() {
   const { profile, setProfile } = useProfileStore();
@@ -8,12 +10,8 @@ export function useProfile() {
 
   useEffect(() => {
     if (!profile) {
-        console.log('Fetching profile data...');
-      fetch('https://rohan-backend-api.fly.dev/api/profiles')
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch profile');
-          return res.json();
-        })  
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      apiFetch<any[]>(API.PROFILE)
         .then((data) => {
           setProfile(data);
           setLoading(false);

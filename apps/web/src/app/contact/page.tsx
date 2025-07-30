@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useContactSubmit } from '@/hooks/useContactSubmit';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [submitted, setSubmitted] = useState(false);
+  const { submitContact, submitting, success, globalError, fieldErrors } = useContactSubmit();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,8 +18,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission (e.g., POST to /api/contact)
-    setSubmitted(true);
+    await submitContact(formData);
   };
 
   return (
@@ -26,35 +26,64 @@ export default function ContactPage() {
       <h1 className="text-3xl font-bold mb-6 text-center">Contact Me</h1>
       <Card>
         <CardContent className="p-6">
-          {submitted ? (
-            <p className="text-center text-green-600 font-medium">Thanks for reaching out! I'll get back to you soon.</p>
+          {success ? (
+            <p className="text-center text-green-600 font-medium">
+              Thanks for reaching out! I&apos;ll get back to you soon.
+            </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                name="name"
-                type="text"
-                placeholder="Your Name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-              />
-              <Input
-                name="email"
-                type="email"
-                placeholder="Your Email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-              />
-              <Textarea
-                name="message"
-                placeholder="Your Message"
-                rows={6}
-                required
-                value={formData.message}
-                onChange={handleChange}
-              />
-              <Button type="submit" className="w-full">Send Message</Button>
+              {globalError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Submission failed</AlertTitle>
+                  <AlertDescription>{globalError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-1">
+                <Input
+                  name="name"
+                  type="text"
+                  placeholder="Your Name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+                {fieldErrors.name && (
+                  <p className="text-sm text-destructive">{fieldErrors.name}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="Your Email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {fieldErrors.email && (
+                  <p className="text-sm text-destructive">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Textarea
+                  name="message"
+                  placeholder="Your Message"
+                  rows={6}
+                  required
+                  value={formData.message}
+                  onChange={handleChange}
+                />
+                {fieldErrors.message && (
+                  <p className="text-sm text-destructive">{fieldErrors.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? 'Sending...' : 'Send Message'}
+              </Button>
             </form>
           )}
         </CardContent>
