@@ -21,6 +21,17 @@ export const createProfile = async (req: Request, res: Response) => {
     delete result._id;
     res.status(201).json({ data: result });
   } catch (err: any) {
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({
+        msg: 'Duplicate email',
+        error: [
+          {
+            field: 'email',
+            message: `Email "${err.keyValue.email}" is already in use`,
+          },
+        ],
+      });
+    }
     logger.error({ err }, 'Profile creation failed');
     res.status(500).json({ error: ERROR_MESSAGES.CREATE_FAILED });
   }
