@@ -24,8 +24,6 @@ export function SkillsSection({ skills }: { skills: Profile['skills'] }) {
             ? icon.svg.replace(/fill="[^"]*"/g, `fill="#${icon.hex}"`)
             : null;
 
-            console.log(`Rendering skill: ${skill.name} with icon: ${iconKey}`, { svg });   
-
           return (
             <Card key={skill.name} className="shadow-sm">
               <CardHeader className="flex items-center gap-3">

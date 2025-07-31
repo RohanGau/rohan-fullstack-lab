@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Profile from '../src/models/Profile';
+import logger from '../src/utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -12,17 +13,16 @@ async function migrateSkills() {
   }
 
   await mongoose.connect(uri);
-  console.log('✅ Connected to MongoDB');
-
+  logger.info('✅ Connected to MongoDB');
   // Only find documents where skills are still string arrays
   const profiles = await Profile.find({ 'skills.0': { $type: 'string' } });
 
   if (profiles.length === 0) {
-    console.log('✅ No documents to migrate');
+    logger.info('✅ No documents to migrate');
     process.exit(0);
   }
 
-  console.log(`Found ${profiles.length} profiles to migrate...\n`);
+  logger.info(`Found ${profiles.length} profiles to migrate...\n`);
 
   for (const profile of profiles) {
     const oldSkills = profile.skills as unknown as string[];
@@ -39,17 +39,17 @@ async function migrateSkills() {
 
     try {
       await profile.save();
-      console.log(`✅ Migrated profile: ${profile.name}`);
+      logger.info(`✅ Migrated profile: ${profile.name}`);
     } catch (err) {
-      console.error(`❌ Error migrating ${profile.name}:`, err);
+      logger.error(`❌ Error migrating ${profile.name}:`, err);
     }
   }
 
-  console.log('\n🎉 Migration complete.');
+  logger.error('\n🎉 Migration complete.');
   process.exit(0);
 }
 
 migrateSkills().catch(err => {
-  console.error('❌ Migration failed:', err);
+  logger.error('❌ Migration failed:', err);
   process.exit(1);
 });

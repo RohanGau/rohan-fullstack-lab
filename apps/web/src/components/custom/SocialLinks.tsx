@@ -4,7 +4,6 @@ import { Linkedin } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function SocialLinks({ user }: { user: any }) {
-    console.log("SocialLinks user:", user);
   return (
     <div className="flex gap-4 justify-center sm:justify-start">
         {user.gmail && (
