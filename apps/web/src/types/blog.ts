@@ -7,3 +7,12 @@ export interface Blog {
   createdAt: string; // ISO date string
   updatedAt: string;
 }
+
+export interface BlogState {
+  blogs: Blog[] | null;
+  featureBlogs: Blog[] | null;
+  blogDetails: Record<string, Blog>;
+  setBlogs: (blogs: Blog[]) => void;
+  setFeatureBlogs: (blogs: Blog[]) => void;
+  setBlogDetail: (blog: Blog) => void;
+}

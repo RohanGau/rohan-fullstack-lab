@@ -28,6 +28,37 @@ const ProfileCreate: React.FC = () => (
       <TextInput source="githubUrl" />
       <TextInput source="linkedinUrl" />
       <TextInput source="location" />
+
+      <ArrayInput source="topSkills">
+        <SimpleFormIterator>
+          <TextInput source="" label="Top Skill" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <ArrayInput source="allTechStack">
+        <SimpleFormIterator>
+          <TextInput source='' label="Stack or Tool" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <ArrayInput source="impact">
+        <SimpleFormIterator>
+          <TextInput source='' label="Impact Statement" multiline fullWidth />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <TextInput source="philosophy" label="Philosophy" multiline fullWidth />
+
+      <ArrayInput source="architectureAreas">
+        <SimpleFormIterator>
+          <TextInput source="title" label="Area Title" />
+          <ArrayInput source="topics" label="Topics">
+            <SimpleFormIterator>
+              <TextInput source='' label="Topic" />
+            </SimpleFormIterator>
+          </ArrayInput>
+        </SimpleFormIterator>
+      </ArrayInput>
     </SimpleForm>
   </Create>
 );

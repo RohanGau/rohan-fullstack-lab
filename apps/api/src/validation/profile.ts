@@ -30,6 +30,18 @@ export const profileUpdateSchema = Joi.object({
   githubUrl: Joi.string().uri(),
   linkedinUrl: Joi.string().uri(),
   location: Joi.string(),
+  topSkills: Joi.array().items(Joi.string()).optional(),
+  allTechStack: Joi.array().items(Joi.string()).optional(),
+  architectureAreas: Joi.array()
+    .items(
+      Joi.object({
+        title: Joi.string().required(),
+        topics: Joi.array().items(Joi.string()).required(),
+      })
+    )
+    .optional(),
+  philosophy: Joi.string().optional(),
+  impact: Joi.array().items(Joi.string()).optional(),
 })
   .min(1)
   .unknown(true);

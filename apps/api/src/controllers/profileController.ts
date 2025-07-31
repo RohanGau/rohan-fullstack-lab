@@ -78,6 +78,11 @@ export const updateProfile = async (req: Request, res: Response) => {
       'githubUrl',
       'linkedinUrl',
       'location',
+      'topSkills',
+      'allTechStack',
+      'architectureAreas',
+      'philosophy',
+      'impact',
     ];
 
     const filteredBody: Record<string, any> = {};

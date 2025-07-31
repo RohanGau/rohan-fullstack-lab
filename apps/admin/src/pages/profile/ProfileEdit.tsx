@@ -28,6 +28,38 @@ const ProfileEdit: React.FC = () => (
       <TextInput source="githubUrl" />
       <TextInput source="linkedinUrl" />
       <TextInput source="location" />
+
+      {/* ✅ Extended About Page Fields */}
+      <ArrayInput source="topSkills" label="Top Skills">
+        <SimpleFormIterator>
+          <TextInput source="" label="Top Skill" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <ArrayInput source="allTechStack" label="All Tech Stack">
+        <SimpleFormIterator>
+          <TextInput source="" label="Stack or Tool" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <ArrayInput source="impact" label="Impact Statements">
+        <SimpleFormIterator>
+          <TextInput source="" label="Impact" multiline fullWidth />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <TextInput source="philosophy" label="Philosophy" multiline fullWidth />
+
+      <ArrayInput source="architectureAreas" label="Architecture Areas">
+        <SimpleFormIterator>
+          <TextInput source="title" label="Area Title" />
+          <ArrayInput source="topics" label="Topics">
+            <SimpleFormIterator>
+              <TextInput source="" label="Topic" />
+            </SimpleFormIterator>
+          </ArrayInput>
+        </SimpleFormIterator>
+      </ArrayInput>
     </SimpleForm>
   </Edit>
 );

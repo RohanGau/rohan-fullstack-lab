@@ -27,6 +27,16 @@ const ProfileSchema = new Schema<ProfileDocument>(
     githubUrl: { type: String },
     linkedinUrl: { type: String },
     location: { type: String },
+    topSkills: [String],
+    allTechStack: [String],
+    architectureAreas: [
+      {
+        title: String,
+        topics: [String],
+      },
+    ],
+    philosophy: { type: String },
+    impact: [String],
   },
   {
     timestamps: true,

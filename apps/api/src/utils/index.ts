@@ -36,6 +36,15 @@ export const CONTACT_ERROR_MESSAGES = {
   DELETE_FAILED: 'Failed to delete contact',
 };
 
+export const PROJECT_ERROR_MESSAGES = {
+  CREATE_FAILED: 'Project creation failed',
+  INVALID_ID_FOND: 'Invalid project ID provided',
+  PROJECT_NOT_FOUND: 'Project not found',
+  UPDATE_FAILED: 'Project update failed',
+  FETCH_FAILED: 'Failed to fetch project',
+  DELETE_FAILED: 'Failed to delete project',
+};
+
 export const jsonErrorHandler: ErrorRequestHandler = (err, _, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ msg: ERROR_MESSAGES.INVALID_JSON });

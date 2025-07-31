@@ -10,6 +10,7 @@ import todoRoutes from './routes/todoRoutes';
 import blogRoutes from './routes/blogRoutes';
 import contactRoutes from './routes/contactRoutes';
 import profileRoutes from './routes/profileRoutes';
+import projectRoutes from './routes/projectRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
@@ -67,6 +68,7 @@ app.use('/api/todos', todoRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.use(globalErrorHandler);
 

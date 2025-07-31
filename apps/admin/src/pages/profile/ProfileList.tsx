@@ -1,4 +1,11 @@
-import { List, Datagrid, TextField, NumberField, EditButton, DeleteButton } from 'react-admin';
+import {
+  List,
+  Datagrid,
+  TextField,
+  NumberField,
+  EditButton,
+  DeleteButton,
+} from 'react-admin';
 
 const ProfileList: React.FC = () => (
   <List title="Profiles">

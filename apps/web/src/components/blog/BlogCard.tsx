@@ -1,12 +1,11 @@
-// components/blog/BlogCard.tsx
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { Blog } from '@/types/blog';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function BlogCard({ blog }: { blog: any }) {
+export function BlogCard({ blog }: { blog: Blog }) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
