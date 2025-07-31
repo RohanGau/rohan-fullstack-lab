@@ -7,7 +7,7 @@ import {
   NumberInput,
 } from 'react-admin';
 
-const ProjectEdit = () => (
+const ProjectEdit: React.FC = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="title" />

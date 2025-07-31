@@ -69,7 +69,6 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 
   try {
-    // ✨ Whitelist fields for update
     const allowedFields = [
       'name',
       'email',

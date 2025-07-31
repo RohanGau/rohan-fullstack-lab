@@ -7,7 +7,7 @@ import {
   DeleteButton,
 } from 'react-admin';
 
-const ProjectList = () => (
+const ProjectList: React.FC = () => (
   <List title="Projects">
     <Datagrid>
       <TextField source="title" />

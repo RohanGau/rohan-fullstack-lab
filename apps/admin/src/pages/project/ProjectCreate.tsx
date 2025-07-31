@@ -7,7 +7,7 @@ import {
   NumberInput,
 } from 'react-admin';
 
-const ProjectCreate = () => (
+const ProjectCreate: React.FC = () => (
   <Create>
     <SimpleForm>
       <TextInput source="title" required />

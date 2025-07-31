@@ -3,7 +3,6 @@ import {
   SimpleShowLayout,
   TextField,
   ArrayField,
-  FunctionField,
   NumberField,
 } from 'react-admin';
 
@@ -19,11 +18,16 @@ const ProjectShow = () => (
       <TextField source="link" />
       <TextField source="thumbnailUrl" />
 
-      <ArrayField source="techStack">
-        <FunctionField render={(record: any) => record} />
+      <ArrayField source="techStack" label="Tech Stack">
+        <SimpleShowLayout>
+          <TextField source="" />
+        </SimpleShowLayout>
       </ArrayField>
-      <ArrayField source="features">
-        <FunctionField render={(record: any) => record} />
+
+      <ArrayField source="features" label="Features">
+        <SimpleShowLayout>
+          <TextField source="" />
+        </SimpleShowLayout>
       </ArrayField>
     </SimpleShowLayout>
   </Show>

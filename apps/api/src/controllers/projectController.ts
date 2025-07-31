@@ -17,7 +17,7 @@ export const createProject = async (req: Request, res: Response) => {
     resultObj.id = resultObj._id;
     delete resultObj._id;
     logger.info({ id: project._id }, '✅ Project created');
-    res.status(201).json({ data: resultObj });
+    res.status(201).json(resultObj);
   } catch (err) {
     logger.error({ err }, '❌ Project creation failed');
     res.status(500).json({ error: ERROR_MESSAGES.CREATE_FAILED });
@@ -81,25 +81,33 @@ export const getProjectById = async (req: Request, res: Response) => {
 };
 
 export const updateProject = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const { id } = req.params;
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: ERROR_MESSAGES.INVALID_ID_FOND });
+    return res.status(404).json({ error: 'Invalid ID supplied' });
   }
 
-  const allowedFields = [
-    'title',
-    'description',
-    'company',
-    'role',
-    'techStack',
-    'features',
-    'link',
-    'year',
-    'thumbnailUrl',
-    'type',
-  ];
-
   try {
+    delete req.body.createdAt;
+    delete req.body.updatedAt;
+    delete req.body.__v;
+    delete req.body.id;
+
+    req.validatedBody = req.body;
+
+    const allowedFields = [
+      'title',
+      'description',
+      'company',
+      'role',
+      'techStack',
+      'features',
+      'link',
+      'year',
+      'thumbnailUrl',
+      'type',
+    ];
+
     const filteredBody: Record<string, any> = {};
     for (const key of allowedFields) {
       if (req.validatedBody[key] !== undefined) {
@@ -108,18 +116,19 @@ export const updateProject = async (req: Request, res: Response) => {
     }
 
     const updated = await Project.findByIdAndUpdate(id, filteredBody, { new: true });
+
     if (!updated) {
-      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
-    const obj = updated.toObject();
-    obj.id = obj._id;
-    delete obj._id;
+    const result = updated.toObject();
+    result.id = result._id;
+    delete result._id;
 
-    res.status(200).json(obj);
+    res.status(200).json(result);
   } catch (err) {
     logger.error({ err }, 'Failed to update project');
-    res.status(500).json({ error: ERROR_MESSAGES.UPDATE_FAILED });
+    res.status(500).json({ error: 'Update failed' });
   }
 };
 
