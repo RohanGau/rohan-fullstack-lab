@@ -6,6 +6,11 @@ const skillSchema = Joi.object({
   yearsOfExperience: Joi.number().min(0).required(),
 });
 
+const architectureAreaSchema = Joi.object({
+  title: Joi.string().required(),
+  topics: Joi.array().items(Joi.string()).required(),
+});
+
 export const profileSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -17,6 +22,11 @@ export const profileSchema = Joi.object({
   githubUrl: Joi.string().uri().optional(),
   linkedinUrl: Joi.string().uri().optional(),
   location: Joi.string().optional(),
+  topSkills: Joi.array().items(Joi.string()).optional(),
+  allTechStack: Joi.array().items(Joi.string()).optional(),
+  architectureAreas: Joi.array().items(architectureAreaSchema).optional(),
+  philosophy: Joi.string().optional(),
+  impact: Joi.array().items(Joi.string()).optional(),
 });
 
 export const profileUpdateSchema = Joi.object({
@@ -32,14 +42,7 @@ export const profileUpdateSchema = Joi.object({
   location: Joi.string(),
   topSkills: Joi.array().items(Joi.string()).optional(),
   allTechStack: Joi.array().items(Joi.string()).optional(),
-  architectureAreas: Joi.array()
-    .items(
-      Joi.object({
-        title: Joi.string().required(),
-        topics: Joi.array().items(Joi.string()).required(),
-      })
-    )
-    .optional(),
+  architectureAreas: Joi.array().items(architectureAreaSchema).optional(),
   philosophy: Joi.string().optional(),
   impact: Joi.array().items(Joi.string()).optional(),
 })

@@ -14,8 +14,10 @@ export const createBlog = async (req: Request, res: Response) => {
   try {
     const blog = new Blog(req.validatedBody);
     const result = await blog.save();
-    logger.info({ id: result._id }, 'Blog created successfully');
-    res.status(201).json(result);
+    const resultObj = result.toObject();
+    resultObj.id = resultObj._id;
+    delete resultObj._id;
+    res.status(201).json({ data: resultObj });
   } catch (err: any) {
     logger.error({ err }, 'Blog creation failed');
     res.status(500).json({ error: ERROR_MESSAGES.CREATE_FAILED });

@@ -14,9 +14,12 @@ export const createProfile = async (req: Request, res: Response) => {
     const profile = new Profile(req.validatedBody);
     const saved = await profile.save();
     const savedObj = saved.toObject();
-    savedObj.id = savedObj._id;
-    delete savedObj._id;
-    res.status(201).json({ data: savedObj });
+    const result = {
+      id: savedObj._id?.toString(),
+      ...savedObj,
+    };
+    delete result._id;
+    res.status(201).json({ data: result });
   } catch (err: any) {
     logger.error({ err }, 'Profile creation failed');
     res.status(500).json({ error: ERROR_MESSAGES.CREATE_FAILED });

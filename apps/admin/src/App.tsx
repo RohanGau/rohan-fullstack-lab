@@ -12,9 +12,14 @@ import ProfileEdit from './pages/profile/ProfileEdit';
 import ProfileShow from './pages/profile/ProfileShow';
 import ContactList from './pages/contact/Contact';
 
+import ProjectCreate from './pages/project/ProjectCreate';
+import ProjectList from './pages/project/ProjectList';
+import ProjectEdit from './pages/project/ProjectEdit';
+import ProjectShow from './pages/project/ProjectShow';
+
 // Replace with backend URL if deployed
-// const apiUrl = 'http://localhost:5050';
-const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
+const apiUrl = 'http://localhost:5050';
+// const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
 const dataProvider = simpleRestProvider(`${apiUrl}/api`);
 
 
@@ -36,6 +41,13 @@ function App() {
         show={ProfileShow}
       />
       <Resource name="contact" list={ContactList} />
+      <Resource
+        name="projects"
+        list={ProjectList}
+        create={ProjectCreate}
+        edit={ProjectEdit}
+        show={ProjectShow}
+      />
     </Admin>
   );
 }

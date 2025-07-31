@@ -13,8 +13,11 @@ export const createProject = async (req: Request, res: Response) => {
   try {
     const project = new Project(req.validatedBody);
     const result = await project.save();
-    res.status(201).json(result);
+    const resultObj = result.toObject();
+    resultObj.id = resultObj._id;
+    delete resultObj._id;
     logger.info({ id: project._id }, '✅ Project created');
+    res.status(201).json({ data: resultObj });
   } catch (err) {
     logger.error({ err }, '❌ Project creation failed');
     res.status(500).json({ error: ERROR_MESSAGES.CREATE_FAILED });
