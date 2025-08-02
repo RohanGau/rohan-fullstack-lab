@@ -3,7 +3,7 @@ import process from 'process';
 import swaggerUi from 'swagger-ui-express';
 import dotenv from 'dotenv';
 import path from 'path';
-import rateLimit from 'express-rate-limit';
+import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
 import helmet from 'helmet';
 import express from 'express';
 import todoRoutes from './routes/todoRoutes';
@@ -74,12 +74,12 @@ app.use(globalErrorHandler);
 
 app.use(helmet());
 
-const limiter = rateLimit({
+const limiter: RateLimitRequestHandler = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
   max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
 });
 
-app.use(limiter);
+app.use(limiter as unknown as express.RequestHandler);
 
 connectDB();
 

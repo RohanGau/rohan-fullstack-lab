@@ -1,58 +1,35 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useBlogDetail } from '@/hooks/useBlogDetail';
 import { format } from 'date-fns';
-// import ReactMarkdown from 'react-markdown';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { BlogDetailSkeleton } from '@/components/blog/BlogDetailSkeleton';
 import { Badge } from '@/components/ui/badge';
+import { BlogDetailSkeleton } from '@/components/blog/BlogDetailSkeleton';
 import { MarkdownRenderer } from '@/components/blog/MarkdownRenderer';
-// import remarkGfm from 'remark-gfm';
-// import rehypeHighlight from 'rehype-highlight';
-// import "./markdown.css";
-
+import { BlogErrorMessage } from '@/components/blog/BlogErrorMessage';
+import { BackToBlogButton } from '@/components/blog/BackToBlogButton';
 
 export default function BlogDetailPage() {
-  const { id } = useParams();
-  const { blog, loading, error } = useBlogDetail(id);
-  const router = useRouter();
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
 
+  const { blog, loading, error } = useBlogDetail(id ?? '');
+
+  if (!id) return <BlogErrorMessage message="Invalid blog ID" />;
   if (loading) return <BlogDetailSkeleton />;
-  if (error || !blog) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-red-500 mb-4">{error || 'Blog not found'}</p>
-        <Button variant="outline" onClick={() => router.push('/blog')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blogs
-        </Button>
-      </div>
-    );
-  }
-
-  if (!blog) return <p className="text-center">Blog not found</p>;
+  if (error || !blog) return <BlogErrorMessage message={error || 'Blog not found'} />;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
       {/* Back Button */}
-      <Button
-        variant="ghost"
-        className="flex items-center gap-2 mb-4 text-muted-foreground"
-        onClick={() => router.push('/blog')}
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Blogs
-      </Button>
+      <BackToBlogButton className="mb-4 text-muted-foreground" />
 
       {/* Title */}
       <h1 className="text-3xl font-bold leading-tight">{blog.title}</h1>
 
       {/* Meta */}
       <p className="text-sm text-muted-foreground">
-        By <span className="font-medium">{blog.author}</span> ·{' '}
-        {format(new Date(blog.createdAt), 'PPP')}
+        By <span className="font-medium">{blog.author}</span> · {format(new Date(blog.createdAt), 'PPP')}
       </p>
 
       {/* Tags */}
@@ -63,13 +40,9 @@ export default function BlogDetailPage() {
           </Badge>
         ))}
       </div>
+
+      {/* Content */}
       <MarkdownRenderer markdown={blog.content} />
-        {/* <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
-        >
-            {blog.content}
-        </ReactMarkdown> */}
     </div>
   );
 }

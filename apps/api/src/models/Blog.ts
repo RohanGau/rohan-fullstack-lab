@@ -1,7 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
-import { IBlog } from '../types/blog.js';
+import { IBlogDb } from '@fullstack-lab/types';
 
-export interface BlogDocument extends IBlog, Document {}
+export interface BlogDocument extends IBlogDb, Document {}
 
 const BlogSchema = new Schema<BlogDocument>(
   {

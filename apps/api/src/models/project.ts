@@ -1,19 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
+import { IProjectDb } from '@fullstack-lab/types';
 
-export interface ProjectDocument extends Document {
-  title: string;
-  description: string;
-  company?: string;
-  role?: string;
-  techStack: string[];
-  features?: string[];
-  link?: string;
-  year?: number;
-  thumbnailUrl?: string;
-  type?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export interface ProjectDocument extends IProjectDb, Document {}
 
 const ProjectSchema = new Schema<ProjectDocument>(
   {

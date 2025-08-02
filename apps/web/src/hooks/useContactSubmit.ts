@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
-import { ContactFormData } from '@/types/contact';
+import { IContactBase } from '@fullstack-lab/types';
 
 
 export function useContactSubmit() {
@@ -9,7 +9,7 @@ export function useContactSubmit() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const submitContact = async (data: ContactFormData) => {
+  const submitContact = async (data: IContactBase) => {
     setSubmitting(true);
     setSuccess(false);
     setFieldErrors({});

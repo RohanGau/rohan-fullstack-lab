@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { Profile } from '@/types/profile';
+import { IProfileDto } from '@fullstack-lab/types';
 
 interface ProfileState {
-  profile: Profile[] | null;
-  setProfile: (profile: Profile[]) => void;
+  profile: IProfileDto[] | null;
+  setProfile: (profile: IProfileDto[]) => void;
 }
 
 export const useProfileStore = create<ProfileState>((set) => ({

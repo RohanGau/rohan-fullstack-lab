@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+
 import { useProfile } from '@/hooks/useProfile';
 import { ProjectsPreview } from '@/components/custom/ProjectsPreview';
 import { BlogsPreview } from '@/components/custom/BlogsPreview';
@@ -17,7 +17,7 @@ export default function Home() {
     loading: isFeatureBlogsLoading,
     error: featureBlogsError
   } = useFeaturedBlogs();
-  const user = profile?.[0];
+  const user = profile?.find((item) => item.id === "688a63c9e76b322b8c0b5814") ?? null;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-16">

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
 import { useBlogStore } from '@/lib/store/blogStore';
-import { Blog } from '@/types/blog';
+import { IBlogDto } from '@fullstack-lab/types';
 
 export function useBlogs() {
   const { blogs, setBlogs } = useBlogStore();
@@ -11,7 +11,7 @@ export function useBlogs() {
 
   useEffect(() => {
     if (!blogs) {
-      apiFetch<Blog[]>(API.BLOGS)
+      apiFetch<IBlogDto[]>(API.BLOGS)
         .then((data) => {
           setBlogs(data);
           setLoading(false);

@@ -1,11 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { IContactDb } from '@fullstack-lab/types';
 
-export interface ContactDocument extends Document {
-  name: string;
-  email: string;
-  message: string;
-  createdAt: Date;
-}
+export interface ContactDocument extends IContactDb, Document {}
 
 const ContactSchema = new Schema<ContactDocument>(
   {
@@ -14,7 +10,7 @@ const ContactSchema = new Schema<ContactDocument>(
     message: { type: String, required: true, trim: true },
   },
   {
-    timestamps: true, // Adds createdAt + updatedAt
+    timestamps: true,
   }
 );
 

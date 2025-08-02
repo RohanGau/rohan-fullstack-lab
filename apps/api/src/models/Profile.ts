@@ -1,7 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
-import { IProfile } from '../types/profile.js';
+import { IProfileDb } from '@fullstack-lab/types';
 
-export interface ProfileDocument extends IProfile, Document {}
+export interface ProfileDocument extends IProfileDb, Document {}
 
 const SkillSchema = new Schema(
   {

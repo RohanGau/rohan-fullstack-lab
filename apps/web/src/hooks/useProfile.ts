@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useProfileStore } from '@/lib/store';
 import { apiFetch } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
+import { IProfileDto } from '@fullstack-lab/types';
 
 export function useProfile() {
   const { profile, setProfile } = useProfileStore();
@@ -10,8 +11,7 @@ export function useProfile() {
 
   useEffect(() => {
     if (!profile) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      apiFetch<any[]>(API.PROFILE)
+      apiFetch<IProfileDto[]>(API.PROFILE)
         .then((data) => {
           setProfile(data);
           setLoading(false);

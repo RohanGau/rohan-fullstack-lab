@@ -9,7 +9,7 @@ export interface ArchitectureArea {
   topics: string[];
 }
 
-export interface IProfile {
+export interface IProfileBase {
   name: string;
   email: string;
   bio?: string;
@@ -25,7 +25,15 @@ export interface IProfile {
   architectureAreas?: ArchitectureArea[];
   philosophy?: string;
   impact?: string[];
+}
 
+export interface IProfileDb extends IProfileBase {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IProfileDto extends IProfileBase {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 }
