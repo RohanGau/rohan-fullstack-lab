@@ -13,6 +13,8 @@ export const ERROR_MESSAGES = {
 
 export const allowedOrigins = [
   process.env.FRONTEND_ORIGIN,
+  process.env.BACKEND_ORIGIN,
+  process.env.NEXT_ORIGIN,
   'http://localhost:3000',
   'http://localhost:5050',
 ].filter(Boolean);
