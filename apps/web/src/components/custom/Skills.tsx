@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Card,
   CardContent,
@@ -5,43 +7,57 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Profile } from '@/types/profile';
-import * as simpleIcons from 'simple-icons';
+import { Badge } from '@/components/ui/badge';
 import { getSimpleIconSlug } from '@/lib/utils';
+import * as simpleIcons from 'simple-icons';
+import { SkillsProps } from '@/types/profile';
 
-export function SkillsSection({ skills }: { skills: Profile['skills'] }) {
+
+export function SkillsSection({
+  skills,
+  fullStack,
+  gridCols,
+}: SkillsProps) {
+  if (!skills || skills.length === 0) return null;
+
+  const base = gridCols?.base || 1;
+  const sm = gridCols?.sm || 2;
+  const md = gridCols?.md || 3;
+  const lg = gridCols?.lg || md;
+  
+  const gridClass = `grid grid-cols-${base} sm:grid-cols-${sm} md:grid-cols-${md} lg:grid-cols-${lg} gap-4`;
+
   return (
     <section>
-      <h2 className="text-2xl font-semibold mb-6">Skills</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <h2 className="text-2xl font-semibold mb-6">Top Skills</h2>
+      <div className={gridClass}>
         {skills.map((skill) => {
           const slug = getSimpleIconSlug(skill.name);
           const iconKey = 'si' + slug.charAt(0).toUpperCase() + slug.slice(1);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const icon = (simpleIcons as any)[iconKey];
-
           const svg = icon?.svg
             ? icon.svg.replace(/fill="[^"]*"/g, `fill="#${icon.hex}"`)
             : null;
 
           return (
             <Card key={skill.name} className="shadow-sm">
-              <CardHeader className="flex items-center gap-3">
+              <CardHeader className="flex items-center gap-3 pb-2">
                 {svg && (
-                    <span
-                        className="w-5 h-5 flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ __html: svg }}
-                    />
+                  <span
+                    className="w-5 h-5"
+                    dangerouslySetInnerHTML={{ __html: svg }}
+                  />
                 )}
-                <CardTitle className="text-base">{skill.name}</CardTitle>
+                <CardTitle className="text-base font-medium">{skill.name}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 pt-0">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Rating</span>
                   <span>{skill.rating}/10</span>
                 </div>
                 <Progress value={(skill.rating / 10) * 100} />
-                <div className="text-xs text-muted-foreground pt-1">
+                <div className="text-xs text-muted-foreground">
                   {skill.yearsOfExperience} year{skill.yearsOfExperience > 1 ? 's' : ''} experience
                 </div>
               </CardContent>
@@ -49,6 +65,20 @@ export function SkillsSection({ skills }: { skills: Profile['skills'] }) {
           );
         })}
       </div>
+      {fullStack && (
+        <details className="mt-8 mb-6">
+          <summary className="cursor-pointer text-2xl font-semibold mb-2 text-muted-foreground">
+            View my full stack & dev tools
+          </summary>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {fullStack.map((tool) => (
+              <Badge key={tool} variant="secondary">
+                {tool}
+              </Badge>
+            ))}
+          </div>
+        </details>
+      )}
     </section>
   );
 }

@@ -6,9 +6,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getSimpleIconSlug(skillName: string): string {
-  return skillName
+  const customSlugs: Record<string, string> = {
+    'Next.js': 'nextdotjs',
+    'Node.js': 'nodedotjs',
+    'Express.js': 'express',
+    'Vue.js': 'vuedotjs',
+    'Nuxt.js': 'nuxtdotjs',
+    'Deno.js': 'denodotjs',
+    'RxJS': 'rxjs',
+  };
+
+  const normalized = skillName.trim();
+
+  if (customSlugs[normalized]) {
+    return customSlugs[normalized];
+  }
+
+  return normalized
     .toLowerCase()
-    .replace(/\s+/g, '')          // remove spaces
-    .replace(/\./g, '')           // remove dots
-    .replace(/js$/, 'javascript'); // convert "js" to "javascript"
+    .replace(/\s+/g, '')
+    .replace(/\./g, 'dot');
 }
