@@ -3,9 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Blog } from '@/types/blog';
+import { IBlogDto } from '@fullstack-lab/types';
 
-export function BlogCard({ blog }: { blog: Blog }) {
+export function BlogCard({ blog }: { blog: IBlogDto }) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>

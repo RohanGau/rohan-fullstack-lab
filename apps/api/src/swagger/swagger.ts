@@ -1,6 +1,8 @@
 import process from 'process';
 import swaggerJSDoc from 'swagger-jsdoc';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -9,9 +11,15 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API documentation for your Todo backend',
     },
-    servers: [{ url: `http://localhost:${process.env.PORT || 5050}` }],
+    servers: [
+      {
+        url: process.env.SWAGGER_SERVER_URL || `http://localhost:${process.env.PORT || 5050}`,
+      },
+    ],
   },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+  apis: isDev
+    ? ['./src/routes/*.ts', './src/controllers/*.ts']
+    : ['./dist/routes/*.js', './dist/controllers/*.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

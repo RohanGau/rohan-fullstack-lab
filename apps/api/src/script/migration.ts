@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Profile from '../src/models/Profile';
-import logger from '../src/utils/logger';
+import Profile from '../models/Profile';
+import logger from '../utils/logger';
+import process = require('process');
 
 // Load environment variables
 dotenv.config();

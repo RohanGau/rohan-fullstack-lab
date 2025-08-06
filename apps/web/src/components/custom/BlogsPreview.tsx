@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { Blog } from '@/types/blog';
+import { IBlogDto } from '@fullstack-lab/types';
 import { BlogCard } from '../blog/BlogCard';
 import { BlogListSkeleton } from '../blog/BlogListSkeleton';
 
 interface BlogsPreviewProps {
-  featureBlogs: Blog[] | null;
+  featureBlogs: IBlogDto[] | null;
   loading: boolean;
   error: string | null;
 }

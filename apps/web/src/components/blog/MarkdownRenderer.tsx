@@ -30,18 +30,12 @@ const components: Components = {
   li: ({ node, ...props }) => (
     <li className="list-item" {...props} />
   ),
-  code: ({ node, inline, className, ...props }) => {
-    if (inline) {
-      return (
-        <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold" {...props} />
-      );
-    }
-    return (
-      <pre className="mt-6 overflow-x-auto rounded-lg border bg-slate-900 p-4">
-        <code className="text-sm text-slate-50" {...props} />
-      </pre>
-    );
-  },
+  code: ({ node, className, ...props }) =>  (
+    <pre className="mt-6 overflow-x-auto rounded-lg border bg-slate-900 p-4">
+      <code className="text-sm text-slate-50" {...props} />
+    </pre>
+  )
+  ,
   table: ({ node, ...props }) => (
     <div className="my-6 w-full overflow-y-auto">
       <table className="w-full" {...props} />
