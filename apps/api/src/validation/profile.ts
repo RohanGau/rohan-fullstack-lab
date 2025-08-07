@@ -11,6 +11,12 @@ const architectureAreaSchema = Joi.object({
   topics: Joi.array().items(Joi.string()).required(),
 });
 
+export const upadatedArchitectureAreaSchema = Joi.object({
+  _id: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional().allow(null),
+  title: Joi.string().required(),
+  topics: Joi.array().items(Joi.string()).required(),
+});
+
 export const profileSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -42,7 +48,7 @@ export const profileUpdateSchema = Joi.object({
   location: Joi.string(),
   topSkills: Joi.array().items(Joi.string()).optional(),
   allTechStack: Joi.array().items(Joi.string()).optional(),
-  architectureAreas: Joi.array().items(architectureAreaSchema).optional(),
+  architectureAreas: Joi.array().items(upadatedArchitectureAreaSchema).optional(),
   philosophy: Joi.string().optional(),
   impact: Joi.array().items(Joi.string()).optional(),
 })

@@ -106,6 +106,16 @@ export const updateProfile = async (req: Request, res: Response) => {
       }
     }
 
+    if (filteredBody.architectureAreas && Array.isArray(filteredBody.architectureAreas)) {
+      filteredBody.architectureAreas = filteredBody.architectureAreas.map(area => {
+        if (area._id === null || area._id === undefined) {
+          const { _id, ...rest } = area;
+          return rest;
+        }
+        return area;
+      });
+    }
+
     const updated = await Profile.findByIdAndUpdate(id, filteredBody, { new: true });
 
     if (!updated) {
