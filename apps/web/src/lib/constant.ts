@@ -1,6 +1,7 @@
 export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://rohan-backend-api.fly.dev';
 export const API = {
   PROFILE: '/api/profiles',
+  PROJECTS: '/api/projects',
   BLOGS: '/api/blogs',
   CONTACT: '/api/contact',
 };

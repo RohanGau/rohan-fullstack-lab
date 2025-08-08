@@ -1,8 +1,14 @@
 import { Hero } from "./Hero";
 import { useProfile } from "@/hooks/useProfile";
+import Image from 'next/image';
 import { Card, CardContent} from '@/components/ui/card';
 import { SkillsSection } from "../custom/Skills";
 import { Knowledge } from "./Knowledge";
+import { Separator } from "../ui/separator";
+import { Philosophy } from "./Philosophy";
+// import { SocialLinks } from "../custom/SocialLinks";
+import { SocialLinksContainer } from "./SocialLinks";
+import { CONTACTS } from "@/lib/constant";
 export default function AboutContent() {
   const { profile } = useProfile();
   const user = profile?.find((item) => item.id !== "688a63c9e76b322b8c0b5814") ?? null;
@@ -20,12 +26,22 @@ export default function AboutContent() {
                 </div>
                 <SkillsSection skills={user.skills} fullStack={user.allTechStack} />
                 <Knowledge areas={user.architectureAreas} />
+                <Separator className="my-8" />
+                <Philosophy text={user.philosophy} impact={user.impact} />
+                <SocialLinksContainer user={user} />
             </CardContent>
         </Card>
-        {/* <p className="text-base mb-6">{user.bio}</p>
-        <Knowledge areas={KNOWLEDGE_AREAS} />
-        <Philosophy text={user.philosophy} impact={user.impact} />
-        <SocialLinks githubUrl={user.githubUrl} linkedinUrl={user.linkedinUrl} /> */}
+        <div className="flex justify-center">
+            <Image
+                src={user.avatarUrl ?? '/profile.jpg'}
+                alt={user.name}
+                width={250}
+                height={250}
+                className="rounded-xl drop-shadow w-full max-w-md border"
+                style={{objectFit: 'cover'}}
+                priority
+            />
+        </div>
     </div>
     );
 }

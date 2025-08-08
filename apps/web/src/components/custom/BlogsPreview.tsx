@@ -1,15 +1,14 @@
 import Link from 'next/link';
-import { IBlogDto } from '@fullstack-lab/types';
 import { BlogCard } from '../blog/BlogCard';
 import { BlogListSkeleton } from '../blog/BlogListSkeleton';
+import { useFeaturedBlogs } from '@/hooks/useFeaturedBlogs';
 
-interface BlogsPreviewProps {
-  featureBlogs: IBlogDto[] | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export function BlogsPreview({ featureBlogs, loading, error }: BlogsPreviewProps) {
+export default function BlogsPreview() {
+  const {
+      featureBlogs,
+      loading,
+      error
+    } = useFeaturedBlogs();
   
   if (loading) return <BlogListSkeleton numberOfSkeletons={3} />;
   if (error) {

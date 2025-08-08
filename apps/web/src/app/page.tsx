@@ -1,33 +1,31 @@
 'use client';
 
-import { useProfile } from '@/hooks/useProfile';
-import { ProjectsPreview } from '@/components/custom/ProjectsPreview';
-import { BlogsPreview } from '@/components/custom/BlogsPreview';
-import { useFeaturedBlogs } from '@/hooks/useFeaturedBlogs';
-import { ProfileSection } from '@/components/home/ProfileSection';
+import { BlogListSkeleton } from '@/components/blog/BlogListSkeleton';
+import { HomeSkeleton } from '@/components/custom/HomeSkeleton';
+import { withClientFallback } from '@/lib/hoc/withClientFallback';
 
-export default function Home() {
-  const {
-    profile,
-    loading: isProfileLoading,
-    error: profileError
-  } = useProfile();
-  const {
-    featureBlogs,
-    loading: isFeatureBlogsLoading,
-    error: featureBlogsError
-  } = useFeaturedBlogs();
-  const user = profile?.find((item) => item.id === "688a63c9e76b322b8c0b5814") ?? null;
+const ProfileSection = withClientFallback(
+  () => import('@/components/home/ProfileSection'),
+  { fallback: <HomeSkeleton /> }
+);
+
+const ProjectsPreview = withClientFallback(
+  () => import('@/components/custom/ProjectsPreview'),
+  { fallback: <BlogListSkeleton /> }
+);
+
+const BlogsPreview = withClientFallback(
+  () => import('@/components/custom/BlogsPreview'),
+  { fallback: <BlogListSkeleton /> }
+);
+
+export default function HomeContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-16">
-     <ProfileSection user={user} loading={isProfileLoading} error={profileError} />
-
-      {/* Projects Section */}
+     <ProfileSection />
       <ProjectsPreview />
-
-      {/* Blog Section */}
-      <BlogsPreview featureBlogs={featureBlogs} loading={isFeatureBlogsLoading} error={featureBlogsError} />
+      <BlogsPreview />
     </div>
   );
 }
