@@ -11,6 +11,7 @@ import blogRoutes from './routes/blogRoutes';
 import contactRoutes from './routes/contactRoutes';
 import profileRoutes from './routes/profileRoutes';
 import projectRoutes from './routes/projectRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
@@ -69,6 +70,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.use(globalErrorHandler);
 

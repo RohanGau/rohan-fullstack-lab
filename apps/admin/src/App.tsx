@@ -1,4 +1,5 @@
-import { Admin, Resource } from 'react-admin';
+import { Admin, Resource, CustomRoutes } from 'react-admin';
+import { Route } from 'react-router-dom';
 import simpleRestProvider from 'ra-data-simple-rest';
 
 import BlogCreate from './pages/blog/BlogCreate';
@@ -16,6 +17,9 @@ import ProjectCreate from './pages/project/ProjectCreate';
 import ProjectList from './pages/project/ProjectList';
 import ProjectEdit from './pages/project/ProjectEdit';
 import ProjectShow from './pages/project/ProjectShow';
+import AssetUploadSection from './components/AssetUploadSection';
+
+import { CustomLayout } from './layout/CustomLayout';
 
 // Replace with backend URL if deployed
 // const apiUrl = 'http://localhost:5050';
@@ -25,7 +29,10 @@ const dataProvider = simpleRestProvider(`${apiUrl}/api`);
 
 function App() {
   return (
-    <Admin dataProvider={dataProvider}>
+    <Admin dataProvider={dataProvider} layout={CustomLayout}>
+      <CustomRoutes>
+        <Route path="/assets" element={<AssetUploadSection apiUrl={apiUrl} />} />
+      </CustomRoutes>
       <Resource
         name="blogs"
         list={BlogList}
