@@ -1,5 +1,4 @@
-// src/validation/index.ts
-import Joi, { ObjectSchema } from 'joi';
+import { ObjectSchema } from 'joi';
 import logger from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
 import { CMS_ERROR_MESSAGES as ERROR_MESSAGES } from '../utils';
@@ -8,7 +7,8 @@ export const validateSchema =
   (schema: ObjectSchema) => (req: Request, res: Response, next: NextFunction) => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
-      stripUnknown: true,
+      stripUnknown: { objects: true },
+      convert: true 
     });
 
     if (error) {

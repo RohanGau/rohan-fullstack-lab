@@ -12,12 +12,14 @@ import { getSimpleIconSlug } from '@/lib/utils';
 import * as simpleIcons from 'simple-icons';
 import { SkillsProps } from '@/types/profile';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 
 export function SkillsSection({
   skills,
   fullStack,
   gridCols,
+  isProfile,
 }: SkillsProps) {
   if (!skills || skills.length === 0) return null;
 
@@ -65,17 +67,21 @@ export function SkillsSection({
             </Card>
           );
         })}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">Want to know more?</CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground space-y-3">
-            <p>
-              Curious about my engineering principles, tech journey, and domain expertise?
-            </p>
-            <Link href="/about" className="inline-block px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition">Read More About Me →</Link>
-          </CardContent>
-        </Card>
+        {
+          isProfile && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold">Want to know more?</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground space-y-3">
+                <p>
+                  Curious about my engineering principles, tech journey, and domain expertise?
+                </p>
+                <Link href="/about" className="inline-block px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition">Read More About Me →</Link>
+              </CardContent>
+            </Card>
+          )
+        }
       </div>
       {fullStack && (
         <details className="mt-8 mb-6">

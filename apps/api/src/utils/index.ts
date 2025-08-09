@@ -60,3 +60,37 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
     error: err.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
   });
 };
+
+export function normalizeBody(body: any) {
+  const out = { ...body };
+
+  // Map single link -> links[]
+  if (!out.links && out.link) {
+    out.links = [{ url: out.link, kind: 'other' }];
+    delete out.link;
+  }
+
+  // Map single type -> types[]
+  if (!out.types && out.type) {
+    out.types = [String(out.type).toLowerCase()];
+    delete out.type;
+  }
+
+  // De-duplicate arrays where relevant
+  if (Array.isArray(out.techStack)) {
+    out.techStack = Array.from(new Set(out.techStack.map((s: string) => s.trim()).filter(Boolean)));
+  }
+  if (Array.isArray(out.features)) {
+    out.features = Array.from(new Set(out.features.map((s: string) => s.trim()).filter(Boolean)));
+  }
+  if (Array.isArray(out.types)) {
+    out.types = Array.from(new Set(out.types.map((s: string) => s.toLowerCase()).filter(Boolean)));
+  }
+
+  return out;
+}
+
+export function safeJsonParse<T>(value: unknown, fallback: T): T {
+  if (typeof value !== 'string') return fallback;
+  try { return JSON.parse(value) as T; } catch { return fallback; }
+}

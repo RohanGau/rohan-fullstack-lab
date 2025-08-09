@@ -4,7 +4,10 @@ import {
   TextField,
   ArrayField,
   NumberField,
+  Datagrid,
+  UrlField,
 } from 'react-admin';
+import ChipsField from '../../components/ChipsField';
 
 const ProjectShow = () => (
   <Show>
@@ -14,20 +17,18 @@ const ProjectShow = () => (
       <TextField source="company" />
       <TextField source="role" />
       <NumberField source="year" />
-      <TextField source="type" />
-      <TextField source="link" />
       <TextField source="thumbnailUrl" />
 
-      <ArrayField source="techStack" label="Tech Stack">
-        <SimpleShowLayout>
-          <TextField source="" />
-        </SimpleShowLayout>
-      </ArrayField>
+      <ChipsField source="types" />
+      <ChipsField source="techStack" />
+      <ChipsField source="features" />
 
-      <ArrayField source="features" label="Features">
-        <SimpleShowLayout>
-          <TextField source="" />
-        </SimpleShowLayout>
+      <ArrayField source="links" label="Links">
+        <Datagrid bulkActionButtons={false}>
+          <UrlField source="url" />
+          <TextField source="label" />
+          <TextField source="kind" />
+        </Datagrid>
       </ArrayField>
     </SimpleShowLayout>
   </Show>

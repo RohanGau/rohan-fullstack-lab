@@ -18,7 +18,7 @@ export default function ProfileSection() {
   return (
     <>
       <ProfileCard user={user} />
-      <SkillsSection skills={user.skills} />
+      <SkillsSection skills={user.skills} isProfile />
     </>
   );
 }

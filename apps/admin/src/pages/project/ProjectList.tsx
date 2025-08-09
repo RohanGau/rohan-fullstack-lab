@@ -6,6 +6,7 @@ import {
   EditButton,
   DeleteButton,
 } from 'react-admin';
+import ChipsField from '../../components/ChipsField';
 
 const ProjectList: React.FC = () => (
   <List title="Projects">
@@ -14,7 +15,7 @@ const ProjectList: React.FC = () => (
       <TextField source="company" />
       <TextField source="role" />
       <NumberField source="year" />
-      <TextField source="type" />
+      <ChipsField source="types" />
       <EditButton />
       <DeleteButton />
     </Datagrid>

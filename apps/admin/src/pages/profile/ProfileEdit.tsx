@@ -7,8 +7,24 @@ import {
   SimpleFormIterator,
 } from 'react-admin';
 
+const cleanProjectPayload = (values: any) => {
+    const { id, _id, __v, createdAt, updatedAt, ...rest } = values;
+    const arr = (x:any)=> (Array.isArray(x)?x:[]);
+    const techStack = arr(rest.techStack).map((s:any)=>String(s).trim()).filter(Boolean);
+    const features  = arr(rest.features).map((s:any)=>String(s).trim()).filter(Boolean);
+    const links     = arr(rest.links).map((l:any)=>({
+      url: l?.url?.trim(),
+      label: l?.label?.trim() || undefined,
+      kind: l?.kind || 'other',
+    })).filter((l:any)=>!!l.url);
+    const types     = arr(rest.types).map((s:any)=>String(s).trim()).filter(Boolean);
+
+    return { ...rest, techStack, features, links, types };
+  };
+  
 const ProfileEdit: React.FC = () => (
-  <Edit>
+
+  <Edit mutationMode="pessimistic" transform={cleanProjectPayload}>
     <SimpleForm>
       <TextInput source="name" />
       <TextInput source="email" />

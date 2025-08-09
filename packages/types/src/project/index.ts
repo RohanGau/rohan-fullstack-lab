@@ -1,3 +1,21 @@
+export type ProjectType =
+  | 'web'
+  | 'mobile'
+  | 'api'
+  | 'cli'
+  | 'tool'
+  | 'library'
+  | 'backend'
+  | 'frontend'
+  | 'desktop';
+
+export type ProjectLinkKind = 'live' | 'repo' | 'docs' | 'demo' | 'design' | 'other';
+
+export interface ProjectLink {
+  url: string;
+  label?: string;
+  kind?: ProjectLinkKind;
+}
 export interface IProjectBase {
   title: string;
   description: string;
@@ -5,21 +23,18 @@ export interface IProjectBase {
   role?: string;
   techStack: string[];
   features?: string[];
-  link?: string;
+  links: ProjectLink[];
   year?: number;
   thumbnailUrl?: string;
-  type?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  types: ProjectType[];
 }
-
 export interface IProjectDb extends IProjectBase {
+  _id?: string;
   createdAt: Date;
   updatedAt: Date;
 }
-
 export interface IProjectDto extends IProjectBase {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
-}   
+  createdAt: string;
+  updatedAt: string;
+}

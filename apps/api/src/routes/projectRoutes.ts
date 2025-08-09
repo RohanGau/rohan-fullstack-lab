@@ -13,58 +13,114 @@ const router = Express.Router();
 
 /**
  * @openapi
+ * tags:
+ *   - name: Projects
+ *     description: CRUD for portfolio projects
+ *
  * components:
  *   schemas:
+ *     ProjectLink:
+ *       type: object
+ *       properties:
+ *         url:
+ *           type: string
+ *           format: uri
+ *           example: "https://example.com"
+ *         label:
+ *           type: string
+ *           example: "Live"
+ *         kind:
+ *           type: string
+ *           enum: [live, repo, docs, demo, design, other]
+ *           example: "live"
+ *
  *     Project:
  *       type: object
- *       required:
- *         - title
- *         - description
- *         - techStack
+ *       required: [title, description, techStack]
  *       properties:
  *         id:
  *           type: string
  *           description: Unique project ID
  *         title:
  *           type: string
- *           example: PhonePe Account Aggregator Web App
+ *           example: "PhonePe Account Aggregator Web App"
  *         description:
  *           type: string
- *           example: "An onboarding platform that enabled 50M+ users to aggregate their financial accounts in real time."
+ *           example: "An onboarding platform that enabled 50M+ users..."
  *         company:
  *           type: string
- *           example: PhonePe
+ *           example: "PhonePe"
  *         role:
  *           type: string
- *           example: Frontend Lead
+ *           example: "Frontend Lead"
  *         techStack:
  *           type: array
- *           items:
- *             type: string
- *           example: ["React", "Node.js", "Redux", "Docker"]
+ *           items: { type: string }
+ *           example: ["react", "node.js", "docker"]
  *         features:
  *           type: array
+ *           items: { type: string }
+ *           example: ["OAuth2", "Real-time updates"]
+ *         links:
+ *           type: array
  *           items:
- *             type: string
- *           example: ["Seamless onboarding", "OAuth2", "Real-time updates"]
- *         link:
- *           type: string
- *           format: uri
- *           example: "https://yourproject.com"
+ *             $ref: '#/components/schemas/ProjectLink'
+ *           example:
+ *             - { url: "https://example.com", label: "Live", kind: "live" }
+ *             - { url: "https://github.com/user/repo", label: "GitHub", kind: "repo" }
  *         year:
  *           type: integer
  *           example: 2024
  *         thumbnailUrl:
  *           type: string
- *           example: "/projects/phonepe-aa.png"
- *         type:
- *           type: string
- *           enum: [web, mobile, api, cli, tool, library]
- *           example: web
+ *           format: uri
+ *           example: "https://cdn.example.com/thumbnails/app.png"
+ *         types:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [web, mobile, api, cli, tool, library, backend, frontend, desktop]
+ *           example: ["web", "backend"]
  *         createdAt:
  *           type: string
+ *           format: date-time
  *         updatedAt:
  *           type: string
+ *           format: date-time
+ *
+ *     CreateProjectRequest:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Project'
+ *       required: [title, description, techStack]
+ *       properties:
+ *         id: { readOnly: true }
+ *         createdAt: { readOnly: true }
+ *         updatedAt: { readOnly: true }
+ *
+ *     UpdateProjectRequest:
+ *       type: object
+ *       description: Partial project fields to update
+ *       properties:
+ *         title:        { type: string }
+ *         description:  { type: string }
+ *         company:      { type: string }
+ *         role:         { type: string }
+ *         techStack:
+ *           type: array
+ *           items: { type: string }
+ *         features:
+ *           type: array
+ *           items: { type: string }
+ *         links:
+ *           type: array
+ *           items: { $ref: '#/components/schemas/ProjectLink' }
+ *         year:         { type: integer }
+ *         thumbnailUrl: { type: string, format: uri }
+ *         types:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [web, mobile, api, cli, tool, library, backend, frontend, desktop]
  */
 
 /**
@@ -78,7 +134,7 @@ const router = Express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             $ref: '#/components/schemas/CreateProjectRequest'
  *     responses:
  *       201:
  *         description: Project created successfully
@@ -102,17 +158,20 @@ router.post('/', validateProjectCreate, createProject);
  *         name: range
  *         schema:
  *           type: string
- *         description: JSON string like [0, 9] for pagination
+ *           example: "[0, 9]"
+ *         description: JSON string like [start, end] for pagination
  *       - in: query
  *         name: filter
  *         schema:
  *           type: string
- *         description: JSON filter object
+ *           example: "{\"types\": {\"$in\": [\"web\"]}}"
+ *         description: JSON string filter (Mongo-like)
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *         description: Sort order, e.g. ["createdAt","DESC"]
+ *           example: "[\"createdAt\",\"DESC\"]"
+ *         description: JSON string like ["field","ASC" | "DESC"]
  *     responses:
  *       200:
  *         description: List of projects
@@ -121,6 +180,10 @@ router.post('/', validateProjectCreate, createProject);
  *             schema:
  *               type: integer
  *             description: Total number of projects
+ *           Content-Range:
+ *             schema:
+ *               type: string
+ *             description: Range header for pagination (e.g., projects 0-9/42)
  *         content:
  *           application/json:
  *             schema:
@@ -173,10 +236,10 @@ router.get('/:id', getProjectById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             $ref: '#/components/schemas/UpdateProjectRequest'
  *     responses:
  *       200:
- *         description: Updated project details
+ *         description: Updated project
  *         content:
  *           application/json:
  *             schema:

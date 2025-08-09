@@ -64,7 +64,7 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 app.use('/api/todos', todoRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/profiles', profileRoutes);

@@ -1,22 +1,79 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, HydratedDocument } from 'mongoose';
 import { IProjectDb } from '@fullstack-lab/types';
 
-export interface ProjectDocument extends IProjectDb, Document {}
+export type ProjectDocument = HydratedDocument<IProjectDb>;
 
-const ProjectSchema = new Schema<ProjectDocument>(
+const urlRegex =
+  /^(https?:\/\/)([\w\-]+(\.[\w\-]+)+)(:[0-9]{2,5})?(\/[^\s]*)?$/i;
+
+const LinkSchema = new Schema(
   {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, required: true },
-    company: { type: String },
-    role: { type: String },
-    techStack: [{ type: String }],
-    features: [{ type: String }],
-    link: { type: String },
-    year: { type: Number },
-    thumbnailUrl: { type: String },
-    type: { type: String },
+    url: { type: String, required: true, trim: true, lowercase: true, match: urlRegex },
+    label: { type: String, trim: true },
+    kind: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      enum: ['live', 'repo', 'docs', 'demo', 'design', 'other'],
+      default: 'other',
+    },
   },
-  { timestamps: true }
+  { _id: false }
 );
 
-export default model<ProjectDocument>('Project', ProjectSchema);
+const allowedTypes = ['web', 'mobile', 'api', 'cli', 'tool', 'library', 'backend', 'frontend', 'desktop'] as const;
+
+const ProjectSchema = new Schema<IProjectDb>(
+  {
+    title: { type: String, required: true, trim: true, minlength: 3, maxlength: 140 },
+    description: { type: String, required: true, trim: true, minlength: 10 },
+    company: { type: String, trim: true, lowercase: true },
+    role: { type: String, trim: true, lowercase: true },
+
+    techStack: {
+      type: [String],
+      default: [],
+      set: (arr: string[]) =>
+        Array.from(new Set((arr ?? []).map(s => s.trim()).filter(Boolean))),
+    },
+    features: {
+      type: [String],
+      default: [],
+      set: (arr: string[]) =>
+        Array.from(new Set((arr ?? []).map(s => s.trim()).filter(Boolean))),
+    },
+
+    links: { type: [LinkSchema], default: [] },
+
+    year: { type: Number, min: 1990, max: new Date().getFullYear() + 1 },
+    thumbnailUrl: { type: String, trim: true, match: urlRegex },
+    types: {
+      type: [String],
+      default: [],
+      enum: allowedTypes,
+      set: (arr: string[]) =>
+        Array.from(new Set((arr ?? []).map(s => s.trim().toLowerCase()).filter(Boolean))),
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+    strict: true,
+   toJSON: {
+      virtuals: true,
+      transform: (_doc, ret: any) => {
+        ret.id = ret._id?.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
+    toObject: { virtuals: true },
+  }
+);
+
+ProjectSchema.index({ title: 'text', description: 'text', techStack: 'text' });
+ProjectSchema.index({ 'links.kind': 1 });
+ProjectSchema.index({ types: 1, year: -1 });
+
+export default model<IProjectDb>('Project', ProjectSchema);

@@ -13,6 +13,7 @@ export interface Skill  {
 export interface SkillsProps {
   skills: Skill[] | undefined;
   fullStack?: string[];
+  isProfile?: boolean,
   gridCols?: {
     base?: number;
     sm?: number;
