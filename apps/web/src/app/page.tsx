@@ -23,7 +23,7 @@ export default function HomeContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-16">
-     <ProfileSection />
+      <ProfileSection />
       <ProjectsPreview />
       <BlogsPreview />
     </div>

@@ -5,7 +5,7 @@ const allowedTypes = ['web', 'mobile', 'api', 'cli', 'tool', 'library', 'backend
 const linkObj = Joi.object({
   url: Joi.string().uri().required(),
   label: Joi.string().trim().max(80).optional(),
-  kind: Joi.string().valid('live', 'repo', 'docs', 'demo', 'design', 'other').default('other'),
+  kind: Joi.string().valid('live','repo','docs','demo','design','other').default('other'),
 });
 
 export const projectSchema = Joi.object({
@@ -21,6 +21,7 @@ export const projectSchema = Joi.object({
   thumbnailUrl: Joi.string().uri(),
   types: Joi.array().items(Joi.string().valid(...allowedTypes)).default([]),
   type: Joi.string().valid(...allowedTypes),
+  isFeatured: Joi.boolean().default(false),
 });
 
 export const projectUpdateSchema = Joi.object({
@@ -36,6 +37,7 @@ export const projectUpdateSchema = Joi.object({
   thumbnailUrl: Joi.string().uri(),
   types: Joi.array().items(Joi.string().valid(...allowedTypes)),
   type: Joi.string().valid(...allowedTypes),
+  isFeatured: Joi.boolean(),
 })
   .min(1)
   .unknown(true);

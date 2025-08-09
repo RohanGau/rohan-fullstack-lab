@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import Profile from '../models/Profile';
 import logger from '../utils/logger';
 import { profileSchema, profileUpdateSchema } from '../validation/profile';
-import { CMS_ERROR_MESSAGES as ERROR_MESSAGES } from '../utils';
+import { CMS_ERROR_MESSAGES as ERROR_MESSAGES } from '../utils/constant';
 import { validateSchema } from '../validation';
 
 export const validateProfileCreate = validateSchema(profileSchema);

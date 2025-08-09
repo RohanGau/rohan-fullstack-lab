@@ -1,20 +1,15 @@
-import Image from 'next/image';
+'use client';
+
 import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { ProjectCard } from '../project/ProjectCard';
 import { useFeaturedProjects } from '@/hooks/useFeaturedProjects';
 import { BlogListSkeleton } from '../blog/BlogListSkeleton';
 
-function ProjectsPreview() {
-  const {
-    featureProjects,
-    loading,
-    error
-  } = useFeaturedProjects();
+export default function ProjectsPreview() {
+  const { featureProjects, loading, error } = useFeaturedProjects(3);
 
-  if (loading) return <BlogListSkeleton numberOfSkeletons={3} />;
+  if (loading) return <BlogListSkeleton numberOfSkeletons={4} />;
+
   if (error) {
     return (
       <div className="text-center text-red-500 py-12">
@@ -34,43 +29,14 @@ function ProjectsPreview() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {featureProjects?.map((project) => (
-          <Card key={project.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-4 space-y-3">
-              {project.thumbnailUrl && (
-                <Image
-                  src={project.thumbnailUrl}
-                  alt={project.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto rounded"
-                />
-              )}
-              <h3 className="text-lg font-semibold">{project.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                {project.description}
-              </p>
-              {project.techStack?.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  <strong>Stack:</strong> {project.techStack.join(', ')}
-                </p>
-              )}
-              {project.link && (
-                <Link
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline"
-                >
-                  View Project ↗
-                </Link>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+        {featureProjects && featureProjects.length > 0 ? (
+          featureProjects.map(p => <ProjectCard key={p.id} project={p} />)
+        ) : (
+          <div className="text-center text-muted-foreground py-12 col-span-2">
+            No featured projects found.
+          </div>
+        )}
       </div>
     </section>
   );
 }
-
-export default ProjectsPreview;

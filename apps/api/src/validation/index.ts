@@ -1,14 +1,15 @@
 import { ObjectSchema } from 'joi';
 import logger from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
-import { CMS_ERROR_MESSAGES as ERROR_MESSAGES } from '../utils';
+import { CMS_ERROR_MESSAGES as ERROR_MESSAGES } from '../utils/constant';
 
 export const validateSchema =
   (schema: ObjectSchema) => (req: Request, res: Response, next: NextFunction) => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
+      allowUnknown: true,
       stripUnknown: { objects: true },
-      convert: true 
+      convert: true,
     });
 
     if (error) {

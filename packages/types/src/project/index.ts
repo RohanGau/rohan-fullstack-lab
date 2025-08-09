@@ -27,6 +27,7 @@ export interface IProjectBase {
   year?: number;
   thumbnailUrl?: string;
   types: ProjectType[];
+  isFeatured: boolean;
 }
 export interface IProjectDb extends IProjectBase {
   _id?: string;

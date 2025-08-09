@@ -23,48 +23,34 @@ const LinkSchema = new Schema(
 
 const allowedTypes = ['web', 'mobile', 'api', 'cli', 'tool', 'library', 'backend', 'frontend', 'desktop'] as const;
 
+// …imports
+
 const ProjectSchema = new Schema<IProjectDb>(
   {
     title: { type: String, required: true, trim: true, minlength: 3, maxlength: 140 },
     description: { type: String, required: true, trim: true, minlength: 10 },
     company: { type: String, trim: true, lowercase: true },
     role: { type: String, trim: true, lowercase: true },
-
-    techStack: {
-      type: [String],
-      default: [],
-      set: (arr: string[]) =>
-        Array.from(new Set((arr ?? []).map(s => s.trim()).filter(Boolean))),
-    },
-    features: {
-      type: [String],
-      default: [],
-      set: (arr: string[]) =>
-        Array.from(new Set((arr ?? []).map(s => s.trim()).filter(Boolean))),
-    },
-
+    techStack: { type: [String], default: [], set: (a: string[]) =>
+      Array.from(new Set((a ?? []).map(s => s.trim()).filter(Boolean))) },
+    features: { type: [String], default: [], set: (a: string[]) =>
+      Array.from(new Set((a ?? []).map(s => s.trim()).filter(Boolean))) },
     links: { type: [LinkSchema], default: [] },
-
     year: { type: Number, min: 1990, max: new Date().getFullYear() + 1 },
     thumbnailUrl: { type: String, trim: true, match: urlRegex },
-    types: {
-      type: [String],
-      default: [],
-      enum: allowedTypes,
-      set: (arr: string[]) =>
-        Array.from(new Set((arr ?? []).map(s => s.trim().toLowerCase()).filter(Boolean))),
-    },
+    types: { type: [String], default: [], enum: allowedTypes, set: (a: string[]) =>
+      Array.from(new Set((a ?? []).map(s => s.trim().toLowerCase()).filter(Boolean))) },
+    isFeatured: { type: Boolean, default: false, index: true }, // 👈 NEW
   },
   {
     timestamps: true,
     versionKey: false,
     strict: true,
-   toJSON: {
+    toJSON: {
       virtuals: true,
       transform: (_doc, ret: any) => {
         ret.id = ret._id?.toString();
-        delete ret._id;
-        delete ret.__v;
+        delete ret._id; delete ret.__v;
         return ret;
       },
     },
@@ -72,8 +58,10 @@ const ProjectSchema = new Schema<IProjectDb>(
   }
 );
 
+// indexes useful for filters
 ProjectSchema.index({ title: 'text', description: 'text', techStack: 'text' });
 ProjectSchema.index({ 'links.kind': 1 });
 ProjectSchema.index({ types: 1, year: -1 });
+ProjectSchema.index({ isFeatured: 1, createdAt: -1 });
 
 export default model<IProjectDb>('Project', ProjectSchema);

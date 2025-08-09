@@ -1,18 +1,24 @@
-export interface IBlog {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  tags?: string[];
-  createdAt: Date;
-  updatedAt: Date;
+export type BlogStatus = 'draft' | 'published' | 'archived';
+
+export interface BlogLink {
+  url: string;
+  label?: string;
+  kind?: 'repo' | 'ref' | 'demo' | 'other';
 }
 
 export interface IBlogBase {
   title: string;
+  slug: string; 
   content: string;
+  summary?: string;
   author: string;
-  tags?: string[];
+  tags: string[];
+  links: BlogLink[];
+  coverImageUrl?: string;
+  readingTime?: number;
+  isFeatured?: boolean;
+  status: BlogStatus;
+  publishedAt?: Date;
 }
 
 export interface IBlogDb extends IBlogBase {

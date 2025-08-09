@@ -7,6 +7,7 @@ import {
   NumberInput,
   SelectInput,
   FormDataConsumer,
+  BooleanInput,
 } from 'react-admin';
 
 const typeChoices = [
@@ -89,6 +90,7 @@ const ProjectCreate: React.FC = () => (
           <SelectInput source="" choices={typeChoices} label="Type" />
         </SimpleFormIterator>
       </ArrayInput>
+      <BooleanInput source="isFeatured" label="Show on homepage" />
     </SimpleForm>
   </Create>
 );

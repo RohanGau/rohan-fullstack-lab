@@ -5,6 +5,7 @@ import {
   NumberField,
   EditButton,
   DeleteButton,
+  BooleanField,
 } from 'react-admin';
 import ChipsField from '../../components/ChipsField';
 
@@ -16,6 +17,7 @@ const ProjectList: React.FC = () => (
       <TextField source="role" />
       <NumberField source="year" />
       <ChipsField source="types" />
+      <BooleanField source="isFeatured" />
       <EditButton />
       <DeleteButton />
     </Datagrid>

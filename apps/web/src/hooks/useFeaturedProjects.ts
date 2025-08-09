@@ -4,7 +4,7 @@ import { API } from '@/lib/constant';
 import { IProjectDto } from '@fullstack-lab/types';
 import { useProjectStore } from '@/lib/store/projectStore';
 
-export function useFeaturedProjects() {
+export function useFeaturedProjects(count = 4) {
   const { featureProjects, setFeatureProjects } = useProjectStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function useFeaturedProjects() {
       setLoading(true);
       const queryParams = new URLSearchParams({
         sort: JSON.stringify(['createdAt', 'DESC']),
-        range: JSON.stringify([0, 2]),
+        range: JSON.stringify([0, Math.max(0, count - 1)]),
       });
 
       apiFetch<IProjectDto[]>(`${API.PROJECTS}?${queryParams.toString()}`)

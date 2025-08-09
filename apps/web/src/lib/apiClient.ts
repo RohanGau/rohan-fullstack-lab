@@ -31,3 +31,22 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     };
   }
 }
+
+
+export async function apiFetchWithMeta<T>(
+  endpoint: string, options: RequestInit = {}
+): Promise<{ data: T; headers: Headers; total: number }> {
+  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
+  const res = await fetch(url, { ...options, headers: { Accept: 'application/json', ...(options.headers||{}) } });
+  const isJson = res.headers.get('content-type')?.includes('application/json');
+  if (!res.ok) {
+    const body = isJson ? await res.json().catch(() => null) : null;
+    throw { status: res.status, msg: body?.msg || res.statusText, error: body?.error || null };
+  }
+  const data = (isJson ? await res.json() : ({} as T)) as T;
+  const totalHeader = res.headers.get('X-Total-Count') || res.headers.get('x-total-count');
+  let total = totalHeader ? Number(totalHeader) : Array.isArray(data) ? data.length : 0;
+  return { data, headers: res.headers, total };
+}
+
+

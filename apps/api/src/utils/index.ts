@@ -1,49 +1,7 @@
 import { ErrorRequestHandler } from '../types/express/error';
 import { Request, Response, NextFunction } from 'express';
 import logger from './logger'; // Adjust the import path as needed
-
-export const ERROR_MESSAGES = {
-  VALIDATION_ERROR: 'Validation Error',
-  INVALID_JSON: 'Invalid JSON in request body',
-  TITLE_EXISTS: 'Title already exists. Please choose a different title.',
-  CREATE_FAILED: 'Failed to create todo',
-  FETCH_FAILED: 'Failed to fetch todos',
-  UPDATE_FAILED: 'Failed to update todo',
-  DELETE_FAILED: 'Failed to delete todo',
-  TODO_NOT_FOUND: 'Todo not found',
-  INVALID_ID_FOND: 'Invalid ID found',
-  INTERNAL_SERVER_ERROR: 'Internal Server Error',
-  BLOG_NOT_FOUND: 'Blog not found',
-  PROFILE_NOT_FOUND: 'Profile not found',
-};
-
-export const CMS_ERROR_MESSAGES = {
-  VALIDATION_ERROR: 'Validation failed',
-  CREATE_FAILED: 'Resource creation failed',
-  UPDATE_FAILED: 'Update failed',
-  DELETE_FAILED: 'Delete failed',
-  FETCH_FAILED: 'Fetching data failed',
-  BLOG_NOT_FOUND: 'Blog not found',
-  PROFILE_NOT_FOUND: 'Profile not found',
-  TODO_NOT_FOUND: 'Todo not found',
-  INVALID_ID_FOND: 'Invalid MongoDB ID received',
-  TITLE_EXISTS: 'Title already exists',
-};
-
-export const CONTACT_ERROR_MESSAGES = {
-  CREATION_FAILED: 'Contact creation failed',
-  FETCH_FAILED: 'Failed to fetch contacts',
-  DELETE_FAILED: 'Failed to delete contact',
-};
-
-export const PROJECT_ERROR_MESSAGES = {
-  CREATE_FAILED: 'Project creation failed',
-  INVALID_ID_FOND: 'Invalid project ID provided',
-  PROJECT_NOT_FOUND: 'Project not found',
-  UPDATE_FAILED: 'Project update failed',
-  FETCH_FAILED: 'Failed to fetch project',
-  DELETE_FAILED: 'Failed to delete project',
-};
+import { ERROR_MESSAGES } from './constant';
 
 export const jsonErrorHandler: ErrorRequestHandler = (err, _, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -93,4 +51,50 @@ export function normalizeBody(body: any) {
 export function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== 'string') return fallback;
   try { return JSON.parse(value) as T; } catch { return fallback; }
+}
+
+export function escapeRegex(input: string) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function buildProjectQuery(filter: any = {}) {
+  const q: Record<string, any> = {};
+  const f = filter || {};
+
+  // keyword search
+  if (typeof f.q === 'string' && f.q.trim()) {
+    const rx = new RegExp(escapeRegex(f.q.trim()), 'i');
+    q.$or = [
+      { title: rx }, { description: rx }, { techStack: rx },
+      { company: rx }, { role: rx }, { types: rx },
+      { 'links.label': rx }, { 'links.kind': rx },
+    ];
+  }
+
+  // types (array or single)
+  if (f.types !== undefined) {
+    const arr = Array.isArray(f.types) ? f.types : [f.types];
+    const cleaned = arr.map((s: any) => String(s).toLowerCase()).filter(Boolean);
+    if (cleaned.length) q.types = { $in: cleaned };
+  }
+
+  // featured
+  if (f.isFeatured !== undefined) {
+    const val = String(f.isFeatured).toLowerCase();
+    q.isFeatured = val === 'true' || val === '1' || f.isFeatured === true;
+  }
+
+  // optional fuzzy filters
+  if (f.company) q.company = new RegExp(escapeRegex(String(f.company)), 'i');
+  if (f.role) q.role = new RegExp(escapeRegex(String(f.role)), 'i');
+
+  // year / range
+  if (typeof f.year === 'number') q.year = f.year;
+  if (f.yearFrom || f.yearTo) {
+    q.year = {};
+    if (f.yearFrom) q.year.$gte = Number(f.yearFrom);
+    if (f.yearTo) q.year.$lte = Number(f.yearTo);
+  }
+
+  return q;
 }

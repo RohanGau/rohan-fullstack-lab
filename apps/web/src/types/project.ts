@@ -8,3 +8,11 @@ export interface ProjectState {
   setFeatureProjects: (projects: IProjectDto[]) => void;
   setProjectDetail: (project: IProjectDto) => void;
 }
+
+export type ProjectsQuery = {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  types?: string[]; 
+  sort?: [string, 'ASC' | 'DESC'];
+};

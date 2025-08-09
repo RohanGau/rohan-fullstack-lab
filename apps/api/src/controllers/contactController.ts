@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import logger from '../utils/logger';
 import { validateSchema } from '../validation';
 import { contactSchema } from '../validation/contact';
-import { CONTACT_ERROR_MESSAGES } from '../utils';
+import { CONTACT_ERROR_MESSAGES } from '../utils/constant';
 
 export const validateContactCreate = validateSchema(contactSchema);
 
