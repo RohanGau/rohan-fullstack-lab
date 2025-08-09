@@ -1,36 +1,47 @@
+// lib/cache.ts
 import crypto from 'crypto';
-import { redis } from './redis';
 import logger from '../utils/logger';
+import { redisRest } from './redis-rest';
 
-const DEFAULT_TTL = 60 * 5;
+const DEFAULT_TTL = 60 * 5; // 5 minutes
 
-function hash(obj: unknown) {
-  return crypto.createHash('sha1').update(JSON.stringify(obj)).digest('hex').slice(0, 16);
-}
+const hash = (obj: unknown) =>
+  crypto.createHash('sha1').update(JSON.stringify(obj)).digest('hex').slice(0, 16);
+
+const nsKey = (ns: string) => `${ns}:version`;
 
 async function getVersionNS(ns: string) {
-  if (!redis) return 1;
-  const v = await redis.get(`${ns}:version`);
-  return v ? Number(v) : 1;
+  if (!redisRest) return 1;
+  try {
+    const v = await redisRest.get<number>(nsKey(ns));
+    return v ? Number(v) : 1;
+  } catch (e) {
+    logger.warn({ e, ns }, 'Redis GET version failed (continuing without cache)');
+    return 1;
+  }
 }
 
 async function bumpVersionNS(ns: string) {
-  if (!redis) return;
-  await redis.incr(`${ns}:version`);
+  if (!redisRest) return;
+  try {
+    await redisRest.incr(nsKey(ns));
+  } catch (e) {
+    logger.warn({ e, ns }, 'Redis INCR version failed (continuing without cache)');
+  }
 }
 
-function keyForListNS(ns: string, v: number, qs: unknown) {
+function keyForListNS(ns: string, v: number | string, qs: unknown) {
   return `${ns}:v${v}:list:${hash(qs)}`;
 }
-function keyForIdNS(ns: string, v: number, id: string) {
+function keyForIdNS(ns: string, v: number | string, id: string) {
   return `${ns}:v${v}:id:${id}`;
 }
 
 async function cacheGet<T>(key: string): Promise<T | null> {
-  if (!redis) return null;
+  if (!redisRest) return null;
   try {
-    const raw = await redis.get(key);
-    return raw ? (JSON.parse(raw) as T) : null;
+    // @upstash/redis will parse JSON automatically if it was stored as JSON
+    return (await redisRest.get<T>(key)) ?? null;
   } catch (e) {
     logger.warn({ e, key }, 'Redis GET failed (continuing without cache)');
     return null;
@@ -38,9 +49,10 @@ async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 async function cacheSet(key: string, value: unknown, ttl = DEFAULT_TTL) {
-  if (!redis) return;
+  if (!redisRest) return;
   try {
-    await redis.set(key, JSON.stringify(value), 'EX', ttl);
+    // Upstash REST accepts objects directly and stores JSON under the hood
+    await redisRest.set(key, value as any, { ex: ttl });
   } catch (e) {
     logger.warn({ e, key }, 'Redis SET failed (continuing without cache)');
   }

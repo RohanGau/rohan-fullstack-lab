@@ -1,73 +1,50 @@
 import type { FilterQuery } from 'mongoose';
-import { IBlogDb } from '@fullstack-lab/types';
+import Blog from '../models/Blog';
 
-export function buildBlogQuery(raw: Record<string, any>): FilterQuery<IBlogDb> {
-  const q: FilterQuery<IBlogDb> = {};
+type AnyObj = Record<string, any>;
 
-  // Full-text or regex on q
-  if (raw.q) {
-    const term = String(raw.q).trim();
-    if (term) {
+// Escape user input for regex safely
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export function buildBlogQuery(filter: AnyObj): FilterQuery<typeof Blog> {
+  const q: AnyObj = {};
+
+  // exact filters
+  if (filter.slug) q.slug = String(filter.slug).trim().toLowerCase();
+  if (filter.status) q.status = String(filter.status);
+  if (typeof filter.isFeatured === 'boolean') q.isFeatured = !!filter.isFeatured;
+  if (Array.isArray(filter.tags) && filter.tags.length) {
+    // match any of these tags (normalized to lowercase)
+    q.tags = { $in: filter.tags.map((t: string) => String(t).trim().toLowerCase()) };
+  }
+  if (filter.author) {
+    // loose, case-insensitive author match
+    q.author = new RegExp(escapeRegex(String(filter.author).trim()), 'i');
+  }
+
+  // search
+  const search = String(filter.q ?? '').trim();
+  if (search) {
+    // Prefer text search when a text index exists.
+    // NOTE: Your schema defines: BlogSchema.index({ title: 'text', content: 'text', tags: 'text' })
+    // Do NOT combine $text with regex in the same query.
+    if (filter.searchMode === 'regex') {
+      // explicit regex mode (optional)
+      const re = new RegExp(escapeRegex(search), 'i');
       q.$or = [
-        { $text: { $search: term } },
-        { title: { $regex: term, $options: 'i' } },
-        { content: { $regex: term, $options: 'i' } },
-        { tags: { $regex: term, $options: 'i' } },
+        { title: re },
+        { content: re },
+        { tags: { $elemMatch: re } }, // tags is an array
       ];
+    } else {
+      // default: use $text
+      q.$text = { $search: search };
     }
-  }
-
-  // by tags (any match)
-  if (raw.tags) {
-    const arr = Array.isArray(raw.tags) ? raw.tags : [raw.tags];
-    const tags = arr.map((t) => String(t).toLowerCase().trim()).filter(Boolean);
-    if (tags.length) q.tags = { $in: tags };
-  }
-
-  // author (case-insensitive contains)
-  if (raw.author) {
-    q.author = { $regex: String(raw.author).trim(), $options: 'i' };
-  }
-
-  // isFeatured
-  if (typeof raw.isFeatured !== 'undefined') {
-    const v = raw.isFeatured === true || raw.isFeatured === 'true';
-    q.isFeatured = v;
-  }
-
-  // status
-  if (raw.status) {
-    q.status = String(raw.status).toLowerCase();
-  }
-
-  // slug exact
-  if (raw.slug) {
-    q.slug = String(raw.slug).toLowerCase().trim();
-  }
-
-  // published range
-  const gte = raw.date_gte ? new Date(raw.date_gte) : undefined;
-  const lte = raw.date_lte ? new Date(raw.date_lte) : undefined;
-  if (gte || lte) {
-    q.publishedAt = {};
-    if (gte) (q.publishedAt as any).$gte = gte;
-    if (lte) (q.publishedAt as any).$lte = lte;
-  }
-
-  // ids (react-admin bulk fetch)
-  if (raw.ids) {
-    const ids = Array.isArray(raw.ids) ? raw.ids : [raw.ids];
-    q._id = { $in: ids };
-  }
-
-  // Any additional exact matches (safe allowlist)
-  const direct: Array<keyof IBlogDb> = ['readingTime'];
-  for (const k of direct) {
-    if (raw[k] !== undefined) (q as any)[k] = raw[k];
   }
 
   return q;
 }
+
 
 export function normalizeBlogBody(body: any) {
   const copy = { ...(body || {}) };

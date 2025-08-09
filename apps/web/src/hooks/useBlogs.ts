@@ -1,29 +1,111 @@
-import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/apiClient';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { apiFetchWithMeta } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
 import { useBlogStore } from '@/lib/store/blogStore';
-import { IBlogDto } from '@fullstack-lab/types';
+import type { IBlogDto } from '@fullstack-lab/types';
+import type { BlogsQuery, BlogsQueryRequired, SortField, SortOrder } from '@/types/blog';
+import { keyFromQuery, makeQueryString } from '@/lib/utils';
 
-export function useBlogs() {
-  const { blogs, setBlogs } = useBlogStore();
-  const [loading, setLoading] = useState(!blogs);
+
+export function useBlogs(initial?: BlogsQuery) {
+  const [query, setQuery] = useState<BlogsQuery>({
+    page: 1,
+    perPage: 9,
+    sort: ['publishedAt', 'DESC'],
+    status: 'published',
+    ...(initial ?? {}),
+  });
+
+  const page = query.page ?? 1;
+  const perPage = query.perPage ?? 9;
+  const sort = (query.sort ?? ['publishedAt', 'DESC']) as [SortField, SortOrder];
+
+  const { qs, cacheKey } = useMemo(() => {
+    const q = {
+      ...query,
+      page,
+      perPage,
+      sort,
+    } satisfies BlogsQueryRequired;
+
+    return {
+      qs: makeQueryString(q),
+      cacheKey: keyFromQuery(q),
+    };
+  }, [query, page, perPage, sort]);
+
+  const { listCache, setListCache } = useBlogStore();
+  const cached = listCache[cacheKey];
+
+  const [data, setData] = useState<IBlogDto[]>(cached?.data ?? []);
+  const [total, setTotal] = useState<number>(cached?.total ?? 0);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!blogs) {
-      apiFetch<IBlogDto[]>(API.BLOGS)
-        .then((data) => {
-          setBlogs(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, [blogs, setBlogs]);
+  // guards
+  const reqIdRef = useRef(0);
+  const revalidatedKeysRef = useRef<Set<string>>(new Set());
 
-  return { blogs, loading, error };
+  const fetcher = useCallback(
+    async (signal?: AbortSignal) => {
+      const myReq = ++reqIdRef.current;
+      const { data, total } = await apiFetchWithMeta<IBlogDto[]>(
+        `${API.BLOGS}?${qs}`,
+        { signal }
+      );
+      if (myReq !== reqIdRef.current) return; // drop stale response
+      setData(data);
+      setTotal(total);
+      setError(null);
+      setListCache(cacheKey, { data, total });
+    },
+    [qs, cacheKey, setListCache]
+  );
+
+  const refetch = useCallback(() => {
+    const c = new AbortController();
+    setLoading(true);
+    fetcher(c.signal)
+      .catch((err: any) => {
+        if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+      })
+      .finally(() => setLoading(false));
+  }, [fetcher]);
+
+  useEffect(() => {
+    // show cache immediately if present
+    if (cached) {
+      setData(cached.data);
+      setTotal(cached.total);
+      setLoading(false);
+
+      // 🔒 revalidate AT MOST ONCE per cacheKey
+      if (!revalidatedKeysRef.current.has(cacheKey)) {
+        revalidatedKeysRef.current.add(cacheKey);
+        const c = new AbortController();
+        fetcher(c.signal).catch((err: any) => {
+          if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+        });
+        return () => c.abort();
+      }
+      return; // cached and already revalidated → do nothing
+    }
+
+    // no cache → blocking fetch
+    const c = new AbortController();
+    setLoading(true);
+    fetcher(c.signal)
+      .catch((err: any) => {
+        if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+      })
+      .finally(() => setLoading(false));
+    return () => c.abort();
+  }, [cacheKey, cached, fetcher]);
+
+  const pages = useMemo(
+    () => Math.max(1, Math.ceil(total / (query.perPage ?? 9))),
+    [total, query.perPage]
+  );
+
+  return { data, total, pages, loading, error, query, setQuery, refetch };
 }

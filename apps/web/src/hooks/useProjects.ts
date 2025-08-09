@@ -1,16 +1,9 @@
-// hooks/useProjects.ts
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { IProjectDto } from '@fullstack-lab/types';
 import { API } from '@/lib/constant';
 import { apiFetchWithMeta } from '@/lib/apiClient';
 
-export type ProjectsQuery = {
-  page?: number; perPage?: number;
-  search?: string; types?: string[];
-  isFeatured?: boolean; // 👈
-  sort?: [string,'ASC'|'DESC'];
-};
 
 export function useProjects(q: ProjectsQuery) {
   const page = q.page ?? 1, perPage = q.perPage ?? 8;

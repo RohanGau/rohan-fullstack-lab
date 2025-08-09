@@ -1,3 +1,4 @@
+import { BlogsQuery, BlogsQueryRequired } from "@/types/blog";
 import { IProjectDto } from "@fullstack-lab/types";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -50,3 +51,35 @@ export function pickPrimaryLink(project: IProjectDto) {
   const byKind = (k: string) => links.find(l => l.kind === k && l.url);
   return byKind('live') || byKind('repo') || links[0] || null;
 }
+
+export function makeQueryString(q: BlogsQueryRequired) {
+  const { page, perPage, sort, ...rest } = q;
+  const params = new URLSearchParams({
+    range: JSON.stringify([(page-1)*perPage, page*perPage-1]),
+    sort: JSON.stringify(sort),
+  });
+  const filter: Record<string, any> = {};
+  if (rest.search?.trim()) filter.q = rest.search.trim();
+  if (rest.tags?.length)    filter.tags = rest.tags;
+  if (typeof rest.isFeatured === 'boolean') filter.isFeatured = rest.isFeatured;
+  if (rest.status)          filter.status = rest.status;
+  if (rest.author?.trim())  filter.author = rest.author.trim();
+  if (Object.keys(filter).length) params.set('filter', JSON.stringify(filter));
+  return params.toString();
+}
+
+export function keyFromQuery(q: BlogsQueryRequired) {
+  // stable cache key for Zustand (avoid collisions across pages/filters)
+  return JSON.stringify({
+    p: q.page ?? 1,
+    pp: q.perPage ?? 9,
+    s: q.sort ?? ['publishedAt','DESC'],
+    q: q.search ?? '',
+    t: q.tags ?? [],
+    f: q.isFeatured ?? null,
+    st: q.status ?? 'published',
+    a: q.author ?? '',
+  });
+}
+
+export const isMongoId = (s: string) => /^[a-f\d]{24}$/i.test(s);

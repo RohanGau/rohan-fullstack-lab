@@ -11,12 +11,12 @@ const ProfileSection = withClientFallback(
 
 const ProjectsPreview = withClientFallback(
   () => import('@/components/custom/ProjectsPreview'),
-  { fallback: <BlogListSkeleton /> }
+  { fallback: <BlogListSkeleton numberOfSkeletons={3} /> }
 );
 
 const BlogsPreview = withClientFallback(
   () => import('@/components/custom/BlogsPreview'),
-  { fallback: <BlogListSkeleton /> }
+  { fallback: <BlogListSkeleton numberOfSkeletons={3} /> }
 );
 
 export default function HomeContent() {

@@ -1,16 +1,13 @@
-import Redis from 'ioredis';
+// lib/redis-rest.ts
+import { Redis } from '@upstash/redis';
 
-let redis: Redis | null = null;
-const url = process.env.REDIS_URL;
+// Build once. No sockets, so nothing to "connect".
+export const redisRest =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL!,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      })
+    : null;
 
-if (url) {
-  redis = new Redis(url, {
-    maxRetriesPerRequest: 2,
-    enableReadyCheck: false,
-    lazyConnect: false,
-  });
-  redis.on('error', (e) => console.error('Redis error', e));
-}
-
-export { redis };
-export const hasRedis = !!redis;
+export const hasRedis = !!redisRest;

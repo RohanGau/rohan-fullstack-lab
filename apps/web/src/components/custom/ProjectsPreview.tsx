@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ProjectCard } from '../project/ProjectCard';
+// import { useFeaturedProjects } from '@/hooks/useFeaturedProjects';
 import { useFeaturedProjects } from '@/hooks/useFeaturedProjects';
 import { BlogListSkeleton } from '../blog/BlogListSkeleton';
 

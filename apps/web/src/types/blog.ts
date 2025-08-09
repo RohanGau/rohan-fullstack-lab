@@ -1,10 +1,29 @@
 import { IBlogDto } from "@fullstack-lab/types";
 
-export interface BlogState {
-  blogs: IBlogDto[] | null;
-  featureBlogs: IBlogDto[] | null;
-  blogDetails: Record<string, IBlogDto>;
-  setBlogs: (blogs: IBlogDto[]) => void;
-  setFeatureBlogs: (blogs: IBlogDto[]) => void;
-  setBlogDetail: (blog: IBlogDto) => void;
-}
+export type ListCacheItem = { data: IBlogDto[]; total: number };
+export type BlogStore = {
+  listCache: Record<string, ListCacheItem>;
+  detailsById: Record<string, IBlogDto>;
+  detailsBySlug: Record<string, IBlogDto>;
+  setListCache: (key: string, payload: ListCacheItem) => void;
+  setDetailById: (id: string, blog: IBlogDto) => void;
+  setDetailBySlug: (slug: string, blog: IBlogDto) => void;
+};
+
+export type BlogsQuery = {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  tags?: string[];
+  isFeatured?: boolean;
+  status?: 'draft'|'published'|'archived';
+  author?: string;
+  sort?: [ 'createdAt'|'updatedAt'|'publishedAt'|'title', 'ASC'|'DESC' ];
+};
+
+export type BlogsQueryRequired =
+  Required<Pick<BlogsQuery, 'page' | 'perPage' | 'sort'>> &
+  Omit<BlogsQuery, 'page' | 'perPage' | 'sort'>;
+
+export type SortField = 'publishedAt' | 'createdAt' | 'updatedAt' | 'title';
+export type SortOrder = 'ASC' | 'DESC';

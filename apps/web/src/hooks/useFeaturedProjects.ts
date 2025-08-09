@@ -1,38 +1,23 @@
-import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/apiClient';
-import { API } from '@/lib/constant';
-import { IProjectDto } from '@fullstack-lab/types';
-import { useProjectStore } from '@/lib/store/projectStore';
+'use client';
+import { useProjects } from './useProjects';
 
-export function useFeaturedProjects(count = 4) {
-  const { featureProjects, setFeatureProjects } = useProjectStore();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useFeaturedProjects(limit = 3) {
+  const {
+    data, loading, error, query, setQuery, refetch,
+  } = useProjects({
+    page: 1,
+    perPage: limit,
+    isFeatured: true,
+    status: 'published',
+    sort: ['publishedAt','DESC'],
+  });
 
-  useEffect(() => {
-    if (!featureProjects) {
-      setLoading(true);
-      const queryParams = new URLSearchParams({
-        sort: JSON.stringify(['createdAt', 'DESC']),
-        range: JSON.stringify([0, Math.max(0, count - 1)]),
-      });
-
-      apiFetch<IProjectDto[]>(`${API.PROJECTS}?${queryParams.toString()}`)
-        .then((data) => {
-          setFeatureProjects(data);
-          setError(null);
-        })
-        .catch((err) => {
-          console.error(err);
-          setError(err.msg || 'Failed to fetch featured projects');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, [featureProjects, setFeatureProjects]);
-
-  return { featureProjects, loading, error };
+  return {
+    featureBlogs: data,
+    loading,
+    error,
+    refetch,
+    query,
+    setQuery,
+  };
 }
