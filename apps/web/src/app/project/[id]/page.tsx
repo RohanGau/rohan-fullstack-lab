@@ -19,11 +19,7 @@ const ProjectArticle = withClientFallback(
 export default function ProjectDetailPage() {
   const params = useParams();
   const raw =
-    typeof params.id === 'string'
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : '';
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
   const id = useMemo(() => raw.trim(), [raw]);
 
   if (!id || !isMongoId(id)) {

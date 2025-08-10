@@ -38,9 +38,7 @@ export default function BlogsPreview() {
 
       {/* Empty */}
       {!loading && !error && (!featureBlogs || featureBlogs.length === 0) && (
-        <div className="text-center text-muted-foreground py-12">
-          No featured blogs found.
-        </div>
+        <div className="text-center text-muted-foreground py-12">No featured blogs found.</div>
       )}
 
       {/* List */}
@@ -50,7 +48,7 @@ export default function BlogsPreview() {
             <BlogCard
               key={blog.id}
               blog={blog}
-              priorityImage={idx === 0}   // boost LCP for first card
+              priorityImage={idx === 0} // boost LCP for first card
               variant="default"
               showStatus={false}
             />

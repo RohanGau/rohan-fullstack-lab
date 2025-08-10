@@ -7,5 +7,6 @@ export const useBlogStore = create<BlogStore>((set) => ({
   detailsBySlug: {},
   setListCache: (key, payload) => set((s) => ({ listCache: { ...s.listCache, [key]: payload } })),
   setDetailById: (id, blog) => set((s) => ({ detailsById: { ...s.detailsById, [id]: blog } })),
-  setDetailBySlug: (slug, blog) => set((s) => ({ detailsBySlug: { ...s.detailsBySlug, [slug]: blog } })),
+  setDetailBySlug: (slug, blog) =>
+    set((s) => ({ detailsBySlug: { ...s.detailsBySlug, [slug]: blog } })),
 }));

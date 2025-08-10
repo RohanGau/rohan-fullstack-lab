@@ -9,7 +9,7 @@
 .prose th,
 .prose td {
   border: 1px solid #d1d5db; /* Tailwind's gray-300 */
-  padding: 0.5rem 0.75rem;    /* px-3 py-2 */
+  padding: 0.5rem 0.75rem; /* px-3 py-2 */
   text-align: left;
 }
 

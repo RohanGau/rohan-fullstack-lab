@@ -1,4 +1,4 @@
-import { IBlogDto } from "@fullstack-lab/types";
+import { IBlogDto } from '@fullstack-lab/types';
 
 export type ListCacheItem = { data: IBlogDto[]; total: number };
 
@@ -14,12 +14,15 @@ export type BlogStore = {
 export type BlogSortField = 'publishedAt' | 'createdAt' | 'updatedAt' | 'title';
 
 export type BlogsQuery = {
-  page?: number; perPage?: number;
-  search?: string; tags?: string[];
-  isFeatured?: boolean; status?: 'draft'|'published'|'archived';
+  page?: number;
+  perPage?: number;
+  search?: string;
+  tags?: string[];
+  isFeatured?: boolean;
+  status?: 'draft' | 'published' | 'archived';
   author?: string;
-  sort?: [BlogSortField, 'ASC'|'DESC'];
+  sort?: [BlogSortField, 'ASC' | 'DESC'];
 };
 
-export type BlogsQueryRequired =
-  Required<Pick<BlogsQuery,'page'|'perPage'|'sort'>> & Omit<BlogsQuery,'page'|'perPage'|'sort'>;
+export type BlogsQueryRequired = Required<Pick<BlogsQuery, 'page' | 'perPage' | 'sort'>> &
+  Omit<BlogsQuery, 'page' | 'perPage' | 'sort'>;

@@ -14,9 +14,7 @@ type ProjectStore = {
 export const useProjectStore = create<ProjectStore>((set) => ({
   listCache: {},
   detailById: {},
-  setListCache: (key, payload) =>
-    set((s) => ({ listCache: { ...s.listCache, [key]: payload } })),
-  setDetailById: (id, proj) =>
-    set((s) => ({ detailById: { ...s.detailById, [id]: proj } })),
+  setListCache: (key, payload) => set((s) => ({ listCache: { ...s.listCache, [key]: payload } })),
+  setDetailById: (id, proj) => set((s) => ({ detailById: { ...s.detailById, [id]: proj } })),
   clearAll: () => set({ listCache: {}, detailById: {} }),
 }));

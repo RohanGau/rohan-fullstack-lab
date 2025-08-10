@@ -7,7 +7,9 @@ export function BlogTags({ tags }: { tags?: string[] | null }) {
   return (
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
-        <Badge key={tag} variant="secondary">#{tag}</Badge>
+        <Badge key={tag} variant="secondary">
+          #{tag}
+        </Badge>
       ))}
     </div>
   );

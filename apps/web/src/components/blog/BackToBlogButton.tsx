@@ -16,11 +16,7 @@ export const BackToBlogButton = ({ className }: { className?: string }) => {
   };
 
   return (
-    <Button
-      variant="outline"
-      onClick={handleBack}
-      className={className}
-    >
+    <Button variant="outline" onClick={handleBack} className={className}>
       <ArrowLeft className="mr-2 h-4 w-4" />
       Back
     </Button>

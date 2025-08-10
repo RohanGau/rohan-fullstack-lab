@@ -1,4 +1,12 @@
-export function TypeChips({ types = [], max = 5, className = '' }: { types?: string[]; max?: number; className?: string }) {
+export function TypeChips({
+  types = [],
+  max = 5,
+  className = '',
+}: {
+  types?: string[];
+  max?: number;
+  className?: string;
+}) {
   if (!types.length) return null;
   const shown = types.slice(0, max);
   const more = types.length - shown.length;

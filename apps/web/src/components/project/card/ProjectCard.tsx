@@ -9,7 +9,12 @@ import { cn } from '@/lib/utils';
 
 export function ProjectCard({ project, className }: { project: IProjectDto; className?: string }) {
   return (
-    <Card className={cn('group hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden', className)}>
+    <Card
+      className={cn(
+        'group hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden',
+        className
+      )}
+    >
       <Cover src={project.thumbnailUrl} alt={project.title} />
       <CardHeader className="space-y-2">
         <div className="flex items-center gap-2">

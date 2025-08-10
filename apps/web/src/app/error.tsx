@@ -3,10 +3,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
-export default function GlobalError({ error, reset }: {
-  error: Error;
-  reset: () => void;
-}) {
+export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
     console.error('Global error boundary:', error);
   }, [error]);

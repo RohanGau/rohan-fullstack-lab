@@ -1,4 +1,4 @@
-import { IProjectDto } from "@fullstack-lab/types";
+import { IProjectDto } from '@fullstack-lab/types';
 
 export type ListEntry = { data: IProjectDto[]; total: number; ts: number };
 export type ProjectStore = {
@@ -13,14 +13,18 @@ export type ProjectStore = {
 export type ProjectSortField = 'createdAt' | 'updatedAt' | 'year' | 'title';
 
 export type ProjectsQuery = {
-  page?: number; perPage?: number;
+  page?: number;
+  perPage?: number;
   search?: string;
   types?: string[];
   isFeatured?: boolean;
-  company?: string; role?: string;
-  year?: number; yearFrom?: number; yearTo?: number;
-  sort?: [ProjectSortField, 'ASC'|'DESC'];
+  company?: string;
+  role?: string;
+  year?: number;
+  yearFrom?: number;
+  yearTo?: number;
+  sort?: [ProjectSortField, 'ASC' | 'DESC'];
 };
 
-export type ProjectsQueryRequired =
-  Required<Pick<ProjectsQuery,'page'|'perPage'|'sort'>> & Omit<ProjectsQuery,'page'|'perPage'|'sort'>;
+export type ProjectsQueryRequired = Required<Pick<ProjectsQuery, 'page' | 'perPage' | 'sort'>> &
+  Omit<ProjectsQuery, 'page' | 'perPage' | 'sort'>;

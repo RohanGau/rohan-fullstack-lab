@@ -6,10 +6,12 @@ import type { IBlogDto } from '@fullstack-lab/types';
 
 function StatusBadge({ status }: { status?: IBlogDto['status'] }) {
   if (!status) return null;
-  const variant =
-    status === 'published' ? 'default' :
-    status === 'draft' ? 'secondary' : 'outline';
-  return <Badge variant={variant} className="uppercase">{status}</Badge>;
+  const variant = status === 'published' ? 'default' : status === 'draft' ? 'secondary' : 'outline';
+  return (
+    <Badge variant={variant} className="uppercase">
+      {status}
+    </Badge>
+  );
 }
 
 function FeaturedBadge({ isFeatured }: { isFeatured?: boolean }) {

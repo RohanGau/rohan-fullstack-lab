@@ -1,4 +1,4 @@
-import { BaseQueryRequired } from "@/types/query";
+import { BaseQueryRequired } from '@/types/query';
 
 export function makeQueryStringFromFilter<F extends string>(
   q: BaseQueryRequired<F>,

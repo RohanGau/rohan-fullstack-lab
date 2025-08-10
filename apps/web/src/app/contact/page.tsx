@@ -48,9 +48,7 @@ export default function ContactPage() {
                   value={formData.name}
                   onChange={handleChange}
                 />
-                {fieldErrors.name && (
-                  <p className="text-sm text-destructive">{fieldErrors.name}</p>
-                )}
+                {fieldErrors.name && <p className="text-sm text-destructive">{fieldErrors.name}</p>}
               </div>
 
               <div className="space-y-1">

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
 import { IContactBase } from '@fullstack-lab/types';
 
-
 export function useContactSubmit() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -23,7 +22,7 @@ export function useContactSubmit() {
       });
 
       setSuccess(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err?.error && Array.isArray(err.error)) {
         const mappedErrors: Record<string, string> = {};

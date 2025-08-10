@@ -7,9 +7,9 @@ export const API = {
 };
 
 export const CONTACTS = {
-    gmail: "rohangautam105@gmail.com",
-    telegramUrl: 'https://t.me/animalpark105',
-    discordUrl: "https://discordapp.com/users/rohangautam105"
+  gmail: 'rohangautam105@gmail.com',
+  telegramUrl: 'https://t.me/animalpark105',
+  discordUrl: 'https://discordapp.com/users/rohangautam105',
 };
 
 export const navItems = [
@@ -18,6 +18,5 @@ export const navItems = [
   { label: 'Project', href: '/project' },
   { label: 'About', href: '/about' },
 ];
-
 
 export const revalidate = 3600;

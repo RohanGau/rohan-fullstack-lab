@@ -2,7 +2,13 @@
 
 import Image from 'next/image';
 
-export function BlogCover({ title, coverImageUrl }: { title: string; coverImageUrl?: string | null }) {
+export function BlogCover({
+  title,
+  coverImageUrl,
+}: {
+  title: string;
+  coverImageUrl?: string | null;
+}) {
   if (!coverImageUrl) return null;
   return (
     <div className="relative w-full aspect-[16/9] overflow-hidden rounded-xl">

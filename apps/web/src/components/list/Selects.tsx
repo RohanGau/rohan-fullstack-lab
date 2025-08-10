@@ -1,6 +1,12 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-export type SortOption<F extends string> = { label: string; value: `${F}:${'ASC'|'DESC'}` };
+export type SortOption<F extends string> = { label: string; value: `${F}:${'ASC' | 'DESC'}` };
 
 export function SortSelect<F extends string>({
   value,

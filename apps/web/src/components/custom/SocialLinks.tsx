@@ -1,11 +1,11 @@
-import { SocialIcon } from "./SocialIcon";
+import { SocialIcon } from './SocialIcon';
 import * as simpleIcons from 'simple-icons';
 import { Linkedin } from 'lucide-react';
 
-export function SocialLinks({ user, ariaLabel }: { user: any, ariaLabel: string }) {
+export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string }) {
   return (
     <div className="flex gap-4 justify-center sm:justify-start" aria-label={ariaLabel}>
-        {user.gmail && (
+      {user.gmail && (
         <a
           href={`mailto:${user.gmail}`}
           className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
@@ -19,17 +19,17 @@ export function SocialLinks({ user, ariaLabel }: { user: any, ariaLabel: string 
           />
         </a>
       )}
-        {user.linkedinUrl && (
+      {user.linkedinUrl && (
         <a
-            href={user.linkedinUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="LinkedIn"
-            className="text-muted-foreground hover:text-foreground"
+          href={user.linkedinUrl}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="LinkedIn"
+          className="text-muted-foreground hover:text-foreground"
         >
-            <Linkedin className="w-5 h-5" />
+          <Linkedin className="w-5 h-5" />
         </a>
-        )}
+      )}
       {user.githubUrl && <SocialIcon name="github" url={user.githubUrl} />}
       {user.telegramUrl && <SocialIcon name="telegram" url={user.telegramUrl} />}
       {user.discordUrl && <SocialIcon name="discord" url={user.discordUrl} />}

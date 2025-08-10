@@ -34,11 +34,15 @@ export function ProjectCard({ project }: { project: IProjectDto }) {
         )}
 
         <div className="flex flex-wrap gap-2">
-          {types.map(t => (
-            <Badge key={t} variant="secondary" className="text-[11px]">{t}</Badge>
+          {types.map((t) => (
+            <Badge key={t} variant="secondary" className="text-[11px]">
+              {t}
+            </Badge>
           ))}
           {typesRest > 0 && (
-            <Badge variant="secondary" className="text-[11px]">+{typesRest} more</Badge>
+            <Badge variant="secondary" className="text-[11px]">
+              +{typesRest} more
+            </Badge>
           )}
         </div>
 

@@ -14,8 +14,9 @@ export function useProjects(initial?: ProjectsQuery) {
     ...(initial ?? {}),
   });
 
-  const page = query.page ?? 1, perPage = query.perPage ?? 8;
-  const sort = (query.sort ?? ['createdAt','DESC']) as ProjectsQueryRequired['sort'];
+  const page = query.page ?? 1,
+    perPage = query.perPage ?? 8;
+  const sort = (query.sort ?? ['createdAt', 'DESC']) as ProjectsQueryRequired['sort'];
 
   const { qs, cacheKey } = useMemo(() => {
     const q: ProjectsQueryRequired = { ...query, page, perPage, sort };
@@ -36,7 +37,9 @@ export function useProjects(initial?: ProjectsQuery) {
   const fetcher = useCallback(
     async (signal?: AbortSignal) => {
       const reqId = ++reqIdRef.current;
-      const { data, total } = await apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`, { signal });
+      const { data, total } = await apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`, {
+        signal,
+      });
       if (reqId !== reqIdRef.current) return;
       setData(data);
       setTotal(total);
@@ -50,7 +53,9 @@ export function useProjects(initial?: ProjectsQuery) {
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((e: any) => { if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects'); })
+      .catch((e: any) => {
+        if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+      })
       .finally(() => setLoading(false));
   }, [fetcher]);
 
@@ -64,7 +69,8 @@ export function useProjects(initial?: ProjectsQuery) {
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
         fetcher(c.signal).catch((e: any) => {
-          if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+          if (e?.name !== 'AbortError')
+            setError(e?.message || e?.msg || 'Failed to fetch projects');
         });
         return () => c.abort();
       }
@@ -74,7 +80,9 @@ export function useProjects(initial?: ProjectsQuery) {
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((e: any) => { if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects'); })
+      .catch((e: any) => {
+        if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+      })
       .finally(() => setLoading(false));
     return () => c.abort();
   }, [cacheKey, cached, fetcher]);

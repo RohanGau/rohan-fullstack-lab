@@ -50,7 +50,9 @@ export function useProjectDetail(param: string) {
     const run = async () => {
       setLoading(true);
       try {
-        const item = await apiFetch<IProjectDto>(`${API.PROJECTS}/${id}`, { signal: controller.signal });
+        const item = await apiFetch<IProjectDto>(`${API.PROJECTS}/${id}`, {
+          signal: controller.signal,
+        });
         setProject(item);
         setDetailById(item.id, item);
         setError(null);

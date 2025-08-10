@@ -1,9 +1,9 @@
 'use client';
 
-import dynamic from "next/dynamic";
-import React, { Suspense } from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { WithFallbackOptions } from "@/types/hoc";
+import dynamic from 'next/dynamic';
+import React, { Suspense } from 'react';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { WithFallbackOptions } from '@/types/hoc';
 
 export function withClientFallback<T extends object>(
   importer: () => Promise<{ default: React.ComponentType<T> }>,

@@ -39,9 +39,7 @@ export default function ProjectsPreview() {
 
       {/* Empty */}
       {!loading && !error && (!featureProjects || featureProjects.length === 0) && (
-        <div className="text-center text-muted-foreground py-12">
-          No featured projects found.
-        </div>
+        <div className="text-center text-muted-foreground py-12">No featured projects found.</div>
       )}
 
       {/* List */}

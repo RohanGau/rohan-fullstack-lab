@@ -6,7 +6,6 @@ import type { IBlogDto } from '@fullstack-lab/types';
 import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
 import { makeBlogQueryString, blogKeyFromQuery } from '@/lib/utils';
 
-
 export function useBlogs(initial?: BlogsQuery) {
   const [query, setQuery] = useState<BlogsQuery>({
     page: 1,
@@ -16,13 +15,14 @@ export function useBlogs(initial?: BlogsQuery) {
     ...(initial ?? {}),
   });
 
-  const page = query.page ?? 1, perPage = query.perPage ?? 9;
-const sort = (query.sort ?? ['publishedAt','DESC']) as BlogsQueryRequired['sort'];
+  const page = query.page ?? 1,
+    perPage = query.perPage ?? 9;
+  const sort = (query.sort ?? ['publishedAt', 'DESC']) as BlogsQueryRequired['sort'];
 
-const { qs, cacheKey } = useMemo(() => {
-  const q: BlogsQueryRequired = { ...query, page, perPage, sort };
-  return { qs: makeBlogQueryString(q), cacheKey: blogKeyFromQuery(q) };
-}, [query, page, perPage, sort]);
+  const { qs, cacheKey } = useMemo(() => {
+    const q: BlogsQueryRequired = { ...query, page, perPage, sort };
+    return { qs: makeBlogQueryString(q), cacheKey: blogKeyFromQuery(q) };
+  }, [query, page, perPage, sort]);
 
   const { listCache, setListCache } = useBlogStore();
   const cached = listCache[cacheKey];
@@ -39,10 +39,7 @@ const { qs, cacheKey } = useMemo(() => {
   const fetcher = useCallback(
     async (signal?: AbortSignal) => {
       const myReq = ++reqIdRef.current;
-      const { data, total } = await apiFetchWithMeta<IBlogDto[]>(
-        `${API.BLOGS}?${qs}`,
-        { signal }
-      );
+      const { data, total } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${qs}`, { signal });
       if (myReq !== reqIdRef.current) return;
       setData(data);
       setTotal(total);
@@ -57,7 +54,8 @@ const { qs, cacheKey } = useMemo(() => {
     setLoading(true);
     fetcher(c.signal)
       .catch((err: any) => {
-        if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+        if (err?.name !== 'AbortError')
+          setError(err?.message || err?.msg || 'Failed to fetch blogs');
       })
       .finally(() => setLoading(false));
   }, [fetcher]);
@@ -74,7 +72,8 @@ const { qs, cacheKey } = useMemo(() => {
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
         fetcher(c.signal).catch((err: any) => {
-          if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+          if (err?.name !== 'AbortError')
+            setError(err?.message || err?.msg || 'Failed to fetch blogs');
         });
         return () => c.abort();
       }
@@ -86,7 +85,8 @@ const { qs, cacheKey } = useMemo(() => {
     setLoading(true);
     fetcher(c.signal)
       .catch((err: any) => {
-        if (err?.name !== 'AbortError') setError(err?.message || err?.msg || 'Failed to fetch blogs');
+        if (err?.name !== 'AbortError')
+          setError(err?.message || err?.msg || 'Failed to fetch blogs');
       })
       .finally(() => setLoading(false));
     return () => c.abort();

@@ -21,8 +21,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     const { resetKeys = [] } = this.props;
     const prev = prevProps.resetKeys ?? [];
-    if (resetKeys.length !== prev.length ||
-        resetKeys.some((k, i) => Object.is(k, prev[i]) === false)) {
+    if (
+      resetKeys.length !== prev.length ||
+      resetKeys.some((k, i) => Object.is(k, prev[i]) === false)
+    ) {
       this.reset();
     }
   }

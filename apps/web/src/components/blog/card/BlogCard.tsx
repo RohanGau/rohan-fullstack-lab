@@ -32,7 +32,12 @@ export function BlogCard({
   const tagMax = variant === 'default' ? 5 : 3;
 
   return (
-    <Card className={cn('group hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden', className)}>
+    <Card
+      className={cn(
+        'group hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden',
+        className
+      )}
+    >
       {/* Cover with overlay + top-left badges */}
       <div className="relative">
         <Cover src={blog.coverImageUrl} alt={blog.title} priority={priorityImage} withOverlay />
@@ -61,13 +66,15 @@ export function BlogCard({
 
       <CardContent className={cn(variant === 'compact' && 'pt-0')}>
         {showSummary && (
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-            {blog.summary}
-          </p>
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{blog.summary}</p>
         )}
 
         {showTags && (
-          <TagChips tags={blog.tags} max={tagMax} className={variant === 'compact' ? 'mb-1' : 'mb-2'} />
+          <TagChips
+            tags={blog.tags}
+            max={tagMax}
+            className={variant === 'compact' ? 'mb-1' : 'mb-2'}
+          />
         )}
 
         <Link

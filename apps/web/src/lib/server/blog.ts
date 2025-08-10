@@ -1,11 +1,11 @@
-import "server-only";
-import { cache } from "react";
-import type { IBlogDto } from "@fullstack-lab/types";
-import { isMongoId } from "../utils";
+import 'server-only';
+import { cache } from 'react';
+import type { IBlogDto } from '@fullstack-lab/types';
+import { isMongoId } from '../utils';
 
 export type BlogForMeta = Pick<
   IBlogDto,
-  "id" | "slug" | "title" | "summary" | "coverImageUrl" | "status" | "publishedAt" | "updatedAt"
+  'id' | 'slug' | 'title' | 'summary' | 'coverImageUrl' | 'status' | 'publishedAt' | 'updatedAt'
 >;
 
 async function _getBlogByParam(param: string): Promise<IBlogDto | null> {

@@ -1,11 +1,6 @@
-"use client"
+'use client';
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { getSimpleIconSlug } from '@/lib/utils';
@@ -14,20 +9,14 @@ import { SkillsProps } from '@/types/profile';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-
-export function SkillsSection({
-  skills,
-  fullStack,
-  gridCols,
-  isProfile,
-}: SkillsProps) {
+export function SkillsSection({ skills, fullStack, gridCols, isProfile }: SkillsProps) {
   if (!skills || skills.length === 0) return null;
 
   const base = gridCols?.base || 1;
   const sm = gridCols?.sm || 2;
   const md = gridCols?.md || 3;
   const lg = gridCols?.lg || md;
-  
+
   const gridClass = `grid grid-cols-${base} sm:grid-cols-${sm} md:grid-cols-${md} lg:grid-cols-${lg} gap-4`;
 
   return (
@@ -39,19 +28,12 @@ export function SkillsSection({
           const iconKey = 'si' + slug.charAt(0).toUpperCase() + slug.slice(1);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const icon = (simpleIcons as any)[iconKey];
-          const svg = icon?.svg
-            ? icon.svg.replace(/fill="[^"]*"/g, `fill="#${icon.hex}"`)
-            : null;
+          const svg = icon?.svg ? icon.svg.replace(/fill="[^"]*"/g, `fill="#${icon.hex}"`) : null;
 
           return (
             <Card key={skill.name} className="shadow-sm">
               <CardHeader className="flex items-center gap-3 pb-2">
-                {svg && (
-                  <span
-                    className="w-5 h-5"
-                    dangerouslySetInnerHTML={{ __html: svg }}
-                  />
-                )}
+                {svg && <span className="w-5 h-5" dangerouslySetInnerHTML={{ __html: svg }} />}
                 <CardTitle className="text-base font-medium">{skill.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 pt-0">
@@ -67,21 +49,22 @@ export function SkillsSection({
             </Card>
           );
         })}
-        {
-          isProfile && (
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold">Want to know more?</CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground space-y-3">
-                <p>
-                  Curious about my engineering principles, tech journey, and domain expertise?
-                </p>
-                <Link href="/about" className="inline-block px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition">Read More About Me →</Link>
-              </CardContent>
-            </Card>
-          )
-        }
+        {isProfile && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Want to know more?</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground space-y-3">
+              <p>Curious about my engineering principles, tech journey, and domain expertise?</p>
+              <Link
+                href="/about"
+                className="inline-block px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition"
+              >
+                Read More About Me →
+              </Link>
+            </CardContent>
+          </Card>
+        )}
       </div>
       {fullStack && (
         <details className="mt-8 mb-6">

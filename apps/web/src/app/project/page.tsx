@@ -13,7 +13,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BlogCardSkeleton } from '@/components/blog/card';
 
 const arrToCsv = (a?: string[]) => (a && a.length ? a.join(',') : '');
-const csvToArr = (s?: string | null) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
+const csvToArr = (s?: string | null) =>
+  s
+    ? s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean)
+    : [];
 
 export default function ProjectListPage() {
   const router = useRouter();
@@ -26,8 +32,9 @@ export default function ProjectListPage() {
     const types = csvToArr(sp.get('types'));
     const featured = sp.get('featured');
     const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
-    const sortField = (sp.get('sortField') as 'createdAt'|'updatedAt'|'year'|'title' | null) ?? 'createdAt';
-    const sortOrder = (sp.get('sortOrder') as 'ASC'|'DESC' | null) ?? 'DESC';
+    const sortField =
+      (sp.get('sortField') as 'createdAt' | 'updatedAt' | 'year' | 'title' | null) ?? 'createdAt';
+    const sortOrder = (sp.get('sortOrder') as 'ASC' | 'DESC' | null) ?? 'DESC';
     return { page, perPage, search: q, types, isFeatured, sort: [sortField, sortOrder] as any };
   }, [sp]);
 
@@ -58,7 +65,9 @@ export default function ProjectListPage() {
   }, [router, query]);
 
   // debounce → query
-  useEffect(() => { setQuery((q) => ({ ...q, search: debouncedSearch, page: 1 })); }, [debouncedSearch, setQuery]);
+  useEffect(() => {
+    setQuery((q) => ({ ...q, search: debouncedSearch, page: 1 }));
+  }, [debouncedSearch, setQuery]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
@@ -71,7 +80,7 @@ export default function ProjectListPage() {
         <SearchBox value={search} onChange={setSearch} placeholder="Search projects…" />
         <div className="flex gap-2">
           <SortSelect
-            value={`${(query.sort?.[0] ?? 'createdAt')}:${(query.sort?.[1] ?? 'DESC')}`}
+            value={`${query.sort?.[0] ?? 'createdAt'}:${query.sort?.[1] ?? 'DESC'}`}
             onChange={(v) => {
               const [f, o] = v.split(':') as any;
               setQuery((q) => ({ ...q, sort: [f, o], page: 1 }));
@@ -87,8 +96,20 @@ export default function ProjectListPage() {
             ]}
           />
           <FeaturedSelect
-            value={typeof query.isFeatured === 'boolean' ? (query.isFeatured ? 'featured' : 'non') : 'all'}
-            onChange={(v) => setQuery((q) => ({ ...q, isFeatured: v === 'all' ? undefined : v === 'featured', page: 1 }))}
+            value={
+              typeof query.isFeatured === 'boolean'
+                ? query.isFeatured
+                  ? 'featured'
+                  : 'non'
+                : 'all'
+            }
+            onChange={(v) =>
+              setQuery((q) => ({
+                ...q,
+                isFeatured: v === 'all' ? undefined : v === 'featured',
+                page: 1,
+              }))
+            }
           />
           <PerPageSelect
             value={query.perPage ?? 9}
@@ -115,10 +136,12 @@ export default function ProjectListPage() {
       )}
 
       {loading && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: query.perPage ?? 9 }).map((_, i) => <BlogCardSkeleton key={i} />)}
-          </div>
-        )}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: query.perPage ?? 9 }).map((_, i) => (
+            <BlogCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
 
       {error && (
         <Alert variant="destructive">
@@ -127,11 +150,15 @@ export default function ProjectListPage() {
         </Alert>
       )}
 
-      {!loading && !error && data.length === 0 && <p className="text-muted-foreground">No projects found.</p>}
+      {!loading && !error && data.length === 0 && (
+        <p className="text-muted-foreground">No projects found.</p>
+      )}
 
       {!loading && !error && data.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((p) => <ProjectCard key={p.id} project={p} />)}
+          {data.map((p) => (
+            <ProjectCard key={p.id} project={p} />
+          ))}
         </div>
       )}
 

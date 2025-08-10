@@ -7,22 +7,15 @@ import { BlogErrorMessage } from '@/components/blog/BlogErrorMessage';
 import { useBlogDetailParam } from '@/hooks/useBlogDetail';
 import { withClientFallback } from '@/lib/hoc/withClientFallback';
 
-const BlogArticle = withClientFallback(
-  () => import('@/components/blog/detail'),
-  {
-    fallback: <BlogDetailSkeleton />,
-    errorFallback: <BlogErrorMessage message="Failed to load project details." />,
-  }
-);
+const BlogArticle = withClientFallback(() => import('@/components/blog/detail'), {
+  fallback: <BlogDetailSkeleton />,
+  errorFallback: <BlogErrorMessage message="Failed to load project details." />,
+});
 
 export default function BlogDetailPage() {
   const params = useParams();
   const raw =
-    typeof params.id === 'string'
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : '';
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
 
   const param = useMemo(() => raw.trim(), [raw]);
   if (!param) return <BlogErrorMessage message="Invalid blog identifier" />;

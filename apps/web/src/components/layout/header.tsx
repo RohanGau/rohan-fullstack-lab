@@ -6,13 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { isActive } from '@/lib/utils';
 import { navItems } from '@/lib/constant';
 
@@ -35,8 +29,14 @@ export function Header() {
             href="/"
             className="group inline-flex items-center gap-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="hidden text-lg font-extrabold tracking-tight md:block">Rohan Kumar</span>
-            <span className="block text-lg font-extrabold tracking-tight md:hidden">Rohan<br/>Kumar</span>
+            <span className="hidden text-lg font-extrabold tracking-tight md:block">
+              Rohan Kumar
+            </span>
+            <span className="block text-lg font-extrabold tracking-tight md:hidden">
+              Rohan
+              <br />
+              Kumar
+            </span>
           </Link>
 
           {/* Desktop nav */}
@@ -56,7 +56,9 @@ export function Header() {
                   <span
                     className={cn(
                       'pointer-events-none absolute left-3 right-3 -bottom-0.5 h-0.5 rounded-full transition',
-                      active ? 'bg-primary opacity-100' : 'bg-primary/70 opacity-0 group-hover:opacity-100'
+                      active
+                        ? 'bg-primary opacity-100'
+                        : 'bg-primary/70 opacity-0 group-hover:opacity-100'
                     )}
                   />
                   {label}
@@ -93,7 +95,9 @@ export function Header() {
                         aria-current={active ? 'page' : undefined}
                         className={cn(
                           'rounded-lg px-3 py-2 text-base outline-none transition-colors',
-                          active ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          active
+                            ? 'bg-muted text-foreground'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                       >
                         {label}

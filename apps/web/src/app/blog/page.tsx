@@ -13,7 +13,13 @@ import { Pager } from '@/components/list/Pager';
 import { ResultsMeta } from '@/components/list/ResultsMeta';
 
 const arrToCsv = (a?: string[]) => (a && a.length ? a.join(',') : '');
-const csvToArr = (s?: string | null) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
+const csvToArr = (s?: string | null) =>
+  s
+    ? s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean)
+    : [];
 
 export default function BlogListPage() {
   const router = useRouter();
@@ -26,10 +32,20 @@ export default function BlogListPage() {
     const tags = csvToArr(sp.get('tags'));
     const featured = sp.get('featured');
     const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
-    const status = (sp.get('status') as 'draft'|'published'|'archived' | null) ?? 'published';
-    const sortField = (sp.get('sortField') as 'publishedAt'|'createdAt'|'updatedAt'|'title' | null) ?? 'publishedAt';
-    const sortOrder = (sp.get('sortOrder') as 'ASC'|'DESC' | null) ?? 'DESC';
-    return { page, perPage, search: q, tags, isFeatured, status, sort: [sortField, sortOrder] as any };
+    const status = (sp.get('status') as 'draft' | 'published' | 'archived' | null) ?? 'published';
+    const sortField =
+      (sp.get('sortField') as 'publishedAt' | 'createdAt' | 'updatedAt' | 'title' | null) ??
+      'publishedAt';
+    const sortOrder = (sp.get('sortOrder') as 'ASC' | 'DESC' | null) ?? 'DESC';
+    return {
+      page,
+      perPage,
+      search: q,
+      tags,
+      isFeatured,
+      status,
+      sort: [sortField, sortOrder] as any,
+    };
   }, [sp]);
 
   const { data, total, pages, loading, error, query, setQuery } = useBlogs(initial);
@@ -60,7 +76,9 @@ export default function BlogListPage() {
   }, [router, query]);
 
   // debounce → query
-  useEffect(() => { setQuery((q) => ({ ...q, search: debouncedSearch, page: 1 })); }, [debouncedSearch, setQuery]);
+  useEffect(() => {
+    setQuery((q) => ({ ...q, search: debouncedSearch, page: 1 }));
+  }, [debouncedSearch, setQuery]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
@@ -73,7 +91,7 @@ export default function BlogListPage() {
         <SearchBox value={search} onChange={setSearch} placeholder="Search articles…" />
         <div className="flex gap-2">
           <SortSelect
-            value={`${(query.sort?.[0] ?? 'publishedAt')}:${(query.sort?.[1] ?? 'DESC')}`}
+            value={`${query.sort?.[0] ?? 'publishedAt'}:${query.sort?.[1] ?? 'DESC'}`}
             onChange={(v) => {
               const [field, order] = v.split(':') as any;
               setQuery((q) => ({ ...q, sort: [field, order], page: 1 }));
@@ -87,8 +105,20 @@ export default function BlogListPage() {
             ]}
           />
           <FeaturedSelect
-            value={typeof query.isFeatured === 'boolean' ? (query.isFeatured ? 'featured' : 'non') : 'all'}
-            onChange={(v) => setQuery((q) => ({ ...q, isFeatured: v === 'all' ? undefined : v === 'featured', page: 1 }))}
+            value={
+              typeof query.isFeatured === 'boolean'
+                ? query.isFeatured
+                  ? 'featured'
+                  : 'non'
+                : 'all'
+            }
+            onChange={(v) =>
+              setQuery((q) => ({
+                ...q,
+                isFeatured: v === 'all' ? undefined : v === 'featured',
+                page: 1,
+              }))
+            }
           />
           <PerPageSelect
             value={query.perPage ?? 9}
@@ -113,7 +143,9 @@ export default function BlogListPage() {
 
       {loading && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: query.perPage ?? 9 }).map((_, i) => <BlogCardSkeleton key={i} />)}
+          {Array.from({ length: query.perPage ?? 9 }).map((_, i) => (
+            <BlogCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
@@ -124,11 +156,15 @@ export default function BlogListPage() {
         </Alert>
       )}
 
-      {!loading && !error && (data?.length ?? 0) === 0 && <p className="text-muted-foreground">No blogs found.</p>}
+      {!loading && !error && (data?.length ?? 0) === 0 && (
+        <p className="text-muted-foreground">No blogs found.</p>
+      )}
 
       {!loading && !error && data?.length ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((b) => <BlogCard key={b.id} blog={b} />)}
+          {data.map((b) => (
+            <BlogCard key={b.id} blog={b} />
+          ))}
         </div>
       ) : null}
 

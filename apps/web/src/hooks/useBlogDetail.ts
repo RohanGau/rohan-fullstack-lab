@@ -10,13 +10,10 @@ export function useBlogDetailParam(param: string) {
   const { detailsById, detailsBySlug, setDetailById, setDetailBySlug } = useBlogStore();
 
   const prefersId = isMongoId(param);
-  const id   = prefersId ? param : undefined;
+  const id = prefersId ? param : undefined;
   const slug = prefersId ? undefined : param;
 
-  const cached =
-    (id && detailsById[id]) ||
-    (slug && detailsBySlug[slug]) ||
-    null;
+  const cached = (id && detailsById[id]) || (slug && detailsBySlug[slug]) || null;
 
   const [blog, setBlog] = useState<IBlogDto | null>(cached);
   const [loading, setLoading] = useState(!cached);
@@ -61,9 +58,9 @@ export function useBlogDetailParam(param: string) {
     };
 
     const fetchBySlug = async (theSlug: string) => {
-      const { data: rows } = await apiFetchWithMeta<IBlogDto[]>(
-        `${API.BLOGS}?${qsForSlug}`, { signal: controller.signal }
-      );
+      const { data: rows } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${qsForSlug}`, {
+        signal: controller.signal,
+      });
       const item = rows?.[0] ?? null;
       if (item) {
         setDetailBySlug(theSlug, item);

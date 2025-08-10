@@ -28,12 +28,24 @@ export function Footer() {
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-2 text-sm place-items-center">
-            <Link href="/blog" className="hover:underline focus-visible:underline">Blog</Link>
-            <Link href="/project" className="hover:underline focus-visible:underline">Project</Link>
-            <Link href="/about" className="hover:underline focus-visible:underline">About</Link>
-            <Link href="/contact" className="hover:underline focus-visible:underline">Contact</Link>
-            <Link href="/rss.xml" className="hover:underline focus-visible:underline">RSS</Link>
-            <Link href="/sitemap.xml" className="hover:underline focus-visible:underline">Sitemap</Link>
+            <Link href="/blog" className="hover:underline focus-visible:underline">
+              Blog
+            </Link>
+            <Link href="/project" className="hover:underline focus-visible:underline">
+              Project
+            </Link>
+            <Link href="/about" className="hover:underline focus-visible:underline">
+              About
+            </Link>
+            <Link href="/contact" className="hover:underline focus-visible:underline">
+              Contact
+            </Link>
+            <Link href="/rss.xml" className="hover:underline focus-visible:underline">
+              RSS
+            </Link>
+            <Link href="/sitemap.xml" className="hover:underline focus-visible:underline">
+              Sitemap
+            </Link>
           </nav>
 
           <div className="flex items-start justify-start md:justify-end">
@@ -55,9 +67,28 @@ export function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-6 text-center text-xs text-muted-foreground">
         <p>© {year} Rohan Kumar. All rights reserved.</p>
         <p className="mt-1">
-          Built with <Link href="https://nextjs.org" className="font-medium underline-offset-4 hover:underline">Next.js</Link>,{' '}
-          <Link href="https://tailwindcss.com" className="font-medium underline-offset-4 hover:underline">Tailwind CSS</Link>, and{' '}
-          <Link href="https://ui.shadcn.com" className="font-medium underline-offset-4 hover:underline">shadcn/ui</Link>.
+          Built with{' '}
+          <Link
+            href="https://nextjs.org"
+            className="font-medium underline-offset-4 hover:underline"
+          >
+            Next.js
+          </Link>
+          ,{' '}
+          <Link
+            href="https://tailwindcss.com"
+            className="font-medium underline-offset-4 hover:underline"
+          >
+            Tailwind CSS
+          </Link>
+          , and{' '}
+          <Link
+            href="https://ui.shadcn.com"
+            className="font-medium underline-offset-4 hover:underline"
+          >
+            shadcn/ui
+          </Link>
+          .
         </p>
       </div>
     </footer>

@@ -1,12 +1,12 @@
-import { BlogsQueryRequired } from "@/types/blog";
-import { IProjectDto } from "@fullstack-lab/types";
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { keyFromQuery, makeQueryStringFromFilter } from "./query";
-import { ProjectsQueryRequired } from "@/types/project";
+import { BlogsQueryRequired } from '@/types/blog';
+import { IProjectDto } from '@fullstack-lab/types';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { keyFromQuery, makeQueryStringFromFilter } from './query';
+import { ProjectsQueryRequired } from '@/types/project';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getSimpleIconSlug(skillName: string): string {
@@ -17,7 +17,7 @@ export function getSimpleIconSlug(skillName: string): string {
     'Vue.js': 'vuedotjs',
     'Nuxt.js': 'nuxtdotjs',
     'Deno.js': 'denodotjs',
-    'RxJS': 'rxjs',
+    RxJS: 'rxjs',
   };
 
   const normalized = skillName.trim();
@@ -26,16 +26,13 @@ export function getSimpleIconSlug(skillName: string): string {
     return customSlugs[normalized];
   }
 
-  return normalized
-    .toLowerCase()
-    .replace(/\s+/g, '')
-    .replace(/\./g, 'dot');
+  return normalized.toLowerCase().replace(/\s+/g, '').replace(/\./g, 'dot');
 }
 
 export function stripMarkdown(md: string) {
   return md
-    .replace(/```[\s\S]*?```/g, '')      
-    .replace(/`([^`]+)`/g, '$1')         
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
     .replace(/!\[[^\]]*]\([^)]+\)/g, '')
     .replace(/\[[^\]]+]\(([^)]+)\)/g, '$1')
     .replace(/[#>*_~-]+/g, '')
@@ -50,7 +47,7 @@ export function truncate(text: string, max = 180) {
 
 export function pickPrimaryLink(project: IProjectDto) {
   const links = project.links || [];
-  const byKind = (k: string) => links.find(l => l.kind === k && l.url);
+  const byKind = (k: string) => links.find((l) => l.kind === k && l.url);
   return byKind('live') || byKind('repo') || links[0] || null;
 }
 
@@ -68,9 +65,13 @@ export function makeBlogQueryString(q: BlogsQueryRequired) {
 
 export function blogKeyFromQuery(q: BlogsQueryRequired) {
   return keyFromQuery('blogs', {
-    p: q.page, pp: q.perPage, s: q.sort,
-    q: q.search ?? '', t: q.tags ?? [],
-    f: q.isFeatured ?? null, st: q.status ?? 'published',
+    p: q.page,
+    pp: q.perPage,
+    s: q.sort,
+    q: q.search ?? '',
+    t: q.tags ?? [],
+    f: q.isFeatured ?? null,
+    st: q.status ?? 'published',
     a: q.author ?? '',
   });
 }
@@ -92,7 +93,9 @@ export function makeProjectQueryString(q: ProjectsQueryRequired) {
 
 export function projectKeyFromQuery(q: ProjectsQueryRequired) {
   return keyFromQuery('projects', {
-    p: q.page, pp: q.perPage, s: q.sort,
+    p: q.page,
+    pp: q.perPage,
+    s: q.sort,
     q: q.search ?? '',
     ty: q.types ?? [],
     f: q.isFeatured ?? null,
@@ -110,4 +113,3 @@ export function isActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
 }
-

@@ -2,7 +2,15 @@
 
 import { cn } from '@/lib/utils';
 
-export function TagChips({ tags, max = 5, className }: { tags?: string[] | null; max?: number; className?: string }) {
+export function TagChips({
+  tags,
+  max = 5,
+  className,
+}: {
+  tags?: string[] | null;
+  max?: number;
+  className?: string;
+}) {
   if (!tags?.length) return null;
   const show = tags.slice(0, max);
   const extra = Math.max(0, tags.length - max);
