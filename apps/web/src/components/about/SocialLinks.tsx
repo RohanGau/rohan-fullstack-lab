@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { SocialLinks } from '../custom/SocialLinks';
 import { IProfileDto } from '@fullstack-lab/types';

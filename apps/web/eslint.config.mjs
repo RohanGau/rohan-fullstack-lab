@@ -1,14 +1,18 @@
-// eslint.config.mjs
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FlatCompat } from '@eslint/eslintrc';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import tsParser from '@typescript-eslint/parser';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 export default [
+  {
+    ignores: ['node_modules/**', '.next/**', 'out/**', 'dist/**', 'coverage/**'],
+  },
+
   ...compat.extends(
     'next/core-web-vitals',
     'plugin:@typescript-eslint/recommended',
@@ -18,10 +22,11 @@ export default [
     'plugin:import/typescript',
     'prettier'
   ),
+
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      parser: '@typescript-eslint/parser',
+      parser: tsParser,
       parserOptions: {
         project: true,
         tsconfigRootDir: __dirname,
@@ -29,16 +34,6 @@ export default [
     },
     rules: {
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-    },
-  },
-  {
-    files: ['**/*.{js,ts,jsx,tsx}'],
-    plugins: {
-      tailwindcss: require('eslint-plugin-tailwindcss'),
-    },
-    rules: {
-      'tailwindcss/classnames-order': 'warn',
-      'tailwindcss/no-custom-classname': 'off',
     },
   },
 ];

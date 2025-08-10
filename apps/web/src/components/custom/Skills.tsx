@@ -7,7 +7,6 @@ import { getSimpleIconSlug } from '@/lib/utils';
 import * as simpleIcons from 'simple-icons';
 import { SkillsProps } from '@/types/profile';
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 export function SkillsSection({ skills, fullStack, gridCols, isProfile }: SkillsProps) {
   if (!skills || skills.length === 0) return null;

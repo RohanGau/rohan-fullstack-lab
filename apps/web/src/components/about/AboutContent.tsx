@@ -7,7 +7,7 @@ import { Knowledge } from './Knowledge';
 import { Separator } from '../ui/separator';
 import { Philosophy } from './Philosophy';
 import { SocialLinksContainer } from './SocialLinks';
-import { CONTACTS } from '@/lib/constant';
+
 export default function AboutContent() {
   const { profile } = useProfile();
 
