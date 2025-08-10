@@ -51,14 +51,19 @@ export const metadata: Metadata = {
     locale: 'en_US',
     title: 'Rohan Kumar – Senior Frontend Engineer',
     description: 'Building clean, scalable web experiences with React, Next.js, and TypeScript.',
-    images: [{ url: '/og/home.png', width: 1200, height: 630 }],
+    images: [{
+      url: 'https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426',
+      width: 1200,
+      height: 630,
+      alt: 'Rohan Kumar — Senior Frontend Engineer',
+    }],
   },
   twitter: {
     card: 'summary_large_image',
     creator: '@yourhandle', // ← replace with your real handle
     title: 'Rohan Kumar – Senior Frontend Engineer',
     description: 'Frontend architecture, performance, and design systems.',
-    images: ['/og/home.png'],
+    images: ['https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426'],
   },
   robots: {
     index: true,
