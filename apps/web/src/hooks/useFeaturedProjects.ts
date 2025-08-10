@@ -1,23 +1,11 @@
-'use client';
 import { useProjects } from './useProjects';
 
 export function useFeaturedProjects(limit = 3) {
-  const {
-    data, loading, error, query, setQuery, refetch,
-  } = useProjects({
+  const { data, loading, error } = useProjects({
     page: 1,
     perPage: limit,
     isFeatured: true,
-    status: 'published',
-    sort: ['publishedAt','DESC'],
+    sort: ['createdAt', 'DESC'],
   });
-
-  return {
-    featureBlogs: data,
-    loading,
-    error,
-    refetch,
-    query,
-    setQuery,
-  };
+  return { featureProjects: data, loading, error };
 }

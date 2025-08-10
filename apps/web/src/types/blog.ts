@@ -1,6 +1,7 @@
 import { IBlogDto } from "@fullstack-lab/types";
 
 export type ListCacheItem = { data: IBlogDto[]; total: number };
+
 export type BlogStore = {
   listCache: Record<string, ListCacheItem>;
   detailsById: Record<string, IBlogDto>;
@@ -10,20 +11,15 @@ export type BlogStore = {
   setDetailBySlug: (slug: string, blog: IBlogDto) => void;
 };
 
+export type BlogSortField = 'publishedAt' | 'createdAt' | 'updatedAt' | 'title';
+
 export type BlogsQuery = {
-  page?: number;
-  perPage?: number;
-  search?: string;
-  tags?: string[];
-  isFeatured?: boolean;
-  status?: 'draft'|'published'|'archived';
+  page?: number; perPage?: number;
+  search?: string; tags?: string[];
+  isFeatured?: boolean; status?: 'draft'|'published'|'archived';
   author?: string;
-  sort?: [ 'createdAt'|'updatedAt'|'publishedAt'|'title', 'ASC'|'DESC' ];
+  sort?: [BlogSortField, 'ASC'|'DESC'];
 };
 
 export type BlogsQueryRequired =
-  Required<Pick<BlogsQuery, 'page' | 'perPage' | 'sort'>> &
-  Omit<BlogsQuery, 'page' | 'perPage' | 'sort'>;
-
-export type SortField = 'publishedAt' | 'createdAt' | 'updatedAt' | 'title';
-export type SortOrder = 'ASC' | 'DESC';
+  Required<Pick<BlogsQuery,'page'|'perPage'|'sort'>> & Omit<BlogsQuery,'page'|'perPage'|'sort'>;

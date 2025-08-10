@@ -2,10 +2,9 @@ import { SocialIcon } from "./SocialIcon";
 import * as simpleIcons from 'simple-icons';
 import { Linkedin } from 'lucide-react';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function SocialLinks({ user }: { user: any }) {
+export function SocialLinks({ user, ariaLabel }: { user: any, ariaLabel: string }) {
   return (
-    <div className="flex gap-4 justify-center sm:justify-start">
+    <div className="flex gap-4 justify-center sm:justify-start" aria-label={ariaLabel}>
         {user.gmail && (
         <a
           href={`mailto:${user.gmail}`}

@@ -3,8 +3,8 @@ import { apiFetchWithMeta } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
 import { useBlogStore } from '@/lib/store/blogStore';
 import type { IBlogDto } from '@fullstack-lab/types';
-import type { BlogsQuery, BlogsQueryRequired, SortField, SortOrder } from '@/types/blog';
-import { keyFromQuery, makeQueryString } from '@/lib/utils';
+import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
+import { makeBlogQueryString, blogKeyFromQuery } from '@/lib/utils';
 
 
 export function useBlogs(initial?: BlogsQuery) {
@@ -16,23 +16,13 @@ export function useBlogs(initial?: BlogsQuery) {
     ...(initial ?? {}),
   });
 
-  const page = query.page ?? 1;
-  const perPage = query.perPage ?? 9;
-  const sort = (query.sort ?? ['publishedAt', 'DESC']) as [SortField, SortOrder];
+  const page = query.page ?? 1, perPage = query.perPage ?? 9;
+const sort = (query.sort ?? ['publishedAt','DESC']) as BlogsQueryRequired['sort'];
 
-  const { qs, cacheKey } = useMemo(() => {
-    const q = {
-      ...query,
-      page,
-      perPage,
-      sort,
-    } satisfies BlogsQueryRequired;
-
-    return {
-      qs: makeQueryString(q),
-      cacheKey: keyFromQuery(q),
-    };
-  }, [query, page, perPage, sort]);
+const { qs, cacheKey } = useMemo(() => {
+  const q: BlogsQueryRequired = { ...query, page, perPage, sort };
+  return { qs: makeBlogQueryString(q), cacheKey: blogKeyFromQuery(q) };
+}, [query, page, perPage, sort]);
 
   const { listCache, setListCache } = useBlogStore();
   const cached = listCache[cacheKey];
@@ -53,7 +43,7 @@ export function useBlogs(initial?: BlogsQuery) {
         `${API.BLOGS}?${qs}`,
         { signal }
       );
-      if (myReq !== reqIdRef.current) return; // drop stale response
+      if (myReq !== reqIdRef.current) return;
       setData(data);
       setTotal(total);
       setError(null);

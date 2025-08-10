@@ -6,12 +6,13 @@ import { SkillsSection } from "../custom/Skills";
 import { Knowledge } from "./Knowledge";
 import { Separator } from "../ui/separator";
 import { Philosophy } from "./Philosophy";
-// import { SocialLinks } from "../custom/SocialLinks";
 import { SocialLinksContainer } from "./SocialLinks";
 import { CONTACTS } from "@/lib/constant";
 export default function AboutContent() {
   const { profile } = useProfile();
+  
   const user = profile?.find((item) => item.id !== "688a63c9e76b322b8c0b5814") ?? null;
+  
   if (!user) return null;
 
     return (

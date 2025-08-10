@@ -1,118 +1,150 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useProjects } from '@/hooks/useProjects';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ProjectCard } from '@/components/project/ProjectCard';
-import { BlogListSkeleton } from '@/components/blog/BlogListSkeleton';
+import { ProjectCard } from '@/components/project/card/ProjectCard';
+import { useDebounced, SearchBox } from '@/components/list/SearchBox';
+import { SortSelect, FeaturedSelect, PerPageSelect } from '@/components/list/Selects';
+import { ChipToggleCloud } from '@/components/list/ChipToggleCloud';
+import { Pager } from '@/components/list/Pager';
+import { ResultsMeta } from '@/components/list/ResultsMeta';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { BlogCardSkeleton } from '@/components/blog/card';
 
-const ALL_TYPES = ['web','mobile','api','cli','tool','library','backend','frontend','desktop'];
+const arrToCsv = (a?: string[]) => (a && a.length ? a.join(',') : '');
+const csvToArr = (s?: string | null) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 
-export default function ProjectsListClient() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [pending, setPending] = useState('');
-  const [types, setTypes] = useState<string[]>([]);
-  const perPage = 8;
+export default function ProjectListPage() {
+  const router = useRouter();
+  const sp = useSearchParams();
 
-  const { data, pages, loading, error } = useProjects({
-    page,
-    perPage,
-    search,
-    types,
-    sort: ['createdAt', 'DESC'],
-  });
+  const initial = useMemo(() => {
+    const page = Number(sp.get('page') ?? 1);
+    const perPage = Number(sp.get('perPage') ?? 9);
+    const q = sp.get('q') ?? '';
+    const types = csvToArr(sp.get('types'));
+    const featured = sp.get('featured');
+    const isFeatured = featured === 'true' ? true : featured === 'false' ? false : undefined;
+    const sortField = (sp.get('sortField') as 'createdAt'|'updatedAt'|'year'|'title' | null) ?? 'createdAt';
+    const sortOrder = (sp.get('sortOrder') as 'ASC'|'DESC' | null) ?? 'DESC';
+    return { page, perPage, search: q, types, isFeatured, sort: [sortField, sortOrder] as any };
+  }, [sp]);
 
-  const toggleType = (t: string) => {
-    setPage(1);
-    setTypes((prev) => (prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]));
-  };
+  const { data, total, pages, loading, error, query, setQuery } = useProjects(initial);
+  const [search, setSearch] = useState(query.search ?? '');
+  const debouncedSearch = useDebounced(search);
 
-  const applySearch = () => {
-    setPage(1);
-    setSearch(pending);
-  };
+  // derive type options from page data
+  const typeOptions = useMemo(() => {
+    const set = new Set<string>();
+    (data ?? []).forEach((p) => (p.types ?? []).forEach((t) => set.add(t)));
+    (query.types ?? []).forEach((t) => set.add(t));
+    return Array.from(set).sort();
+  }, [data, query.types]);
+
+  // sync → URL
+  useEffect(() => {
+    const s = new URLSearchParams();
+    s.set('page', String(query.page ?? 1));
+    s.set('perPage', String(query.perPage ?? 9));
+    if (query.search) s.set('q', query.search);
+    if (query.types?.length) s.set('types', arrToCsv(query.types));
+    if (typeof query.isFeatured === 'boolean') s.set('featured', String(query.isFeatured));
+    const [sf, so] = query.sort ?? ['createdAt', 'DESC'];
+    s.set('sortField', sf);
+    s.set('sortOrder', so);
+    router.replace(`/project?${s.toString()}`);
+  }, [router, query]);
+
+  // debounce → query
+  useEffect(() => { setQuery((q) => ({ ...q, search: debouncedSearch, page: 1 })); }, [debouncedSearch, setQuery]);
 
   return (
-    <section className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2 w-full md:w-1/2">
-          <Input
-            placeholder="Search projects…"
-            value={pending}
-            onChange={(e) => setPending(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && applySearch()}
-          />
-          <Button onClick={applySearch}>Search</Button>
-          {search && (
-            <Button variant="ghost" onClick={() => { setPending(''); setSearch(''); setPage(1); }}>
-              Clear
-            </Button>
-          )}
-        </div>
+    <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold">Projects</h1>
+        <p className="text-muted-foreground text-sm">Selected work, tools, and experiments.</p>
+      </div>
 
-        <div className="flex flex-wrap gap-2">
-          {ALL_TYPES.map(t => (
-            <Badge
-              key={t}
-              variant={types.includes(t) ? 'default' : 'secondary'}
-              className="cursor-pointer select-none"
-              onClick={() => toggleType(t)}
-            >
-              {t}
-            </Badge>
-          ))}
-          {types.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setTypes([]); setPage(1); }}
-            >
-              Reset types
-            </Button>
-          )}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <SearchBox value={search} onChange={setSearch} placeholder="Search projects…" />
+        <div className="flex gap-2">
+          <SortSelect
+            value={`${(query.sort?.[0] ?? 'createdAt')}:${(query.sort?.[1] ?? 'DESC')}`}
+            onChange={(v) => {
+              const [f, o] = v.split(':') as any;
+              setQuery((q) => ({ ...q, sort: [f, o], page: 1 }));
+            }}
+            options={[
+              { label: 'Newest', value: 'createdAt:DESC' },
+              { label: 'Oldest', value: 'createdAt:ASC' },
+              { label: 'Year ↓', value: 'year:DESC' },
+              { label: 'Year ↑', value: 'year:ASC' },
+              { label: 'Title A–Z', value: 'title:ASC' },
+              { label: 'Title Z–A', value: 'title:DESC' },
+              { label: 'Recently Updated', value: 'updatedAt:DESC' },
+            ]}
+          />
+          <FeaturedSelect
+            value={typeof query.isFeatured === 'boolean' ? (query.isFeatured ? 'featured' : 'non') : 'all'}
+            onChange={(v) => setQuery((q) => ({ ...q, isFeatured: v === 'all' ? undefined : v === 'featured', page: 1 }))}
+          />
+          <PerPageSelect
+            value={query.perPage ?? 9}
+            onChange={(pp) => setQuery((q) => ({ ...q, perPage: pp, page: 1 }))}
+          />
         </div>
       </div>
 
-      <Separator />
+      {typeOptions.length > 0 && (
+        <ChipToggleCloud
+          options={typeOptions}
+          active={query.types ?? []}
+          onToggle={(t) => {
+            setQuery((q) => {
+              const s = new Set(q.types ?? []);
+              s.has(t) ? s.delete(t) : s.add(t);
+              return { ...q, types: Array.from(s), page: 1 };
+            });
+          }}
+          onClear={() => setQuery((q) => ({ ...q, types: [], page: 1 }))}
+          prefix={null}
+          capitalize
+        />
+      )}
 
-      {/* Grid */}
-      {loading ? (
-        <BlogListSkeleton numberOfSkeletons={perPage / 2} />
-      ) : error ? (
-        <div className="text-center text-red-500 py-12">{error}</div>
-      ) : data.length === 0 ? (
-        <div className="text-center text-muted-foreground py-12">No projects found.</div>
-      ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {data.map(p => <ProjectCard key={p.id} project={p} />)}
+      {loading && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: query.perPage ?? 9 }).map((_, i) => <BlogCardSkeleton key={i} />)}
+          </div>
+        )}
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Failed to load projects</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {!loading && !error && data.length === 0 && <p className="text-muted-foreground">No projects found.</p>}
+
+      {!loading && !error && data.length > 0 && (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data.map((p) => <ProjectCard key={p.id} project={p} />)}
         </div>
       )}
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between pt-2">
-        <Button
-          variant="outline"
-          disabled={page <= 1 || loading}
-          onClick={() => setPage(p => Math.max(1, p - 1))}
-        >
-          ← Prev
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          Page {page} of {pages}
-        </span>
-        <Button
-          variant="outline"
-          disabled={page >= pages || loading}
-          onClick={() => setPage(p => p + 1)}
-        >
-          Next →
-        </Button>
-      </div>
-    </section>
+      <Pager
+        page={query.page ?? 1}
+        pages={pages}
+        onPrev={() => setQuery((q) => ({ ...q, page: Math.max(1, (q.page ?? 1) - 1) }))}
+        onNext={() => setQuery((q) => ({ ...q, page: Math.min(pages, (q.page ?? 1) + 1) }))}
+      />
+
+      {!loading && !error && total > 0 && (
+        <ResultsMeta page={query.page ?? 1} perPage={query.perPage ?? 9} total={total} />
+      )}
+    </div>
   );
 }

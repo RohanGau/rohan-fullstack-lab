@@ -1,42 +1,85 @@
-'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { IProjectDto } from '@fullstack-lab/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API } from '@/lib/constant';
 import { apiFetchWithMeta } from '@/lib/apiClient';
+import { useProjectStore } from '@/lib/store/projectStore';
+import type { IProjectDto } from '@fullstack-lab/types';
+import type { ProjectsQuery, ProjectsQueryRequired } from '@/types/project';
+import { makeProjectQueryString, projectKeyFromQuery } from '@/lib/utils';
 
+export function useProjects(initial?: ProjectsQuery) {
+  const [query, setQuery] = useState<ProjectsQuery>({
+    page: 1,
+    perPage: 8,
+    sort: ['createdAt', 'DESC'],
+    ...(initial ?? {}),
+  });
 
-export function useProjects(q: ProjectsQuery) {
-  const page = q.page ?? 1, perPage = q.perPage ?? 8;
-  const sort = q.sort ?? ['createdAt','DESC'];
+  const page = query.page ?? 1, perPage = query.perPage ?? 8;
+  const sort = (query.sort ?? ['createdAt','DESC']) as ProjectsQueryRequired['sort'];
 
-  const [data,setData] = useState<IProjectDto[]>([]);
-  const [total,setTotal] = useState(0);
-  const [loading,setLoading] = useState(true);
-  const [error,setError] = useState<string|null>(null);
+  const { qs, cacheKey } = useMemo(() => {
+    const q: ProjectsQueryRequired = { ...query, page, perPage, sort };
+    return { qs: makeProjectQueryString(q), cacheKey: projectKeyFromQuery(q) };
+  }, [query, page, perPage, sort]);
 
-  const qs = useMemo(() => {
-    const params = new URLSearchParams({
-      range: JSON.stringify([(page-1)*perPage, page*perPage-1]),
-      sort: JSON.stringify(sort),
-    });
-    const filter: Record<string,any> = {};
-    if (q.search?.trim()) filter.q = q.search.trim();
-    if (q.types?.length)  filter.types = q.types;
-    if (typeof q.isFeatured === 'boolean') filter.isFeatured = q.isFeatured;
-    if (Object.keys(filter).length) params.set('filter', JSON.stringify(filter));
-    return params.toString();
-  }, [page,perPage,sort,q.search,q.types,q.isFeatured]);
+  const { listCache, setListCache } = useProjectStore();
+  const cached = listCache[cacheKey];
+
+  const [data, setData] = useState<IProjectDto[]>(cached?.data ?? []);
+  const [total, setTotal] = useState<number>(cached?.total ?? 0);
+  const [loading, setLoading] = useState(!cached);
+  const [error, setError] = useState<string | null>(null);
+
+  const reqIdRef = useRef(0);
+  const revalidatedKeysRef = useRef<Set<string>>(new Set());
+
+  const fetcher = useCallback(
+    async (signal?: AbortSignal) => {
+      const reqId = ++reqIdRef.current;
+      const { data, total } = await apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`, { signal });
+      if (reqId !== reqIdRef.current) return;
+      setData(data);
+      setTotal(total);
+      setError(null);
+      setListCache(cacheKey, { data, total });
+    },
+    [qs, cacheKey, setListCache]
+  );
+
+  const refetch = useCallback(() => {
+    const c = new AbortController();
+    setLoading(true);
+    fetcher(c.signal)
+      .catch((e: any) => { if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects'); })
+      .finally(() => setLoading(false));
+  }, [fetcher]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`, { signal: controller.signal })
-      .then(({data,total}) => { setData(data); setTotal(total); setError(null); })
-      .catch((err:any) => { if (err?.name!=='AbortError') setError(err?.msg||'Failed to fetch projects'); })
-      .finally(() => setLoading(false));
-    return () => controller.abort();
-  }, [qs]);
+    if (cached) {
+      setData(cached.data);
+      setTotal(cached.total);
+      setLoading(false);
 
-  const pages = Math.max(1, Math.ceil(total / perPage));
-  return { data, total, pages, loading, error };
+      if (!revalidatedKeysRef.current.has(cacheKey)) {
+        revalidatedKeysRef.current.add(cacheKey);
+        const c = new AbortController();
+        fetcher(c.signal).catch((e: any) => {
+          if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+        });
+        return () => c.abort();
+      }
+      return;
+    }
+
+    const c = new AbortController();
+    setLoading(true);
+    fetcher(c.signal)
+      .catch((e: any) => { if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects'); })
+      .finally(() => setLoading(false));
+    return () => c.abort();
+  }, [cacheKey, cached, fetcher]);
+
+  const pages = Math.max(1, Math.ceil(total / (query.perPage ?? 8)));
+
+  return { data, total, pages, loading, error, query, setQuery, refetch };
 }

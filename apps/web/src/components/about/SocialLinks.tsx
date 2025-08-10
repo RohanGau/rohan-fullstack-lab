@@ -8,7 +8,7 @@ import { CONTACTS } from '@/lib/constant';
 export function SocialLinksContainer({ user }: { user: IProfileDto | undefined }) {
   return (
     <div className="flex gap-4 pt-4">
-      <SocialLinks user={{ ...user, ...CONTACTS }} />
+      <SocialLinks user={{ ...user, ...CONTACTS }} ariaLabel="Social links" />
       <Link href="/contact"><Mail className="w-5 h-5" /></Link>
       <Link href="/blog"><Badge variant="secondary">Read My Blogs</Badge></Link>
     </div>

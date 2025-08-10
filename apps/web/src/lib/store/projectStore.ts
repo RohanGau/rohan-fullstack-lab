@@ -1,22 +1,22 @@
 import { create } from 'zustand';
-import { ProjectState } from '@/types/project';
-import { IProjectDto } from '@fullstack-lab/types';
+import type { IProjectDto } from '@fullstack-lab/types';
 
-export const useProjectStore = create<ProjectState>((set) => ({
-  projects: null,
-  featureProjects: null,
-  projectDetails: {},
-  
-  setProjects: (projects: IProjectDto[]) => set({ projects }),
+type ListPayload = { data: IProjectDto[]; total: number };
 
-  setFeatureProjects: (featureProjects: IProjectDto[]) =>
-    set({ featureProjects }),
+type ProjectStore = {
+  listCache: Record<string, ListPayload>;
+  detailById: Record<string, IProjectDto>;
+  setListCache: (key: string, payload: ListPayload) => void;
+  setDetailById: (id: string, proj: IProjectDto) => void;
+  clearAll: () => void;
+};
 
-  setProjectDetail: (project: IProjectDto) =>
-    set((state) => ({
-      projectDetails: {
-        ...state.projectDetails,
-        [project.id]: project,
-      },
-    })),
+export const useProjectStore = create<ProjectStore>((set) => ({
+  listCache: {},
+  detailById: {},
+  setListCache: (key, payload) =>
+    set((s) => ({ listCache: { ...s.listCache, [key]: payload } })),
+  setDetailById: (id, proj) =>
+    set((s) => ({ detailById: { ...s.detailById, [id]: proj } })),
+  clearAll: () => set({ listCache: {}, detailById: {} }),
 }));

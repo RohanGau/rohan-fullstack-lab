@@ -8,7 +8,7 @@ import { BlogCover } from './ BlogCover';
 import { BlogHeader } from './BlogHeader';
 import { BlogLinks } from './BlogLinks';
 
-export function BlogArticle({ blog }: { blog: IBlogDto }) {
+function BlogArticle({ blog }: { blog: IBlogDto }) {
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 space-y-6">
       <BackToBlogButton className="mb-2 text-muted-foreground" />
@@ -36,3 +36,5 @@ export function BlogArticle({ blog }: { blog: IBlogDto }) {
     </article>
   );
 }
+
+export default BlogArticle;

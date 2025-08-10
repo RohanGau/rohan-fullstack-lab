@@ -1,43 +1,57 @@
 'use client';
 
 import Link from 'next/link';
-import { ProjectCard } from '../project/ProjectCard';
-// import { useFeaturedProjects } from '@/hooks/useFeaturedProjects';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useFeaturedProjects } from '@/hooks/useFeaturedProjects';
-import { BlogListSkeleton } from '../blog/BlogListSkeleton';
+import { ProjectCard } from '@/components/project/card/ProjectCard';
+import { BlogCardSkeleton } from '@/components/blog/card';
 
 export default function ProjectsPreview() {
   const { featureProjects, loading, error } = useFeaturedProjects(3);
 
-  if (loading) return <BlogListSkeleton numberOfSkeletons={4} />;
-
-  if (error) {
-    return (
-      <div className="text-center text-red-500 py-12">
-        <p>Failed to load projects. Please try again later.</p>
-        <p className="mt-2 text-sm text-red-400">{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <section>
+    <section aria-labelledby="featured-projects">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Featured Projects</h2>
-        <Link href="/projects" className="text-sm text-primary hover:underline">
+        <h2 id="featured-projects" className="text-2xl font-semibold">
+          Featured Projects
+        </h2>
+        <Link href="/project" className="text-sm text-primary hover:underline">
           View all
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {featureProjects && featureProjects.length > 0 ? (
-          featureProjects.map(p => <ProjectCard key={p.id} project={p} />)
-        ) : (
-          <div className="text-center text-muted-foreground py-12 col-span-2">
-            No featured projects found.
-          </div>
-        )}
-      </div>
+      {/* Loading (same skeleton as blogs) */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[0, 1, 2].map((i) => (
+            <BlogCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
+      {/* Error */}
+      {!loading && error && (
+        <Alert variant="destructive">
+          <AlertTitle>Failed to load projects</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Empty */}
+      {!loading && !error && (!featureProjects || featureProjects.length === 0) && (
+        <div className="text-center text-muted-foreground py-12">
+          No featured projects found.
+        </div>
+      )}
+
+      {/* List */}
+      {!loading && !error && featureProjects && featureProjects.length > 0 && (
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {featureProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

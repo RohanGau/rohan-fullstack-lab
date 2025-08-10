@@ -1,7 +1,9 @@
-import { BlogsQuery, BlogsQueryRequired } from "@/types/blog";
+import { BlogsQueryRequired } from "@/types/blog";
 import { IProjectDto } from "@fullstack-lab/types";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { keyFromQuery, makeQueryStringFromFilter } from "./query";
+import { ProjectsQueryRequired } from "@/types/project";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -52,34 +54,60 @@ export function pickPrimaryLink(project: IProjectDto) {
   return byKind('live') || byKind('repo') || links[0] || null;
 }
 
-export function makeQueryString(q: BlogsQueryRequired) {
-  const { page, perPage, sort, ...rest } = q;
-  const params = new URLSearchParams({
-    range: JSON.stringify([(page-1)*perPage, page*perPage-1]),
-    sort: JSON.stringify(sort),
+export function makeBlogQueryString(q: BlogsQueryRequired) {
+  return makeQueryStringFromFilter(q, () => {
+    const filter: Record<string, any> = {};
+    if (q.search?.trim()) filter.q = q.search.trim();
+    if (q.tags?.length) filter.tags = q.tags;
+    if (typeof q.isFeatured === 'boolean') filter.isFeatured = q.isFeatured;
+    if (q.status) filter.status = q.status;
+    if (q.author?.trim()) filter.author = q.author.trim();
+    return filter;
   });
-  const filter: Record<string, any> = {};
-  if (rest.search?.trim()) filter.q = rest.search.trim();
-  if (rest.tags?.length)    filter.tags = rest.tags;
-  if (typeof rest.isFeatured === 'boolean') filter.isFeatured = rest.isFeatured;
-  if (rest.status)          filter.status = rest.status;
-  if (rest.author?.trim())  filter.author = rest.author.trim();
-  if (Object.keys(filter).length) params.set('filter', JSON.stringify(filter));
-  return params.toString();
 }
 
-export function keyFromQuery(q: BlogsQueryRequired) {
-  // stable cache key for Zustand (avoid collisions across pages/filters)
-  return JSON.stringify({
-    p: q.page ?? 1,
-    pp: q.perPage ?? 9,
-    s: q.sort ?? ['publishedAt','DESC'],
-    q: q.search ?? '',
-    t: q.tags ?? [],
-    f: q.isFeatured ?? null,
-    st: q.status ?? 'published',
+export function blogKeyFromQuery(q: BlogsQueryRequired) {
+  return keyFromQuery('blogs', {
+    p: q.page, pp: q.perPage, s: q.sort,
+    q: q.search ?? '', t: q.tags ?? [],
+    f: q.isFeatured ?? null, st: q.status ?? 'published',
     a: q.author ?? '',
   });
 }
 
+export function makeProjectQueryString(q: ProjectsQueryRequired) {
+  return makeQueryStringFromFilter(q, () => {
+    const filter: Record<string, any> = {};
+    if (q.search?.trim()) filter.q = q.search.trim();
+    if (q.types?.length) filter.types = q.types;
+    if (typeof q.isFeatured === 'boolean') filter.isFeatured = q.isFeatured;
+    if (q.company?.trim()) filter.company = q.company.trim();
+    if (q.role?.trim()) filter.role = q.role.trim();
+    if (typeof q.year === 'number') filter.year = q.year;
+    if (q.yearFrom != null) filter.yearFrom = q.yearFrom;
+    if (q.yearTo != null) filter.yearTo = q.yearTo;
+    return filter;
+  });
+}
+
+export function projectKeyFromQuery(q: ProjectsQueryRequired) {
+  return keyFromQuery('projects', {
+    p: q.page, pp: q.perPage, s: q.sort,
+    q: q.search ?? '',
+    ty: q.types ?? [],
+    f: q.isFeatured ?? null,
+    c: q.company ?? '',
+    r: q.role ?? '',
+    y: q.year ?? null,
+    yf: q.yearFrom ?? null,
+    yt: q.yearTo ?? null,
+  });
+}
+
 export const isMongoId = (s: string) => /^[a-f\d]{24}$/i.test(s);
+
+export function isActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
