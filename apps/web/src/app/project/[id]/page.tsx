@@ -17,17 +17,14 @@ const ProjectArticle = withClientFallback(
 );
 
 export default function ProjectDetailPage() {
-  const params = useParams();
-  const raw =
-    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
+  const params = useParams<{ id?: string | string[] }>();
+  const raw = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
   const id = useMemo(() => raw.trim(), [raw]);
-
-  if (!id || !isMongoId(id)) {
-    return <BlogErrorMessage message="Invalid project id" />;
-  }
+  const valid = isMongoId(id);
 
   const { project, loading, error } = useProjectDetail(id);
 
+  if (!valid) return <BlogErrorMessage message="Invalid project id" />;
   if (loading) return <BlogDetailSkeleton />;
   if (error || !project) return <BlogErrorMessage message={error || 'Project not found'} />;
 

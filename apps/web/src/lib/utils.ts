@@ -4,6 +4,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { keyFromQuery, makeQueryStringFromFilter } from './query';
 import { ProjectsQueryRequired } from '@/types/project';
+import { BlogFilter, ProjectFilter } from '@/types/query';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -53,7 +54,7 @@ export function pickPrimaryLink(project: IProjectDto) {
 
 export function makeBlogQueryString(q: BlogsQueryRequired) {
   return makeQueryStringFromFilter(q, () => {
-    const filter: Record<string, any> = {};
+    const filter: BlogFilter = {};
     if (q.search?.trim()) filter.q = q.search.trim();
     if (q.tags?.length) filter.tags = q.tags;
     if (typeof q.isFeatured === 'boolean') filter.isFeatured = q.isFeatured;
@@ -78,7 +79,7 @@ export function blogKeyFromQuery(q: BlogsQueryRequired) {
 
 export function makeProjectQueryString(q: ProjectsQueryRequired) {
   return makeQueryStringFromFilter(q, () => {
-    const filter: Record<string, any> = {};
+    const filter: ProjectFilter = {};
     if (q.search?.trim()) filter.q = q.search.trim();
     if (q.types?.length) filter.types = q.types;
     if (typeof q.isFeatured === 'boolean') filter.isFeatured = q.isFeatured;
@@ -90,7 +91,6 @@ export function makeProjectQueryString(q: ProjectsQueryRequired) {
     return filter;
   });
 }
-
 export function projectKeyFromQuery(q: ProjectsQueryRequired) {
   return keyFromQuery('projects', {
     p: q.page,
@@ -113,3 +113,30 @@ export function isActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'object' && err && 'message' in err && typeof (err as any).message === 'string') {
+    return (err as { message: string }).message;
+  }
+  if (typeof err === 'object' && err && 'msg' in err && typeof (err as any).msg === 'string') {
+    return (err as { msg: string }).msg;
+  }
+  return 'Failed to fetch blogs';
+}
+
+export function isAbort(err: unknown): boolean | null {
+  return (
+    (err instanceof Error && err.name === 'AbortError') ||
+    (typeof err === 'object' && err && 'name' in err && (err as { name?: string }).name === 'AbortError')
+  );
+}
+
+export const arrToCsv = (a?: string[]) => (a && a.length ? a.join(',') : '');
+export const csvToArr = (s?: string | null) =>
+  s
+    ? s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean)
+    : [];

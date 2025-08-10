@@ -5,6 +5,7 @@ import { useBlogStore } from '@/lib/store/blogStore';
 import type { IBlogDto } from '@fullstack-lab/types';
 import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
 import { makeBlogQueryString, blogKeyFromQuery } from '@/lib/utils';
+import { isAbort, getErrorMessage } from '@/lib/utils';
 
 export function useBlogs(initial?: BlogsQuery) {
   const [query, setQuery] = useState<BlogsQuery>({
@@ -15,14 +16,14 @@ export function useBlogs(initial?: BlogsQuery) {
     ...(initial ?? {}),
   });
 
-  const page = query.page ?? 1,
-    perPage = query.perPage ?? 9;
-  const sort = (query.sort ?? ['publishedAt', 'DESC']) as BlogsQueryRequired['sort'];
-
   const { qs, cacheKey } = useMemo(() => {
+    const page = query.page ?? 1;
+    const perPage = query.perPage ?? 9;
+    const sort = (query.sort ?? ['publishedAt', 'DESC']) as BlogsQueryRequired['sort'];
+
     const q: BlogsQueryRequired = { ...query, page, perPage, sort };
     return { qs: makeBlogQueryString(q), cacheKey: blogKeyFromQuery(q) };
-  }, [query, page, perPage, sort]);
+  }, [query]);
 
   const { listCache, setListCache } = useBlogStore();
   const cached = listCache[cacheKey];
@@ -53,9 +54,8 @@ export function useBlogs(initial?: BlogsQuery) {
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((err: any) => {
-        if (err?.name !== 'AbortError')
-          setError(err?.message || err?.msg || 'Failed to fetch blogs');
+      .catch((err: unknown) => {
+        if (!isAbort(err)) setError(getErrorMessage(err));
       })
       .finally(() => setLoading(false));
   }, [fetcher]);
@@ -67,26 +67,24 @@ export function useBlogs(initial?: BlogsQuery) {
       setTotal(cached.total);
       setLoading(false);
 
-      // 🔒 revalidate AT MOST ONCE per cacheKey
+      // revalidate at most once per cacheKey
       if (!revalidatedKeysRef.current.has(cacheKey)) {
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
-        fetcher(c.signal).catch((err: any) => {
-          if (err?.name !== 'AbortError')
-            setError(err?.message || err?.msg || 'Failed to fetch blogs');
+        fetcher(c.signal).catch((err: unknown) => {
+          if (!isAbort(err)) setError(getErrorMessage(err));
         });
         return () => c.abort();
       }
-      return; // cached and already revalidated → do nothing
+      return; // cached and already revalidated
     }
 
     // no cache → blocking fetch
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((err: any) => {
-        if (err?.name !== 'AbortError')
-          setError(err?.message || err?.msg || 'Failed to fetch blogs');
+      .catch((err: unknown) => {
+        if (!isAbort(err)) setError(getErrorMessage(err));
       })
       .finally(() => setLoading(false));
     return () => c.abort();

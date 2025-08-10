@@ -5,6 +5,7 @@ import { useProjectStore } from '@/lib/store/projectStore';
 import type { IProjectDto } from '@fullstack-lab/types';
 import type { ProjectsQuery, ProjectsQueryRequired } from '@/types/project';
 import { makeProjectQueryString, projectKeyFromQuery } from '@/lib/utils';
+import { getErrorMessage, isAbort } from '@/lib/utils';
 
 export function useProjects(initial?: ProjectsQuery) {
   const [query, setQuery] = useState<ProjectsQuery>({
@@ -14,14 +15,15 @@ export function useProjects(initial?: ProjectsQuery) {
     ...(initial ?? {}),
   });
 
-  const page = query.page ?? 1,
-    perPage = query.perPage ?? 8;
-  const sort = (query.sort ?? ['createdAt', 'DESC']) as ProjectsQueryRequired['sort'];
-
+  // Derive all query parts here so deps are stable
   const { qs, cacheKey } = useMemo(() => {
+    const page = query.page ?? 1;
+    const perPage = query.perPage ?? 8;
+    const sort = (query.sort ?? ['createdAt', 'DESC']) as ProjectsQueryRequired['sort'];
+
     const q: ProjectsQueryRequired = { ...query, page, perPage, sort };
     return { qs: makeProjectQueryString(q), cacheKey: projectKeyFromQuery(q) };
-  }, [query, page, perPage, sort]);
+  }, [query]);
 
   const { listCache, setListCache } = useProjectStore();
   const cached = listCache[cacheKey];
@@ -53,8 +55,8 @@ export function useProjects(initial?: ProjectsQuery) {
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((e: any) => {
-        if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+      .catch((e: unknown) => {
+        if (!isAbort(e)) setError(getErrorMessage(e));
       })
       .finally(() => setLoading(false));
   }, [fetcher]);
@@ -68,9 +70,8 @@ export function useProjects(initial?: ProjectsQuery) {
       if (!revalidatedKeysRef.current.has(cacheKey)) {
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
-        fetcher(c.signal).catch((e: any) => {
-          if (e?.name !== 'AbortError')
-            setError(e?.message || e?.msg || 'Failed to fetch projects');
+        fetcher(c.signal).catch((e: unknown) => {
+          if (!isAbort(e)) setError(getErrorMessage(e));
         });
         return () => c.abort();
       }
@@ -80,8 +81,8 @@ export function useProjects(initial?: ProjectsQuery) {
     const c = new AbortController();
     setLoading(true);
     fetcher(c.signal)
-      .catch((e: any) => {
-        if (e?.name !== 'AbortError') setError(e?.message || e?.msg || 'Failed to fetch projects');
+      .catch((e: unknown) => {
+        if (!isAbort(e)) setError(getErrorMessage(e));
       })
       .finally(() => setLoading(false));
     return () => c.abort();

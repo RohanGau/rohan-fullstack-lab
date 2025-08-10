@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { isActive } from '@/lib/utils';
 import { navItems } from '@/lib/constant';
+import Image from 'next/image';
 
 export function Header() {
   const pathname = usePathname();
@@ -23,23 +24,22 @@ export function Header() {
       </a>
 
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {/* 👇 EXACT same width/padding as <main> */}
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Link
             href="/"
             className="group inline-flex items-center gap-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Rohan Kumar — Home"
           >
-            <span className="hidden text-lg font-extrabold tracking-tight md:block">
-              Rohan Kumar
-            </span>
-            <span className="block text-lg font-extrabold tracking-tight md:hidden">
-              Rohan
-              <br />
-              Kumar
-            </span>
+            <Image
+              src="https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/mylogo-7c0bc3bd.png?cb=1754842683033"
+              alt="Rohan Kumar logo"
+              width={180}
+              height={40}
+              priority
+              className="h-8 w-auto md:h-10"
+            />
+            <span className="sr-only">Rohan Kumar</span>
           </Link>
-
-          {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
             {navItems.map(({ label, href }) => {
               const active = isActive(pathname, href);

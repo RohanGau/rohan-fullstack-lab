@@ -16,12 +16,11 @@ export default function BlogDetailPage() {
   const params = useParams();
   const raw =
     typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
-
   const param = useMemo(() => raw.trim(), [raw]);
-  if (!param) return <BlogErrorMessage message="Invalid blog identifier" />;
 
   const { blog, loading, error } = useBlogDetailParam(param);
-
+  
+  if (!param) return <BlogErrorMessage message="Invalid blog identifier" />;
   if (loading) return <BlogDetailSkeleton />;
   if (error || !blog) return <BlogErrorMessage message={error || 'Blog not found'} />;
 
