@@ -10,7 +10,11 @@
     "build:admin": "pnpm --filter admin... build",
     "build": "pnpm build:types && pnpm build:api && pnpm run build:web & pnpm run build:admin & wait",
     "deploy:stage": "fly deploy --config ./apps/api/fly.stage.toml --dockerfile ./apps/api/Dockerfile --remote-only .",
-    "deploy:prod": "fly deploy --config ./apps/api/fly.toml --dockerfile ./apps/api/Dockerfile --remote-only ."
+    "deploy:prod": "fly deploy --config ./apps/api/fly.toml --dockerfile ./apps/api/Dockerfile --remote-only .",
+    "web:build": "cd apps/web && npx @cloudflare/next-on-pages@latest",
+    "web:deploy": "cd apps/web && npx wrangler pages deploy .vercel/output/static --project-name=rohan-fullstack-lab",
+    "web:preview": "cd apps/web && npx wrangler pages deploy .vercel/output/static --project-name=rohan-fullstack-lab --branch=develop",
+    "web:dev": "cd apps/web && npx wrangler pages dev .vercel/output/static --config wrangler.toml"
   },
   "pnpm": {
     "overrides": {
@@ -21,5 +25,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.13",
+    "wrangler": "^4.28.1"
+  }
 }

@@ -1,0 +1,9 @@
+name = "rohan-fullstack-lab"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+API_BASE_URL = "https://rohan-backend-api.fly.dev"
+NEXT_PUBLIC_SITE_URL = "https://rohangautam.dev"
+R2_PUBLIC_BASE_URL = "https://assets.rohangautam.dev"

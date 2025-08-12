@@ -1,0 +1,119 @@
+name: Web Deploy (Cloudflare Pages)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      PAGES_PROJECT: rohan-fullstack-lab
+
+    steps:
+      - name: Prevent interactive login
+        run: |
+          rm -rf ~/.wrangler 2>/dev/null || true
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Choose Environment by Branch
+        run: |
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+            echo "BRANCH_NAME=main" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=preview" >> $GITHUB_ENV
+            echo "BRANCH_NAME=develop" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+          run_install: false
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies (workspace root)
+        run: pnpm install --frozen-lockfile
+
+      # 🔑 Build your workspace types BEFORE web build
+      - name: Build @fullstack-lab/types
+        run: pnpm -F @fullstack-lab/types build
+
+      # (Optional) Debug: verify the package is linked in web
+      - name: Verify workspace link
+        run: |
+          ls -la apps/web/node_modules/@fullstack-lab || true
+          pnpm why @fullstack-lab/types
+
+      - name: Cloudflare-compatible Next.js build
+        run: pnpm web:build
+
+      - name: Verify build output (robust)
+        run: |
+            set -e
+            ROOT="apps/web/.vercel/output"
+            echo "Listing $ROOT:"
+            ls -la "$ROOT" || true
+            echo "Listing $ROOT/static:"
+            ls -la "$ROOT/static" || true
+            echo "Listing $ROOT/functions (if any):"
+            ls -la "$ROOT/functions" || true
+
+            if [ -f "$ROOT/static/_worker.js" ] || [ -f "$ROOT/static/_worker.mjs" ] || [ -d "$ROOT/functions" ]; then
+            echo "✅ Worker/functions present (SSR/edge build)."
+            exit 0
+            fi
+
+            # Static-only builds are valid if there's a config + static assets
+            if [ -f "$ROOT/config.json" ] && [ -d "$ROOT/static" ]; then
+            echo "✅ Static build detected (no worker needed)."
+            exit 0
+            fi
+
+            echo "❌ Could not find expected Pages artifacts."
+            exit 1
+
+      - name: Deploy to Cloudflare Pages
+        env:
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}      # what wrangler reads
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}    # what wrangler reads
+            NO_COLOR: "1"
+        run: |
+            cd apps/web
+            npx wrangler@4.29.0 --version
+            if [ "$DEPLOY_ENV" = "production" ]; then
+            npx wrangler@4.29.0 pages deploy .vercel/output/static \
+                --project-name="${{ env.PAGES_PROJECT }}" \
+                --commit-dirty=true
+            else
+            npx wrangler@4.29.0 pages deploy .vercel/output/static \
+                --project-name="${{ env.PAGES_PROJECT }}" \
+                --branch="${BRANCH_NAME}" \
+                --commit-dirty=true
+            fi
+
