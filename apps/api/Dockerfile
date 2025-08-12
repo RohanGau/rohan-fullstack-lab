@@ -1,60 +1,53 @@
-# ----------- Base Stage: Setup Workspace -----------
-FROM node:18-alpine AS base
+# ---------- Base deps (install only what's needed) ----------
+FROM node:20-alpine AS base
 WORKDIR /app
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 
+# Use pnpm via Corepack
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 
-# Copy workspace config & install context
-COPY pnpm-workspace.yaml .
+# Copy ONLY the files needed to resolve & install deps for the API and types
+# (Do NOT copy the whole repo here)
+COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
-COPY apps/api/package.json apps/api/
-COPY packages/types/package.json packages/types/
+COPY apps/api/package.json apps/api/package.json
+COPY packages/types/package.json packages/types/package.json
 
-# Install all deps for the workspace
+# Install deps for the filtered workspaces only (api + types)
 RUN pnpm install --frozen-lockfile
 
-# ----------- Build Stage -----------
+# ---------- Build (compile types first, then API) ----------
 FROM base AS build
-COPY . .
+# Now bring in only the source for types and the API
+COPY packages/types/ packages/types/
+RUN pnpm -F @fullstack-lab/types build
 
-# Build shared types first
-RUN pnpm --filter @fullstack-lab/types build
+COPY apps/api/ apps/api/
+RUN pnpm -F node-backend build
 
-# Build backend
-RUN pnpm --filter node-backend build
-
-# ----------- Production Runtime Stage -----------
-FROM node:18-alpine AS runtime
+# ---------- Runtime (small, production) ----------
+FROM node:20-alpine AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 
-# Copy required config
-COPY pnpm-workspace.yaml .
+# Copy workspace manifests + lockfile for pruned install
+COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
-COPY apps/api/package.json apps/api/
-COPY packages/types/package.json packages/types/
+COPY apps/api/package.json apps/api/package.json
+COPY packages/types/package.json packages/types/package.json
 
-# Set build arg + env for env selection
-ARG NODE_ENV=production
-ENV NODE_ENV=$NODE_ENV
+# Install ONLY production deps for API (and its local workspaces)
+RUN pnpm install --prod --frozen-lockfile --filter node-backend...
 
-COPY apps/api/.env.${NODE_ENV} /app/apps/api/.env
+# Bring in compiled output (no sources from other apps)
+COPY --from=build /app/packages/types/dist packages/types/dist
+COPY --from=build /app/apps/api/dist apps/api/dist
 
-# Install only production deps for backend
-RUN pnpm install --prod --filter node-backend...
-
-# Copy built app from build stage
-COPY --from=build /app/apps/api/dist ./apps/api/dist
-
-# Copy node_modules (symlinked workspace)
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy env file (optional)
-# COPY apps/api/.env ./apps/api/.env
-
-# Set working directory to compiled code
 WORKDIR /app/apps/api
-
 EXPOSE 5050
 CMD ["node", "dist/index.js"]

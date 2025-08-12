@@ -1,4 +1,33 @@
-node_modules
-dist
+# Ignore everything by default
+**
+
+# Allow essential workspace files
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!package.json
+
+# Allow workspace source folders
+!apps/
+!apps/api/
+!packages/
+!packages/types/
+
+# Ignore build artifacts and node_modules in apps/api
+apps/api/node_modules
+apps/api/dist
+apps/api/.env*
+apps/api/.next
+
+# Ignore dependencies and build output in packages/types
+packages/types/node_modules
+packages/types/dist
+
+# Always ignore common unwanted files/folders globally
 .git
-*.log
+.gitignore
+**/node_modules
+**/.turbo
+**/.next
+**/.cache
+**/dist
+**/.DS_Store
