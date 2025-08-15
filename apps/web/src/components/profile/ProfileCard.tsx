@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 import { SocialLinks } from '../custom/SocialLinks';
 import { CONTACTS } from '@/lib/constant';
 import { IProfileDto } from '@fullstack-lab/types';
+import { ResumeActions } from './ResumeAction';
+import { resume } from '@/lib/constant';
 
 export function ProfileCard({ user }: { user: IProfileDto }) {
   return (
@@ -23,12 +24,7 @@ export function ProfileCard({ user }: { user: IProfileDto }) {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3 pt-6">
           <SocialLinks user={{ ...user, ...CONTACTS }} ariaLabel="Social links" />
-
-          <Button variant="outline" className="w-full sm:w-auto" asChild>
-            <a href="/resume.pdf" target="_blank" rel="noopener noreferrer">
-              Download Resume
-            </a>
-          </Button>
+          <ResumeActions url={resume} />
         </div>
       </div>
     </section>

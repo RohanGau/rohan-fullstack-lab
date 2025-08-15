@@ -1,4 +1,6 @@
 export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://rohan-backend-api.fly.dev';
+export const CDN_LINK = process.env.NEXT_PUBLIC_CDN_URL;
+
 export const API = {
   PROFILE: '/api/profiles',
   PROJECTS: '/api/projects',
@@ -22,4 +24,5 @@ export const navItems = [
 export const revalidate = 3600;
 export const siteUrl = 'https://rohangautam.dev';
 
-export const logoUrl = "https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/mylogo-7c0bc3bd.png?cb=1754842683033";
+export const logoUrl = `${CDN_LINK}/uploads/2025/08/10/mylogo-7c0bc3bd.png?cb=1754842683033`;
+export const resume = `${CDN_LINK}/uploads/2025/08/12/rohan_kumar_sde_2025-99b12fa8.pdf?cb=1755035421315`;
