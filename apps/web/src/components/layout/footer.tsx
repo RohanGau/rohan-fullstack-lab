@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { CONTACTS } from '@/lib/constant';
 import { useProfileStore } from '@/lib/store';
 import { SocialLinks } from '../custom/SocialLinks';
+import { MapPin } from 'lucide-react';
+import { FooterMap } from '../custom/FooterMap';
 
 export function Footer() {
   const { profile } = useProfileStore();
@@ -22,6 +24,12 @@ export function Footer() {
             <p className="mt-2 text-sm text-muted-foreground">
               Senior Software Engineer. Building clean, scalable web experiences.
             </p>
+            {user?.location && (
+              <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" aria-hidden="true" />
+                <span>{user.location}</span>
+              </div>
+            )}
             <div className="mt-4">
               <SocialLinks user={{ ...user, ...CONTACTS }} ariaLabel="Social links" />
             </div>
@@ -62,6 +70,7 @@ export function Footer() {
         </div>
       </div>
 
+      <FooterMap location={user?.location} zoom={13} />
       <Separator className="opacity-50" />
 
       <div className="mx-auto max-w-5xl px-4 py-6 text-center text-xs text-muted-foreground">
