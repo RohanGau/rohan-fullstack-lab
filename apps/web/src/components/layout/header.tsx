@@ -8,8 +8,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { isActive } from '@/lib/utils';
-import { navItems } from '@/lib/constant';
+import { logoUrl, navItems } from '@/lib/constant';
 import Image from 'next/image';
+import { ThemeToggle } from '../theme/theme-toggle';
 
 export function Header() {
   const pathname = usePathname();
@@ -31,12 +32,12 @@ export function Header() {
             aria-label="Rohan Kumar — Home"
           >
             <Image
-              src="https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/mylogo-7c0bc3bd.png?cb=1754842683033"
+              src={logoUrl}
               alt="Rohan Kumar logo"
-              width={180}
-              height={40}
+              width={58}
+              height={55}
               priority
-              className="h-8 w-auto md:h-10"
+              className="h-12 w-auto md:h-12 rounded-[28px]"
             />
             <span className="sr-only">Rohan Kumar</span>
           </Link>
@@ -68,10 +69,12 @@ export function Header() {
             <Button asChild className="ml-2 rounded-full">
               <Link href="/contact">Contact</Link>
             </Button>
+            <ThemeToggle />
           </nav>
 
           {/* Mobile */}
           <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
             <Button asChild size="sm" className="rounded-full">
               <Link href="/contact">Contact</Link>
             </Button>
@@ -85,7 +88,7 @@ export function Header() {
                 <SheetHeader>
                   <SheetTitle className="text-left">Navigation</SheetTitle>
                 </SheetHeader>
-                <div className="mt-4 flex flex-col gap-1">
+                <div className="flex flex-col gap-1">
                   {[...navItems, { label: 'Contact', href: '/contact' }].map(({ label, href }) => {
                     const active = isActive(pathname, href);
                     return (
@@ -94,7 +97,7 @@ export function Header() {
                         href={href}
                         aria-current={active ? 'page' : undefined}
                         className={cn(
-                          'rounded-lg px-3 py-2 text-base outline-none transition-colors',
+                          'rounded-lg mx-2 px-3 py-2 text-base outline-none transition-colors',
                           active
                             ? 'bg-muted text-foreground'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground'

@@ -20,3 +20,6 @@ export const navItems = [
 ];
 
 export const revalidate = 3600;
+export const siteUrl = 'https://rohangautam.dev';
+
+export const logoUrl = "https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/mylogo-7c0bc3bd.png?cb=1754842683033";

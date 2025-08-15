@@ -4,6 +4,8 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
 import { Inter } from 'next/font/google';
+import { logoUrl, siteUrl } from '@/lib/constant';
+import { ThemeProvider } from '@/components/theme/theme-provider';
 import './globals.css';
 
 const inter = Inter({
@@ -22,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://rohangautam.dev'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Rohan Kumar – Senior Frontend Engineer',
     template: '%s · Rohan Kumar',
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
     'Performance',
     'Architecture',
   ],
-  authors: [{ name: 'Rohan Kumar', url: 'https://rohangautam.dev' }],
+  authors: [{ name: 'Rohan Kumar', url: siteUrl }],
   creator: 'Rohan Kumar',
   publisher: 'Rohan Kumar',
   alternates: {
@@ -46,7 +48,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    url: 'https://rohangautam.dev',
+    url: siteUrl,
     siteName: 'Rohan Kumar',
     locale: 'en_US',
     title: 'Rohan Kumar – Senior Frontend Engineer',
@@ -78,11 +80,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico' },
+      { url: '/icon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-48.png', sizes: '48x48', type: 'image/png' },
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    apple: [{ url: '/icon-192.png', sizes: '180x180' }],
   },
   category: 'technology',
   // Optional: if you have a web app manifest
@@ -90,19 +96,19 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const siteUrl = 'https://rohangautam.dev';
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn('min-h-screen flex flex-col bg-background text-foreground', inter.className)}
       >
-        <Header />
-        <main id="content" className="flex-1 container max-w-5xl px-4 py-10 mx-auto">
-          {children}
-        </main>
-        <Footer />
-
+        <ThemeProvider>
+          <Header />
+            <main id="content" className="flex-1 container max-w-5xl px-4 py-10 mx-auto">
+              {children}
+            </main>
+          <Footer />
+        </ThemeProvider>
         {/* JSON-LD: Person */}
         <Script
           id="ld-person"
@@ -113,6 +119,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               '@type': 'Person',
               name: 'Rohan Kumar',
               url: siteUrl,
+              logo: logoUrl,
               jobTitle: 'Senior Software Engineer (Frontend)',
               sameAs: ['https://github.com/rohan', 'https://www.linkedin.com/in/rohan-gautam'],
             }),
@@ -127,6 +134,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               url: siteUrl,
+              logo: logoUrl,
               name: 'Rohan Kumar Portfolio',
               potentialAction: {
                 '@type': 'SearchAction',
