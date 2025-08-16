@@ -2,7 +2,7 @@ name: Web Deploy (Cloudflare Pages)
 
 on:
   push:
-    branches: [main, develop]
+    branches: [develop]
     paths:
       - "apps/web/**"
       - "packages/**"
