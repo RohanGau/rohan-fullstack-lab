@@ -1,7 +1,12 @@
 name = "rohan-fullstack-lab"
 compatibility_date = "2024-10-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 pages_build_output_dir = ".vercel/output/static"
+
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "fullstack-lab"
+preview_bucket_name = "fullstack-lab"
 
 [vars]
 API_BASE_URL = "https://rohan-backend-api.fly.dev"

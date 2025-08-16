@@ -12,8 +12,6 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const runtime = 'edge'; 
-
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#0ea5e9' },
