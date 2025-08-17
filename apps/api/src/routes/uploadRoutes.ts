@@ -1,5 +1,6 @@
 import Express from 'express';
 import { deleteAsset, generateUploadUrl, validateDeleteAsset, validateGenerateUploadUrl } from '../controllers/uploadController';
+import { requireAdmin } from '../middleware/requireAuth';
 
 const router = Express.Router();
 
@@ -49,7 +50,7 @@ const router = Express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/generate-upload-url', validateGenerateUploadUrl, generateUploadUrl);
+router.post('/generate-upload-url', requireAdmin, validateGenerateUploadUrl, generateUploadUrl);
 
 /**
  * @openapi
@@ -76,6 +77,6 @@ router.post('/generate-upload-url', validateGenerateUploadUrl, generateUploadUrl
  *       500:
  *         description: Server error
  */
-router.delete('/', validateDeleteAsset, deleteAsset);
+router.delete('/', requireAdmin, validateDeleteAsset, deleteAsset);
 
 export default router;

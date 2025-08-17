@@ -4,6 +4,7 @@ declare global {
   namespace Express {
     interface Request {
       validatedBody?: any;
+      user?: Partial<IUserDb> & { id: string };
     }
   }
 }

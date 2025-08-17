@@ -8,8 +8,84 @@ import {
   validateBlogUpdate,
   validateBlogCreate,
 } from '../controllers/blogController';
+import { requireAdmin } from '../middleware/requireAuth';
 
 const router = Express.Router();
+
+/**
+ * @openapi
+ * /api/blogs:
+ *   get:
+ *     summary: List blog posts (filter/sort/paginate)
+ *     description: >
+ *       Supports react-admin style query params:
+ *
+ *       - **filter**: JSON string, e.g. `{"q":"text","slug":"my-slug","status":"published","isFeatured":true,"tags":["nodejs"]}`  
+ *       - **sort**: JSON tuple, e.g. `["publishedAt","DESC"]` (allowed fields: createdAt, updatedAt, publishedAt, title)  
+ *       - **range**: JSON pair `[start,end]` (0-based, inclusive) used for pagination. Response includes `X-Total-Count`.
+ *
+ *       To fetch by **slug**, use the list endpoint with filter:
+ *       `GET /api/blogs?filter={"slug":"my-slug","status":"published"}&range=[0,0]`
+ *     tags: [Blogs]
+ *     parameters:
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *           type: string
+ *         description: JSON string with fields like `q`, `slug`, `status`, `isFeatured`, `tags`, `author`
+ *         example: '{"status":"published","isFeatured":true,"tags":["nodejs"]}'
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *         description: JSON array `[field, order]` where order is `ASC` or `DESC`
+ *         example: '["publishedAt","DESC"]'
+ *       - in: query
+ *         name: range
+ *         schema:
+ *           type: string
+ *         description: JSON array `[start,end]` for pagination (0-based)
+ *         example: '[0, 9]'
+ *     responses:
+ *       200:
+ *         description: List of blog posts
+ *         headers:
+ *           X-Total-Count:
+ *             description: Total number of items matching the filter
+ *             schema:
+ *               type: integer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Blog'
+ */
+router.get('/', getAllBlogs);
+
+/**
+ * @openapi
+ * /api/blogs/{id}:
+ *   get:
+ *     summary: Get blog post by ID
+ *     tags: [Blogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: Blog post ID (MongoDB ObjectId)
+ *     responses:
+ *       200:
+ *         description: Blog fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Blog'
+ *       404:
+ *         description: Blog not found
+ */
+router.get('/:id', getBlogById);
 
 /**
  * @openapi
@@ -192,58 +268,7 @@ const router = Express.Router();
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  */
-router.post('/', validateBlogCreate, createBlog);
-
-/**
- * @openapi
- * /api/blogs:
- *   get:
- *     summary: List blog posts (filter/sort/paginate)
- *     description: >
- *       Supports react-admin style query params:
- *
- *       - **filter**: JSON string, e.g. `{"q":"text","slug":"my-slug","status":"published","isFeatured":true,"tags":["nodejs"]}`  
- *       - **sort**: JSON tuple, e.g. `["publishedAt","DESC"]` (allowed fields: createdAt, updatedAt, publishedAt, title)  
- *       - **range**: JSON pair `[start,end]` (0-based, inclusive) used for pagination. Response includes `X-Total-Count`.
- *
- *       To fetch by **slug**, use the list endpoint with filter:
- *       `GET /api/blogs?filter={"slug":"my-slug","status":"published"}&range=[0,0]`
- *     tags: [Blogs]
- *     parameters:
- *       - in: query
- *         name: filter
- *         schema:
- *           type: string
- *         description: JSON string with fields like `q`, `slug`, `status`, `isFeatured`, `tags`, `author`
- *         example: '{"status":"published","isFeatured":true,"tags":["nodejs"]}'
- *       - in: query
- *         name: sort
- *         schema:
- *           type: string
- *         description: JSON array `[field, order]` where order is `ASC` or `DESC`
- *         example: '["publishedAt","DESC"]'
- *       - in: query
- *         name: range
- *         schema:
- *           type: string
- *         description: JSON array `[start,end]` for pagination (0-based)
- *         example: '[0, 9]'
- *     responses:
- *       200:
- *         description: List of blog posts
- *         headers:
- *           X-Total-Count:
- *             description: Total number of items matching the filter
- *             schema:
- *               type: integer
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Blog'
- */
-router.get('/', getAllBlogs);
+router.post('/', requireAdmin, validateBlogCreate, createBlog);
 
 /**
  * @openapi
@@ -305,7 +330,7 @@ router.get('/', getAllBlogs);
  *       404:
  *         description: Blog not found
  */
-router.put('/:id', validateBlogUpdate, updateBlog);
+router.put('/:id', requireAdmin, validateBlogUpdate, updateBlog);
 
 /**
  * @openapi
@@ -325,30 +350,6 @@ router.put('/:id', validateBlogUpdate, updateBlog);
  *       404:
  *         description: Blog not found
  */
-router.delete('/:id', deleteBlog);
-
-/**
- * @openapi
- * /api/blogs/{id}:
- *   get:
- *     summary: Get blog post by ID
- *     tags: [Blogs]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *         description: Blog post ID (MongoDB ObjectId)
- *     responses:
- *       200:
- *         description: Blog fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Blog'
- *       404:
- *         description: Blog not found
- */
-router.get('/:id', getBlogById);
+router.delete('/:id', requireAdmin, deleteBlog);
 
 export default router;

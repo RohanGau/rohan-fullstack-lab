@@ -1,4 +1,4 @@
-import { Admin, Resource, CustomRoutes } from 'react-admin';
+import { Admin, Resource, CustomRoutes, fetchUtils } from 'react-admin';
 import { Route } from 'react-router-dom';
 import simpleRestProvider from 'ra-data-simple-rest';
 
@@ -20,15 +20,45 @@ import ProjectShow from './pages/project/ProjectShow';
 import AssetUploadSection from './components/AssetUploadSection';
 
 import { CustomLayout } from './layout/CustomLayout';
+import { ADMIN_TOKEN_KEY } from './AuthDataProvider';
+
+import authProvider from './AuthDataProvider';
+import LoginPage from './login';
+
+const httpClient  = (url: string, options: any = {}) => {
+  const method = options.method ? options.method.toUpperCase() : 'GET';
+
+  if (!options.headers) {
+    options.headers = new Headers();
+  }
+
+  if (!(options.headers instanceof Headers)) {
+    options.headers = new Headers(options.headers);
+  }
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+    if (token) {
+      options.headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
+  
+  return fetchUtils.fetchJson(url, options);
+}
 
 // Replace with backend URL if deployed
 const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
-const dataProvider = simpleRestProvider(`${apiUrl}/api`);
+const dataProvider = simpleRestProvider(`${apiUrl}/api`, httpClient);
 
 
 function App() {
   return (
-    <Admin dataProvider={dataProvider} layout={CustomLayout}>
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider}
+      loginPage={LoginPage}
+      layout={CustomLayout}
+    >
       <CustomRoutes>
         <Route path="/assets" element={<AssetUploadSection apiUrl={apiUrl} />} />
       </CustomRoutes>

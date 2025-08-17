@@ -8,6 +8,7 @@ import {
   validateProjectCreate,
   validateProjectUpdate,
 } from '../controllers/projectController';
+import { requireAdmin } from '../middleware/requireAuth';
 
 const router = Express.Router();
 
@@ -145,7 +146,7 @@ const router = Express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/', validateProjectCreate, createProject);
+router.post('/', requireAdmin, validateProjectCreate, createProject);
 
 /**
  * @openapi
@@ -247,7 +248,7 @@ router.get('/:id', getProjectById);
  *       404:
  *         description: Project not found
  */
-router.put('/:id', validateProjectUpdate, updateProject);
+router.put('/:id', requireAdmin, validateProjectUpdate, updateProject);
 
 /**
  * @openapi
@@ -268,6 +269,6 @@ router.put('/:id', validateProjectUpdate, updateProject);
  *       404:
  *         description: Project not found
  */
-router.delete('/:id', deleteProject);
+router.delete('/:id', requireAdmin, deleteProject);
 
 export default router;

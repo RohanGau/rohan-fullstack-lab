@@ -5,6 +5,7 @@ import {
   getContacts,
   validateContactCreate,
 } from '../controllers/contactController';
+import { requireAdmin } from '../middleware/requireAuth';
 
 const router = express.Router();
 
@@ -141,6 +142,6 @@ router.get('/', getContacts);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', deleteContact);
+router.delete('/:id', requireAdmin, deleteContact);
 
 export default router;

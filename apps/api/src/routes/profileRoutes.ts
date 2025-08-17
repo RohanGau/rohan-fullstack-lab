@@ -8,6 +8,7 @@ import {
   validateProfileCreate,
   validateProfileUpdate,
 } from '../controllers/profileController';
+import { requireAdmin } from '../middleware/requireAuth';
 
 const router = Express.Router();
 
@@ -129,7 +130,7 @@ const router = Express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/', validateProfileCreate, createProfile);
+router.post('/', requireAdmin, validateProfileCreate, createProfile);
 
 /**
  * @openapi
@@ -223,7 +224,7 @@ router.get('/:id', getProfileById);
  *       404:
  *         description: Profile not found
  */
-router.put('/:id', validateProfileUpdate, updateProfile);
+router.put('/:id', requireAdmin, validateProfileUpdate, updateProfile);
 
 /**
  * @openapi
@@ -244,6 +245,6 @@ router.put('/:id', validateProfileUpdate, updateProfile);
  *       404:
  *         description: Profile not found
  */
-router.delete('/:id', deleteProfile);
+router.delete('/:id', requireAdmin, deleteProfile);
 
 export default router;
