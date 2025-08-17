@@ -80,13 +80,17 @@ export function makeGetByIdHandler<T>(opts: ByIdOptions<T>) {
 }
 
 export function makeCreateHandler<T>(opts: WriteOptions<T>) {
-  const { ns, model, normalize } = opts;
+  const { ns, model, normalize, afterCreate } = opts;
 
   return async function create(req: Request, res: Response) {
     try {
       const normalized = normalize(req.validatedBody);
       const doc = new model(normalized);
       const result = await doc.save();
+
+      if (typeof afterCreate === 'function') {
+        try { await afterCreate(result as any); } catch (e) {}
+      }
 
       await cache.bumpVersionNS(ns);
 
@@ -99,7 +103,7 @@ export function makeCreateHandler<T>(opts: WriteOptions<T>) {
 }
 
 export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
-  const { ns, model, allowedFields, normalize } = opts;
+  const { ns, model, allowedFields = [], normalize, afterUpdate } = opts;
 
   return async function update(req: Request, res: Response) {
     const { id } = req.params;
@@ -107,8 +111,7 @@ export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
       return res.status(404).json({ error: 'INVALID_ID' });
     }
     try {
-      // strip protected
-      for (const k of ['createdAt', 'updatedAt', '__v', 'id']) delete (req.body ?? {})[k];
+      for (const k of ['createdAt', 'updatedAt', '__v', 'id', '_id']) delete (req.body ?? {})[k];
       req.validatedBody = req.validatedBody ?? req.body;
 
       const normalized = normalize(req.validatedBody);
@@ -122,6 +125,10 @@ export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
       );
       if (!updated) return res.status(404).json({ error: 'NOT_FOUND' });
 
+      if (typeof afterUpdate === 'function') {
+        try { await afterUpdate(updated); } catch (e) { /* log but don’t crash */ }
+      }
+
       await cache.bumpVersionNS(ns);
 
       res.status(200).json(updated.toJSON());
@@ -132,8 +139,8 @@ export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
   };
 }
 
-export function makeDeleteHandler<T>(opts: { ns: string; model: Model<T> }) {
-  const { ns, model } = opts;
+export function makeDeleteHandler<T>(opts: { ns: string; model: Model<T>; afterDelete?: (doc: T) => Promise<void> }) {
+  const { ns, model, afterDelete } = opts;
 
   return async function remove(req: Request, res: Response) {
     const { id } = req.params;
@@ -143,6 +150,10 @@ export function makeDeleteHandler<T>(opts: { ns: string; model: Model<T> }) {
     try {
       const deleted = await model.findByIdAndDelete(id);
       if (!deleted) return res.status(404).json({ error: 'NOT_FOUND' });
+
+      if (typeof afterDelete === 'function') {
+        try { await afterDelete(deleted); } catch (e) { /* log but don’t crash */ }
+      }
 
       await cache.bumpVersionNS(ns);
 

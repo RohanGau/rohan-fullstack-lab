@@ -119,7 +119,7 @@ router.post('/', validateContactCreate, createContact);
  *       500:
  *         description: Server error
  */
-router.get('/', getContacts);
+router.get('/', requireAdmin, getContacts);
 
 /**
  * @swagger

@@ -1,0 +1,62 @@
+# Node and npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example   # allow safely publishing an example env file
+.env.local
+
+# Logs and runtime
+logs/
+*.log
+*.log.*
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# TypeScript
+dist/
+build/
+lib/
+coverage/
+tsconfig.tsbuildinfo
+
+# OS system files
+.DS_Store
+Thumbs.db
+
+# Editor and IDE config
+.vscode/
+.idea/
+*.swp
+
+# Test & coverage
+coverage/
+.nyc_output/
+test-output/
+tmp/
+temp/
+
+# Miscellaneous
+*.tgz
+*.bak
+*.tmp
+*.orig
+*.swp
+
+# Optional: Ignore swagger generated files if generated at build
+swagger.json
+swagger.yaml
+
+# Local custom scripts or playgrounds
+scripts/local/
+playground/
+
+# VSCode launch config (optional)
+.vscode/launch.json

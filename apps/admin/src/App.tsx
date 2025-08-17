@@ -19,6 +19,11 @@ import ProjectEdit from './pages/project/ProjectEdit';
 import ProjectShow from './pages/project/ProjectShow';
 import AssetUploadSection from './components/AssetUploadSection';
 
+import SlotList from './pages/slot/SlotList';
+import SlotEdit from './pages/slot/SlotEdit';
+import SlotShow from './pages/slot/SlotShow';
+
+
 import { CustomLayout } from './layout/CustomLayout';
 import { ADMIN_TOKEN_KEY } from './AuthDataProvider';
 
@@ -26,25 +31,18 @@ import authProvider from './AuthDataProvider';
 import LoginPage from './login';
 
 const httpClient  = (url: string, options: any = {}) => {
-  const method = options.method ? options.method.toUpperCase() : 'GET';
-
   if (!options.headers) {
     options.headers = new Headers();
   }
-
   if (!(options.headers instanceof Headers)) {
     options.headers = new Headers(options.headers);
   }
-
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
-    if (token) {
-      options.headers.set('Authorization', `Bearer ${token}`);
-    }
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  if (token) {
+    options.headers.set('Authorization', `Bearer ${token}`);
   }
-  
   return fetchUtils.fetchJson(url, options);
-}
+};
 
 // Replace with backend URL if deployed
 const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
@@ -83,6 +81,12 @@ function App() {
         create={ProjectCreate}
         edit={ProjectEdit}
         show={ProjectShow}
+      />
+      <Resource
+        name="slots"
+        list={SlotList}
+        edit={SlotEdit}
+        show={SlotShow}
       />
     </Admin>
   );

@@ -2,6 +2,7 @@ import { ErrorRequestHandler } from '../types/express/error';
 import { Request, Response, NextFunction } from 'express';
 import logger from './logger'; // Adjust the import path as needed
 import { ERROR_MESSAGES } from './constant';
+import { BuildQuery } from '../types/controller';
 
 export const jsonErrorHandler: ErrorRequestHandler = (err, _, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -47,6 +48,29 @@ export function normalizeBody(body: any) {
 
   return out;
 }
+
+export function normalizeSlotBody(body: any) {
+  const out = { ...body };
+
+  if (typeof out.email === 'string') {
+    out.email = out.email.trim().toLowerCase();
+  }
+
+  if (out.date) {
+    out.date = new Date(out.date);
+  }
+  if ('duration' in out) {
+    let duration = Number(out.duration);
+    if (!duration || duration < 15 || duration > 120) duration = 30; // default
+    out.duration = duration;
+  }
+  if (typeof out.message !== 'string') delete out.message;
+  else out.message = out.message.trim();
+  if (out.status !== 'cancelled') out.status = 'booked';
+
+  return out;
+}
+
 
 export function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== 'string') return fallback;
@@ -98,3 +122,20 @@ export function buildProjectQuery(filter: any = {}) {
 
   return q;
 }
+
+export const buildSlotQuery: BuildQuery<any> = (raw) => {
+  const query: Record<string, any> = {};
+
+  // Filter by date range
+  if (raw.date_gte || raw.date_lte) {
+    query.date = {};
+    if (raw.date_gte) query.date.$gte = new Date(raw.date_gte);
+    if (raw.date_lte) query.date.$lte = new Date(raw.date_lte);
+  }
+  // Filter by email
+  if (raw.email) query.email = raw.email;
+  // Filter by status
+  if (raw.status) query.status = raw.status;
+  // Add any additional filters as needed
+  return query;
+};

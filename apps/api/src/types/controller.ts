@@ -1,4 +1,4 @@
-import type { Model, FilterQuery } from 'mongoose';
+import type { Model, FilterQuery, Document } from 'mongoose';
 
 export type BuildQuery<T> = (raw: Record<string, any>) => FilterQuery<T>;
 type Transform<T>  = (doc: any) => any;
@@ -22,6 +22,9 @@ export type ByIdOptions<T> = {
 export type WriteOptions<T> = {
   ns: string;
   model: Model<T>;
-  allowedFields: string[];
+  allowedFields?: string[];
   normalize: (body: any) => any;
+  afterCreate?: (doc: Document<unknown, {}, T> & T) => Promise<void>;
+  afterUpdate?: (doc: Document<unknown, {}, T> & T) => Promise<void>;
+  afterDelete?: (doc: Document<unknown, {}, T> & T) => Promise<void>;
 };
