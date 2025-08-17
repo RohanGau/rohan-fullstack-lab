@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Rohan Kumar Blog</title>
+        <link>https://rohangautam.dev/</link>
+        <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
+        <lastBuildDate>Sun, 17 Aug 2025 10:56:17 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>en</language>
+        <item>
+            <title><![CDATA[⚡️ Virtualization in Frontend Development (with React & @tanstack/react-virtual)]]></title>
+            <link>https://rohangautam.dev/blog/688aacef0ac295c7a625bd5c</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/688aacef0ac295c7a625bd5c</guid>
+            <pubDate>Wed, 03 Jul 2024 04:14:00 GMT</pubDate>
+            <description><![CDATA[Welcome to the **Frontend System Design Essentials** series — where we dive into foundational concepts that help you build **scalable**, **performant**, and **m]]></description>
+        </item>
+        <item>
+            <title><![CDATA[🧵 Building a Recursive Nested Comment System in React (with Context & Hooks)]]></title>
+            <link>https://rohangautam.dev/blog/688aa4350d39fb46e58cf748</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/688aa4350d39fb46e58cf748</guid>
+            <pubDate>Tue, 30 Jan 2024 04:22:00 GMT</pubDate>
+            <description><![CDATA[🎯 A step-by-step engineering blog based on my personal comment system:  
+[View Demo on CodeSandbox](#)
+
+---
+
+## 👋 The Problem
+
+While working on my blog archit]]></description>
+        </item>
+    </channel>
+</rss>

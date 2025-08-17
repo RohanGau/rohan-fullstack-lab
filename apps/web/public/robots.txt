@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://rohangautam.dev
+
+# Sitemaps
+Sitemap: https://rohangautam.dev/sitemap.xml
