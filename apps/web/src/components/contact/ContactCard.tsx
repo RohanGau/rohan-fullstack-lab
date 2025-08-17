@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Turnstile from 'react-turnstile';
 import { useContactSubmit } from '@/hooks/useContactSubmit';
 import { TURNSTILE_SITE_KEY } from '@/lib/constant';
+import { useTurnstileResponsive } from '@/hooks/useTurnstileResponsive';
 
 function ContactCard() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -22,6 +23,8 @@ function ContactCard() {
   };
 
   const { submitContact, submitting, success, globalError, fieldErrors } = useContactSubmit();
+
+  const { ref: turnstileWrapRef, size: turnstileSize } = useTurnstileResponsive();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -101,13 +104,16 @@ function ContactCard() {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <Turnstile
-                  key={captchaKey} // ← this resets the widget on each submit/error
-                  sitekey={TURNSTILE_SITE_KEY}
-                  onVerify={(token) => setCaptchaToken(token)}
-                  onExpire={() => setCaptchaToken(null)}
-                  onError={() => setCaptchaToken(null)}
-                />
+                <div ref={turnstileWrapRef} className="w-full">
+                  <Turnstile
+                    key={captchaKey}
+                    sitekey={TURNSTILE_SITE_KEY}
+                    size={turnstileSize}
+                    onVerify={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                  />
+                </div>
               )}
             </div>
 

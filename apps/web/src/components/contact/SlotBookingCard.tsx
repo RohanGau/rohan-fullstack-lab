@@ -1,7 +1,7 @@
 'use client';
 
 import { format, startOfDay, isBefore } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar'; // shadcn/ui calendar
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Check, Loader2 } from 'lucide-react';
 import { useSlotBooking } from '@/hooks/useSlotBooking';
 import Turnstile from 'react-turnstile';
 import { TURNSTILE_SITE_KEY } from '@/lib/constant';
+import { useTurnstileResponsive } from '@/hooks/useTurnstileResponsive';
 
 function SlotBookingCard() {
   const {
@@ -37,6 +38,8 @@ function SlotBookingCard() {
     success,
     error,
   } = useSlotBooking();
+
+  const { ref: turnstileWrapRef, size: turnstileSize } = useTurnstileResponsive();
 
   return (
     <Card>
@@ -134,13 +137,16 @@ function SlotBookingCard() {
 
                 <div className="space-y-2">
                   <Label>Verification</Label>
-                  <Turnstile
-                    sitekey={TURNSTILE_SITE_KEY}
-                    onVerify={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={() => setCaptchaToken(null)}
-                    retry="never"
-                  />
+                  <div ref={turnstileWrapRef} className="w-full">
+                    <Turnstile
+                      sitekey={TURNSTILE_SITE_KEY}
+                      size={turnstileSize}
+                      onVerify={(token) => setCaptchaToken(token)}
+                      onExpire={() => setCaptchaToken(null)}
+                      onError={() => setCaptchaToken(null)}
+                      retry="never"
+                    />
+                  </div>
                 </div>
 
                 <Button
