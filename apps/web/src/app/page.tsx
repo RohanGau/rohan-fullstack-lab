@@ -21,6 +21,14 @@ const BlogsPreview = withClientFallback(() => import('@/components/custom/BlogsP
 });
 
 export default function HomeContent() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  // Log them for debugging
+  console.log("API URL:", apiUrl);
+  console.log("CDN URL:", cdnUrl);
+  console.log("SITE URL:", siteUrl);
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-16">
       <ProfileSection />

@@ -1,4 +1,4 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://rohan-backend-api.fly.dev';
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export const CDN_LINK = process.env.NEXT_PUBLIC_CDN_URL;
 
 export const API = {
