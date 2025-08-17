@@ -1,22 +1,25 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Turnstile from "react-turnstile";
-import { useContactSubmit } from "@/hooks/useContactSubmit";
-import { TURNSTILE_SITE_KEY } from "@/lib/constant";
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Turnstile from 'react-turnstile';
+import { useContactSubmit } from '@/hooks/useContactSubmit';
+import { TURNSTILE_SITE_KEY } from '@/lib/constant';
 
 function ContactCard() {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const [captchaKey, setCaptchaKey] = useState(0);
-  const resetCaptcha = () => { setCaptchaToken(null); setCaptchaKey(k => k + 1); };
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    setCaptchaKey((k) => k + 1);
+  };
 
   const { submitContact, submitting, success, globalError, fieldErrors } = useContactSubmit();
 
@@ -50,18 +53,42 @@ function ContactCard() {
             )}
 
             <div className="space-y-1">
-              <Input name="name" type="text" placeholder="Your Name" required value={formData.name} onChange={handleChange} />
+              <Input
+                name="name"
+                type="text"
+                placeholder="Your Name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+              />
               {fieldErrors.name && <p className="text-sm text-destructive">{fieldErrors.name}</p>}
             </div>
 
             <div className="space-y-1">
-              <Input name="email" type="email" placeholder="Your Email" required value={formData.email} onChange={handleChange} />
+              <Input
+                name="email"
+                type="email"
+                placeholder="Your Email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+              />
               {fieldErrors.email && <p className="text-sm text-destructive">{fieldErrors.email}</p>}
             </div>
 
             <div className="space-y-1">
-              <Textarea name="message" placeholder="Your Message" rows={6}  minLength={10} required value={formData.message} onChange={handleChange} />
-              {fieldErrors.message && <p className="text-sm text-destructive">{fieldErrors.message}</p>}
+              <Textarea
+                name="message"
+                placeholder="Your Message"
+                rows={6}
+                minLength={10}
+                required
+                value={formData.message}
+                onChange={handleChange}
+              />
+              {fieldErrors.message && (
+                <p className="text-sm text-destructive">{fieldErrors.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -69,11 +96,13 @@ function ContactCard() {
               {!TURNSTILE_SITE_KEY ? (
                 <Alert variant="destructive">
                   <AlertTitle>Captcha not configured</AlertTitle>
-                  <AlertDescription>Set NEXT_PUBLIC_TURNSTILE_SITE_KEY and restart the dev server.</AlertDescription>
+                  <AlertDescription>
+                    Set NEXT_PUBLIC_TURNSTILE_SITE_KEY and restart the dev server.
+                  </AlertDescription>
                 </Alert>
               ) : (
                 <Turnstile
-                  key={captchaKey}                 // ← this resets the widget on each submit/error
+                  key={captchaKey} // ← this resets the widget on each submit/error
                   sitekey={TURNSTILE_SITE_KEY}
                   onVerify={(token) => setCaptchaToken(token)}
                   onExpire={() => setCaptchaToken(null)}
@@ -83,7 +112,7 @@ function ContactCard() {
             </div>
 
             <Button type="submit" className="w-full" disabled={submitting || !captchaToken}>
-              {submitting ? "Sending..." : "Send Message"}
+              {submitting ? 'Sending...' : 'Send Message'}
             </Button>
           </form>
         )}

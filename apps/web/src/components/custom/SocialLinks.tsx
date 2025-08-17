@@ -1,17 +1,12 @@
-import * as React from "react";
-import Link from "next/link";
-import { useEffectiveTheme } from "@/hooks/useEffectiveTheme";
-import {
-  siGmail,
-  siGithub,
-  siTelegram,
-  siDiscord,
-} from "simple-icons/icons";
-import { Linkedin } from "lucide-react";
+import * as React from 'react';
+import Link from 'next/link';
+import { useEffectiveTheme } from '@/hooks/useEffectiveTheme';
+import { siGmail, siGithub, siTelegram, siDiscord } from 'simple-icons/icons';
+import { Linkedin } from 'lucide-react';
 
 function IconSVG({
   path,
-  className = "h-5 w-5",
+  className = 'h-5 w-5',
   fill,
 }: {
   path: string;
@@ -20,32 +15,28 @@ function IconSVG({
 }) {
   return (
     <svg role="img" viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d={path} fill={fill ?? "currentColor"} />
+      <path d={path} fill={fill ?? 'currentColor'} />
     </svg>
   );
 }
 
 export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string }) {
   const theme = useEffectiveTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   return (
     <div className="flex gap-4 justify-center sm:justify-start" aria-label={ariaLabel}>
-      {user.gmail && (
-        isDark ? (
-          <a
-            href={`mailto:${user.gmail}`}
-            className="text-muted-foreground hover:text-[#EA4335]"
-          >
+      {user.gmail &&
+        (isDark ? (
+          <a href={`mailto:${user.gmail}`} className="text-muted-foreground hover:text-[#EA4335]">
             <IconSVG path={siGmail.path} />
           </a>
         ) : (
           <a href={`mailto:${user.gmail}`} className="text-muted-foreground hover:text-foreground">
             <IconSVG path={siGmail.path} fill="#D14836" />
           </a>
-        )
-      )}
-       {user.linkedinUrl && (
+        ))}
+      {user.linkedinUrl && (
         <a
           href={user.linkedinUrl}
           target="_blank"
@@ -56,8 +47,8 @@ export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string 
           <Linkedin className="w-5 h-5" />
         </a>
       )}
-      {user.githubUrl && (
-        isDark ? (
+      {user.githubUrl &&
+        (isDark ? (
           <Link
             href={user.githubUrl}
             target="_blank"
@@ -77,10 +68,9 @@ export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string 
           >
             <IconSVG path={siGithub.path} fill={`#${siGithub.hex}`} />
           </Link>
-        )
-      )}
-      {user.telegramUrl && (
-        isDark ? (
+        ))}
+      {user.telegramUrl &&
+        (isDark ? (
           <Link
             href={user.telegramUrl}
             target="_blank"
@@ -100,10 +90,9 @@ export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string 
           >
             <IconSVG path={siTelegram.path} fill={`#${siTelegram.hex}`} />
           </Link>
-        )
-      )}
-      {user.discordUrl && (
-        isDark ? (
+        ))}
+      {user.discordUrl &&
+        (isDark ? (
           <Link
             href={user.discordUrl}
             target="_blank"
@@ -123,8 +112,7 @@ export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string 
           >
             <IconSVG path={siDiscord.path} fill={`#${siDiscord.hex}`} />
           </Link>
-        )
-      )}
+        ))}
     </div>
   );
 }

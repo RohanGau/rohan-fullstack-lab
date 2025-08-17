@@ -1,5 +1,5 @@
 import { ProjectsQueryRequired } from '@/types/project';
-import { BlogsQueryRequired  } from './blog';
+import { BlogsQueryRequired } from './blog';
 
 export type SortOrder = 'ASC' | 'DESC';
 export type SortTuple<F extends string> = [F, SortOrder];
@@ -9,7 +9,6 @@ export type BaseQueryRequired<F extends string> = {
   perPage: number;
   sort: SortTuple<F>;
 };
-
 
 export type BlogFilter = {
   q?: string;

@@ -17,10 +17,10 @@ export function useContactSubmit() {
     setFieldErrors({});
     setGlobalError(null);
     try {
-      await apiFetch("/api/contact", {
-        method: "POST",
+      await apiFetch('/api/contact', {
+        method: 'POST',
         body: JSON.stringify({ ...data, captchaToken }),
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
       setSuccess(true);
       return true;

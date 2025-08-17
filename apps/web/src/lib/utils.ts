@@ -116,7 +116,12 @@ export function isActive(pathname: string, href: string) {
 
 export function getErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
-  if (typeof err === 'object' && err && 'message' in err && typeof (err as any).message === 'string') {
+  if (
+    typeof err === 'object' &&
+    err &&
+    'message' in err &&
+    typeof (err as any).message === 'string'
+  ) {
     return (err as { message: string }).message;
   }
   if (typeof err === 'object' && err && 'msg' in err && typeof (err as any).msg === 'string') {
@@ -128,7 +133,10 @@ export function getErrorMessage(err: unknown): string {
 export function isAbort(err: unknown): boolean | null {
   return (
     (err instanceof Error && err.name === 'AbortError') ||
-    (typeof err === 'object' && err && 'name' in err && (err as { name?: string }).name === 'AbortError')
+    (typeof err === 'object' &&
+      err &&
+      'name' in err &&
+      (err as { name?: string }).name === 'AbortError')
   );
 }
 
@@ -141,8 +149,11 @@ export const csvToArr = (s?: string | null) =>
         .filter(Boolean)
     : [];
 
-export function extractApiErrors(err: any): { fieldErrors: Record<string,string>; global: string } {
-  const fe: Record<string,string> = {};
+export function extractApiErrors(err: any): {
+  fieldErrors: Record<string, string>;
+  global: string;
+} {
+  const fe: Record<string, string> = {};
   const data = err?.response?.data ?? err;
   const arr = data?.error || data?.errors;
   if (Array.isArray(arr)) {
@@ -150,6 +161,6 @@ export function extractApiErrors(err: any): { fieldErrors: Record<string,string>
       if (e?.field && e?.message) fe[e.field] = String(e.message);
     });
   }
-  const msg = data?.msg || data?.message || err?.message || "Something went wrong";
+  const msg = data?.msg || data?.message || err?.message || 'Something went wrong';
   return { fieldErrors: fe, global: msg };
 }

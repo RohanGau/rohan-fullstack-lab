@@ -13,8 +13,8 @@ function BrandLink({ href, icon, label, light, dark, className }: BrandLinkProps
   const lightHex = (light ?? `#${icon.hex}`) as `#${string}`;
   const darkHex = (dark ?? lightHex) as `#${string}`;
   const style = {
-    ["--brand" as any]: lightHex,
-    ["--brand-dark" as any]: darkHex,
+    ['--brand' as any]: lightHex,
+    ['--brand-dark' as any]: darkHex,
   } as React.CSSProperties;
 
   return (
@@ -25,7 +25,7 @@ function BrandLink({ href, icon, label, light, dark, className }: BrandLinkProps
       aria-label={label}
       style={style}
       className={cn(
-        "text-muted-foreground transition-colors hover:text-[var(--brand)] dark:hover:text-[var(--brand-dark)]",
+        'text-muted-foreground transition-colors hover:text-[var(--brand)] dark:hover:text-[var(--brand-dark)]',
         className
       )}
     >

@@ -21,7 +21,7 @@ export default function BlogDetailPage() {
   const param = useMemo(() => raw.trim(), [raw]);
 
   const { blog, loading, error } = useBlogDetailParam(param);
-  
+
   if (!param) return <BlogErrorMessage message="Invalid blog identifier" />;
   if (loading) return <BlogDetailSkeleton />;
   if (error || !blog) return <BlogErrorMessage message={error || 'Blog not found'} />;

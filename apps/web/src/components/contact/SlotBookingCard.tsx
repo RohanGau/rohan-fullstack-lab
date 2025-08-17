@@ -1,32 +1,41 @@
-"use client";
+'use client';
 
-import { format, startOfDay, isBefore } from "date-fns";
-import { Calendar } from "@/components/ui/calendar"; // shadcn/ui calendar
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import TimeGrid from "./TimeGrid";
-import { Check, Loader2 } from "lucide-react";
-import { useSlotBooking } from "@/hooks/useSlotBooking";
-import Turnstile from "react-turnstile";
-import { TURNSTILE_SITE_KEY } from "@/lib/constant";
+import { format, startOfDay, isBefore } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar'; // shadcn/ui calendar
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import TimeGrid from './TimeGrid';
+import { Check, Loader2 } from 'lucide-react';
+import { useSlotBooking } from '@/hooks/useSlotBooking';
+import Turnstile from 'react-turnstile';
+import { TURNSTILE_SITE_KEY } from '@/lib/constant';
 
 function SlotBookingCard() {
   const {
-    date, setDate,
-    time, setTime,
-    duration, setDuration,
-    name, setName,
-    email, setEmail,
-    message, setMessage,
-    startDateTime, endDateTime,
+    date,
+    setDate,
+    time,
+    setTime,
+    duration,
+    setDuration,
+    name,
+    setName,
+    email,
+    setEmail,
+    message,
+    setMessage,
+    startDateTime,
+    endDateTime,
     submit,
     captchaToken,
     setCaptchaToken,
-    submitting, success, error,
+    submitting,
+    success,
+    error,
   } = useSlotBooking();
 
   return (
@@ -40,7 +49,8 @@ function SlotBookingCard() {
             <Check className="h-4 w-4" />
             <AlertTitle>Booked!</AlertTitle>
             <AlertDescription>
-              Your slot {startDateTime ? `on ${format(startDateTime, "PPPp")}` : ""} has been reserved. A confirmation email has been sent.
+              Your slot {startDateTime ? `on ${format(startDateTime, 'PPPp')}` : ''} has been
+              reserved. A confirmation email has been sent.
             </AlertDescription>
           </Alert>
         ) : (
@@ -77,7 +87,9 @@ function SlotBookingCard() {
                       onChange={(e) => setDuration(Number(e.target.value))}
                     >
                       {[15, 30, 45, 60, 90].map((m) => (
-                        <option key={m} value={m}>{m} minutes</option>
+                        <option key={m} value={m}>
+                          {m} minutes
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -85,8 +97,9 @@ function SlotBookingCard() {
                   <div className="text-sm text-muted-foreground">
                     {date && startDateTime && (
                       <>
-                        Selected: <span className="font-medium">{format(startDateTime, "PPP p")}</span>
-                        {" "}– <span className="font-medium">{format(endDateTime!, "p")}</span>
+                        Selected:{' '}
+                        <span className="font-medium">{format(startDateTime, 'PPP p')}</span> –{' '}
+                        <span className="font-medium">{format(endDateTime!, 'p')}</span>
                       </>
                     )}
                   </div>
@@ -94,15 +107,29 @@ function SlotBookingCard() {
 
                 <div className="space-y-2">
                   <Label>Your name</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@doe.com" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="jane@doe.com"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Message (optional)</Label>
-                  <Textarea rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="What would you like to discuss?" />
+                  <Textarea
+                    rows={4}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="What would you like to discuss?"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -118,13 +145,16 @@ function SlotBookingCard() {
 
                 <Button
                   onClick={submit}
-                  disabled={submitting || !date || !name || !email || !startDateTime || !captchaToken}
+                  disabled={
+                    submitting || !date || !name || !email || !startDateTime || !captchaToken
+                  }
                   className="w-full"
                 >
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Book Slot"}
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Book Slot'}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Note: If the selected time is already taken, the server will reject the booking and you’ll see an error here.
+                  Note: If the selected time is already taken, the server will reject the booking
+                  and you’ll see an error here.
                 </p>
               </div>
             </div>

@@ -1,22 +1,21 @@
 const { Feed } = require('feed');
 const fs = require('fs');
 
-
 async function generateRSS() {
   // Fetch blog posts from your public API endpoint
-  const response = await fetch("https://rohan-backend-api.fly.dev/api/blogs");
+  const response = await fetch('https://rohan-backend-api.fly.dev/api/blogs');
   const posts = await response.json();
 
   const feed = new Feed({
-    title: "Rohan Kumar Blog",
-    description: "Senior Software Engineer. Building clean, scalable web experiences.",
-    id: "https://rohangautam.dev/",
-    link: "https://rohangautam.dev/",
-    language: "en",
-    favicon: "https://rohangautam.dev/favicon.ico"
+    title: 'Rohan Kumar Blog',
+    description: 'Senior Software Engineer. Building clean, scalable web experiences.',
+    id: 'https://rohangautam.dev/',
+    link: 'https://rohangautam.dev/',
+    language: 'en',
+    favicon: 'https://rohangautam.dev/favicon.ico',
   });
 
-  posts.forEach(post => {
+  posts.forEach((post) => {
     feed.addItem({
       title: post.title,
       id: `https://rohangautam.dev/blog/${post.id}`,
@@ -31,6 +30,6 @@ async function generateRSS() {
 }
 
 generateRSS().catch((err) => {
-  console.error("RSS generation failed:", err);
+  console.error('RSS generation failed:', err);
   process.exit(1);
 });

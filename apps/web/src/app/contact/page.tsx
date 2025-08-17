@@ -1,9 +1,8 @@
 'use client';
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import ContactCard from "@/components/contact/ContactCard";
-import SlotBookingCard from "@/components/contact/SlotBookingCard";
-
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import ContactCard from '@/components/contact/ContactCard';
+import SlotBookingCard from '@/components/contact/SlotBookingCard';
 
 export default function ContactPage() {
   return (

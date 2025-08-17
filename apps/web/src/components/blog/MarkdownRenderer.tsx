@@ -61,7 +61,10 @@ const components: Components = {
         </code>
       </pre>
     ) : (
-      <code className={`rounded bg-muted px-1 py-0.5 font-mono text-sm ${className ?? ''}`} {...props}>
+      <code
+        className={`rounded bg-muted px-1 py-0.5 font-mono text-sm ${className ?? ''}`}
+        {...props}
+      >
         {children}
       </code>
     );

@@ -28,7 +28,10 @@ function isAbortLike(err: unknown): boolean {
   );
 }
 
-function makeApiError(message: string, extras?: Partial<Pick<ApiError, 'status' | 'body'>>): ApiError {
+function makeApiError(
+  message: string,
+  extras?: Partial<Pick<ApiError, 'status' | 'body'>>
+): ApiError {
   const e = new Error(message) as ApiError;
   e.name = 'ApiError';
   e.status = extras?.status ?? 0;
@@ -42,8 +45,14 @@ async function parseError(res: Response): Promise<ApiError> {
     const body: Json = await res.clone().json();
     // try common keys from APIs
     const maybeMsg =
-      (typeof body === 'object' && body && 'msg' in body && (body as Record<string, unknown>).msg) ||
-      (typeof body === 'object' && body && 'error' in body && (body as Record<string, unknown>).error);
+      (typeof body === 'object' &&
+        body &&
+        'msg' in body &&
+        (body as Record<string, unknown>).msg) ||
+      (typeof body === 'object' &&
+        body &&
+        'error' in body &&
+        (body as Record<string, unknown>).error);
 
     if (typeof maybeMsg === 'string' && maybeMsg.trim()) msg = maybeMsg;
     return makeApiError(msg, { status: res.status, body });
@@ -106,8 +115,7 @@ export async function apiFetchWithMeta<T>(
     const data: T = ct.includes('application/json') ? ((await res.json()) as T) : ({} as T);
 
     const totalHeader = res.headers.get('X-Total-Count') || res.headers.get('x-total-count');
-    const total =
-      totalHeader ? Number(totalHeader) : Array.isArray(data) ? data.length : 0;
+    const total = totalHeader ? Number(totalHeader) : Array.isArray(data) ? data.length : 0;
 
     return { data, total, headers: res.headers };
   } catch (err: unknown) {

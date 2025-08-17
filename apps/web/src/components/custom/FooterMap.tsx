@@ -1,13 +1,7 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
 
-export function FooterMap({
-  location,
-  zoom = 13,
-}: {
-  location?: string;
-  zoom?: number;
-}) {
+export function FooterMap({ location, zoom = 13 }: { location?: string; zoom?: number }) {
   if (!location) return null;
 
   const embedSrc = `https://www.google.com/maps?&q=${encodeURIComponent(
@@ -38,11 +32,7 @@ export function FooterMap({
               </a>
             </Button>
             <Button asChild size="sm">
-              <a
-                href={`${mapsLink}&travelmode=driving`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={`${mapsLink}&travelmode=driving`} target="_blank" rel="noopener noreferrer">
                 Directions
               </a>
             </Button>

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { format, addMinutes, setHours, setMinutes, isAfter } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
+import { format, addMinutes, setHours, setMinutes, isAfter } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function TimeGrid({
   date,
@@ -29,7 +29,7 @@ function TimeGrid({
     while (!isAfter(cur, end)) {
       const hh = cur.getHours();
       const mm = cur.getMinutes();
-      const label = format(cur, "hh:mm a");
+      const label = format(cur, 'hh:mm a');
       arr.push({ label, hh, mm });
       cur = addMinutes(cur, stepMinutes);
     }
@@ -39,15 +39,15 @@ function TimeGrid({
   return (
     <div className="grid grid-cols-3 gap-2">
       {items.map((it) => {
-        const t = `${String(it.hh).padStart(2, "0")}:${String(it.mm).padStart(2, "0")}`;
+        const t = `${String(it.hh).padStart(2, '0')}:${String(it.mm).padStart(2, '0')}`;
         const active = value === t;
         return (
           <Button
             key={t}
             type="button"
-            variant={active ? "default" : "outline"}
+            variant={active ? 'default' : 'outline'}
             onClick={() => onChange(t)}
-            className={cn("w-full", active && "ring-2 ring-offset-1")}
+            className={cn('w-full', active && 'ring-2 ring-offset-1')}
           >
             {it.label}
           </Button>
@@ -56,6 +56,5 @@ function TimeGrid({
     </div>
   );
 }
-
 
 export default TimeGrid;

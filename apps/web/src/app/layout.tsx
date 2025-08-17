@@ -53,19 +53,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     title: 'Rohan Kumar – Senior Frontend Engineer',
     description: 'Building clean, scalable web experiences with React, Next.js, and TypeScript.',
-    images: [{
-      url: 'https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426',
-      width: 1200,
-      height: 630,
-      alt: 'Rohan Kumar — Senior Frontend Engineer',
-    }],
+    images: [
+      {
+        url: 'https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426',
+        width: 1200,
+        height: 630,
+        alt: 'Rohan Kumar — Senior Frontend Engineer',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     creator: '@yourhandle', // ← replace with your real handle
     title: 'Rohan Kumar – Senior Frontend Engineer',
     description: 'Frontend architecture, performance, and design systems.',
-    images: ['https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426'],
+    images: [
+      'https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev/uploads/2025/08/10/og_image-3a0564a6.png?cb=1754843343426',
+    ],
   },
   robots: {
     index: true,
@@ -96,7 +100,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -104,9 +107,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       >
         <ThemeProvider>
           <Header />
-            <main id="content" className="flex-1 container max-w-5xl px-4 py-10 mx-auto">
-              {children}
-            </main>
+          <main id="content" className="flex-1 container max-w-5xl px-4 py-10 mx-auto">
+            {children}
+          </main>
           <Footer />
         </ThemeProvider>
         {/* JSON-LD: Person */}

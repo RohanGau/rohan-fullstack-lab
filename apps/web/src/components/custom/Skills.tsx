@@ -1,22 +1,22 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { getSimpleIconSlug } from "@/lib/utils";
-import * as simpleIcons from "simple-icons";
-import { SkillsProps } from "@/types/profile";
-import Link from "next/link";
-import { useEffectiveTheme } from "@/hooks/useEffectiveTheme";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { getSimpleIconSlug } from '@/lib/utils';
+import * as simpleIcons from 'simple-icons';
+import { SkillsProps } from '@/types/profile';
+import Link from 'next/link';
+import { useEffectiveTheme } from '@/hooks/useEffectiveTheme';
 
 function getIconForName(name: string): { path: string; hex: string } | undefined {
   const slug = getSimpleIconSlug(name);
-  const key = "si" + slug.charAt(0).toUpperCase() + slug.slice(1);
+  const key = 'si' + slug.charAt(0).toUpperCase() + slug.slice(1);
   return (simpleIcons as any)[key] as { path: string; hex: string } | undefined;
 }
 
 export function SkillsSection({ skills, fullStack, gridCols, isProfile }: SkillsProps) {
   const theme = useEffectiveTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   if (!skills || skills.length === 0) return null;
 
@@ -33,25 +33,32 @@ export function SkillsSection({ skills, fullStack, gridCols, isProfile }: Skills
       <div className={gridClass}>
         {skills.map((skill) => {
           const icon = getIconForName(skill.name);
-          const isGithub = skill.name.trim().toLowerCase() === "github";
-          const darkColor = isGithub ? "#ffffff" : icon ? `#${icon.hex}` : undefined;
+          const isGithub = skill.name.trim().toLowerCase() === 'github';
+          const darkColor = isGithub ? '#ffffff' : icon ? `#${icon.hex}` : undefined;
 
           return (
             <Card key={skill.name} className="shadow-sm">
               <CardHeader className="flex items-center gap-3 pb-2">
-                {icon && (
-                  isDark ? (
-                    <span className="shrink-0 text-[var(--brand)]" style={{ ["--brand" as any]: darkColor }}>
+                {icon &&
+                  (isDark ? (
+                    <span
+                      className="shrink-0 text-[var(--brand)]"
+                      style={{ ['--brand' as any]: darkColor }}
+                    >
                       <svg viewBox="0 0 24 24" className="h-5 w-5" role="img" aria-hidden="true">
                         <path d={icon.path} fill="currentColor" />
                       </svg>
                     </span>
                   ) : (
-                    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" role="img" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5 shrink-0"
+                      role="img"
+                      aria-hidden="true"
+                    >
                       <path d={icon.path} fill={`#${icon.hex}`} />
                     </svg>
-                  )
-                )}
+                  ))}
                 <CardTitle className="text-base font-medium">{skill.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 pt-0">
@@ -61,7 +68,7 @@ export function SkillsSection({ skills, fullStack, gridCols, isProfile }: Skills
                 </div>
                 <Progress value={(skill.rating / 10) * 100} />
                 <div className="text-xs text-muted-foreground">
-                  {skill.yearsOfExperience} year{skill.yearsOfExperience > 1 ? "s" : ""} experience
+                  {skill.yearsOfExperience} year{skill.yearsOfExperience > 1 ? 's' : ''} experience
                 </div>
               </CardContent>
             </Card>
