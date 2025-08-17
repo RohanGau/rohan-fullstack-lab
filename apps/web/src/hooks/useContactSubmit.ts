@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
-import { IContactBase } from '@fullstack-lab/types';
+import { extractApiErrors } from '@/lib/utils';
 
 export function useContactSubmit() {
   const [submitting, setSubmitting] = useState(false);
@@ -8,41 +8,31 @@ export function useContactSubmit() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const submitContact = async (data: IContactBase) => {
+  const submitContact = async (
+    data: { name: string; email: string; message: string },
+    captchaToken: string | null
+  ): Promise<boolean> => {
     setSubmitting(true);
     setSuccess(false);
     setFieldErrors({});
     setGlobalError(null);
-
     try {
-      await apiFetch('/api/contact', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+      await apiFetch("/api/contact", {
+        method: "POST",
+        body: JSON.stringify({ ...data, captchaToken }),
+        headers: { "Content-Type": "application/json" },
       });
-
       setSuccess(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return true;
     } catch (err: any) {
-      if (err?.error && Array.isArray(err.error)) {
-        const mappedErrors: Record<string, string> = {};
-        err.error.forEach((e: { field: string; message: string }) => {
-          mappedErrors[e.field] = e.message;
-        });
-        setFieldErrors(mappedErrors);
-      }
-
-      setGlobalError(err?.msg || 'Something went wrong');
+      const { fieldErrors: fe, global } = extractApiErrors(err);
+      if (Object.keys(fe).length) setFieldErrors(fe);
+      setGlobalError(global);
+      return false;
     } finally {
       setSubmitting(false);
     }
   };
 
-  return {
-    submitContact,
-    submitting,
-    success,
-    fieldErrors,
-    globalError,
-  };
+  return { submitContact, submitting, success, fieldErrors, globalError };
 }

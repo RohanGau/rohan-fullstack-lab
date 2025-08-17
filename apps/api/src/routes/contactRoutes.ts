@@ -6,6 +6,7 @@ import {
   validateContactCreate,
 } from '../controllers/contactController';
 import { requireAdmin } from '../middleware/requireAuth';
+import { requireCaptcha } from '../middleware/requireCaptcha';
 
 const router = express.Router();
 
@@ -72,7 +73,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/', validateContactCreate, createContact);
+router.post('/', requireCaptcha, validateContactCreate, createContact);
 
 /**
  * @swagger

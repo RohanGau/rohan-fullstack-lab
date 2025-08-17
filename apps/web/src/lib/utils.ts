@@ -140,3 +140,16 @@ export const csvToArr = (s?: string | null) =>
         .map((x) => x.trim())
         .filter(Boolean)
     : [];
+
+export function extractApiErrors(err: any): { fieldErrors: Record<string,string>; global: string } {
+  const fe: Record<string,string> = {};
+  const data = err?.response?.data ?? err;
+  const arr = data?.error || data?.errors;
+  if (Array.isArray(arr)) {
+    arr.forEach((e: any) => {
+      if (e?.field && e?.message) fe[e.field] = String(e.message);
+    });
+  }
+  const msg = data?.msg || data?.message || err?.message || "Something went wrong";
+  return { fieldErrors: fe, global: msg };
+}

@@ -13,3 +13,4 @@ NEXT_PUBLIC_API_URL = "https://rohan-backend-api.fly.dev"
 NEXT_PUBLIC_CDN_URL = "https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev"
 NEXT_PUBLIC_SITE_URL = "https://rohangautam.dev"
 R2_PUBLIC_BASE_URL = "https://assets.rohangautam.dev"
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAABsqCmqlPQbsTFKY

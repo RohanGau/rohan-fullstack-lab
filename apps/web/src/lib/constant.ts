@@ -1,5 +1,6 @@
 export const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export const CDN_LINK = process.env.NEXT_PUBLIC_CDN_URL;
+export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string;
 
 export const API = {
   PROFILE: '/api/profiles',

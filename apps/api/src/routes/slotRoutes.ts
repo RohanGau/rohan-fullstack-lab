@@ -9,6 +9,7 @@ import {
   validateSlotUpdate,
 } from '../controllers/slotController';
 import { requireAdmin } from '../middleware/requireAuth';
+import { requireCaptcha } from '../middleware/requireCaptcha';
 
 const router = Express.Router();
 
@@ -208,7 +209,7 @@ router.get('/:id', requireAdmin, getSlotById);
  *                   type: string
  *                   example: "Slot not available."
  */
-router.post('/', validateSlotCreate, createSlot);
+router.post('/', requireCaptcha, validateSlotCreate, createSlot);
 
 /**
  * @openapi
