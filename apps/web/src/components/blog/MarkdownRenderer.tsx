@@ -1,6 +1,6 @@
-import ReactMarkdown from 'react-markdown';
+import React from 'react';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Components } from 'react-markdown';
 
 const components: Components = {
   h1: ({ children, ...props }) => (
@@ -51,20 +51,31 @@ const components: Components = {
       {children}
     </li>
   ),
-  code: (props) => {
-    const { children, className } = props as React.ComponentProps<'code'> & { inline?: boolean };
-    const isBlock = !(props as { inline?: boolean }).inline;
-    return isBlock ? (
-      <pre className="mt-6 overflow-x-auto rounded-lg border bg-slate-900 p-4">
-        <code className={`font-mono text-sm text-slate-50 ${className ?? ''}`} {...props}>
+
+  /** KEY FIXES FOR CODE BLOCKS **/
+  pre: ({ children, ...props }) => (
+    <pre className="mt-6 overflow-x-auto rounded-lg border bg-slate-900 p-4" {...props}>
+      {children}
+    </pre>
+  ),
+  code: ({
+    inline,
+    className,
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) => {
+    if (inline) {
+      return (
+        <code
+          className={`rounded bg-muted px-1 py-0.5 font-mono text-sm ${className ?? ''}`}
+          {...props}
+        >
           {children}
         </code>
-      </pre>
-    ) : (
-      <code
-        className={`rounded bg-muted px-1 py-0.5 font-mono text-sm ${className ?? ''}`}
-        {...props}
-      >
+      );
+    }
+    return (
+      <code className={`font-mono text-sm text-slate-50 ${className ?? ''}`} {...props}>
         {children}
       </code>
     );
