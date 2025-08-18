@@ -13,10 +13,15 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import { ALLOWED, MAX_BYTES } from '../utils/Constant';
-
+import { ADMIN_TOKEN_KEY } from '../AuthDataProvider';
 
 const isImageUrl = (url?: string | null) =>
   !!url && /\.(png|jpe?g|webp|avif)(\?|$)/i.test(url);
+
+const authHeaders = (): HeadersInit => {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function AssetUploadSection({ apiUrl = "" } : { apiUrl: string }) {
   const PRESIGN_URL = `${apiUrl}/api/uploads/generate-upload-url`;
@@ -88,7 +93,10 @@ export default function AssetUploadSection({ apiUrl = "" } : { apiUrl: string })
       // 1) Presign
       const presign = await fetch(PRESIGN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders(),
+        },
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type || guessMime(file.name),
@@ -126,7 +134,10 @@ export default function AssetUploadSection({ apiUrl = "" } : { apiUrl: string })
     try {
       const res = await fetch(DELETE_URL, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders(),
+        },
         body: JSON.stringify({ key: assetKey }),
       });
       if (res.status !== 204) {
