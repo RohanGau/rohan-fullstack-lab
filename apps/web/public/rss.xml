@@ -4,10 +4,18 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Sun, 17 Aug 2025 22:59:15 GMT</lastBuildDate>
+        <lastBuildDate>Mon, 18 Aug 2025 20:23:40 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[🚀 Building a Scalable Monorepo: A Senior Engineer’s Tour of `fullstack-lab`]]></title>
+            <link>https://rohangautam.dev/blog/68a37f91c3c0a211198a18f0</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/68a37f91c3c0a211198a18f0</guid>
+            <pubDate>Tue, 19 Aug 2025 00:48:00 GMT</pubDate>
+            <description><![CDATA[Modern full-stack development thrives on **consistency**, ⚡ **rapid iteration**, and 🤖 **automated deployment**.  
+This repository demonstrates how a **single ]]></description>
+        </item>
         <item>
             <title><![CDATA[⚡️ Virtualization in Frontend Development (with React & @tanstack/react-virtual)]]></title>
             <link>https://rohangautam.dev/blog/688aacef0ac295c7a625bd5c</link>
