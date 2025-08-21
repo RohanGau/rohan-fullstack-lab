@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useProfileStore } from '@/lib/store';
 import { apiFetch } from '@/lib/apiClient';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
 import { API } from '@/lib/constant';

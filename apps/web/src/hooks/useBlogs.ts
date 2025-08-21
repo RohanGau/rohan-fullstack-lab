@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetchWithMeta } from '@/lib/apiClient';
 import { API } from '@/lib/constant';

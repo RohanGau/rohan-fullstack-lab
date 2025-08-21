@@ -36,18 +36,12 @@ export async function getBlogDetail(param: string, signal?: AbortSignal): Promis
 
   if (isMongoId(param)) {
     const byId = await getBlogById(param, signal);
-    if (byId) return byId;
-    return await getBlogBySlug(param, signal);
+    return byId ?? (await getBlogBySlug(param, signal));
   }
 
   const bySlug = await getBlogBySlug(param, signal);
-  if (bySlug) return bySlug;
-
-  if (isMongoId(param)) {
-    return await getBlogById(param, signal);
-  }
-
-  return null;
+  return bySlug ?? null;
 }
 
+// Dedupes across page.tsx + generateMetadata in the same request
 export const getBlogDetailCached = cache(getBlogDetail);

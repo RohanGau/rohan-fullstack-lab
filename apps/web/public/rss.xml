@@ -4,10 +4,19 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Thu, 21 Aug 2025 05:22:06 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 21 Aug 2025 15:53:05 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Mastering Next.js: From Fundamentals to Architect-Level Expertise]]></title>
+            <link>https://rohangautam.dev/blog/68a72acccda4e7a79b4c2e5b</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/68a72acccda4e7a79b4c2e5b</guid>
+            <pubDate>Thu, 21 Aug 2025 19:47:00 GMT</pubDate>
+            <description><![CDATA[# Mastering Next.js: From Fundamentals to Architect-Level Expertise  
+
+### Next.js has quickly become the **go-to framework for building scalable React applicat]]></description>
+        </item>
         <item>
             <title><![CDATA[⚔️ Server-First Next.js vs React CSR: A Deep Dive for Builders]]></title>
             <link>https://rohangautam.dev/blog/68a698958ada72477bd5132e</link>

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { IBlogDto } from '@fullstack-lab/types';
 import { API } from '@/lib/constant';

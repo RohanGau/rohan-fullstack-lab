@@ -1,12 +1,14 @@
+import type { Metadata } from 'next';
 import { getBlogDetailCached } from '@/lib/server/blogApi';
 import { stripMarkdown } from '@/lib/utils';
 import { BlogDetailPageProps } from '@/types/blog';
 
-export async function generateMetadata(props: BlogDetailPageProps) {
+export const runtime = 'edge';
+
+export async function generateMetadata(props: BlogDetailPageProps): Promise<Metadata> {
   const { id } = await props.params;
   const raw = Array.isArray(id) ? id[0] : (id ?? '');
   const param = raw.trim();
-
   if (!param) {
     return { title: 'Blog not found · Rohan Kumar', robots: { index: false, follow: false } };
   }
@@ -18,7 +20,6 @@ export async function generateMetadata(props: BlogDetailPageProps) {
 
   const urlPath = `/blog/${blog.slug ?? blog.id}`;
   const desc = blog.summary?.trim()?.slice(0, 160) || stripMarkdown(blog.content).slice(0, 160);
-
   const images = blog.coverImageUrl ? [{ url: blog.coverImageUrl }] : undefined;
   const published = blog.publishedAt ? new Date(blog.publishedAt).toISOString() : undefined;
   const modified = blog.updatedAt ? new Date(blog.updatedAt).toISOString() : published;
@@ -42,11 +43,6 @@ export async function generateMetadata(props: BlogDetailPageProps) {
       authors: blog.author ? [blog.author] : undefined,
       tags: blog.tags,
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: blog.title,
-      description: desc,
-      images,
-    },
+    twitter: { card: 'summary_large_image', title: blog.title, description: desc, images },
   };
 }

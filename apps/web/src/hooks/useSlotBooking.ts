@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import { addMinutes, setHours, setMinutes } from 'date-fns';
 import { apiFetch } from '@/lib/apiClient';

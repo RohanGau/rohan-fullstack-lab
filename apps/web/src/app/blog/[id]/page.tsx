@@ -7,6 +7,8 @@ import { BlogDetailPageProps } from '@/types/blog';
 
 export const revalidate = 60;
 
+export const revalidate = 60;
+
 export default async function BlogDetailPage(props: BlogDetailPageProps) {
   const { id } = await props.params;
   const raw = Array.isArray(id) ? id[0] : (id ?? '');

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
 import { extractApiErrors } from '@/lib/utils';
