@@ -26,3 +26,8 @@ export type BlogsQuery = {
 
 export type BlogsQueryRequired = Required<Pick<BlogsQuery, 'page' | 'perPage' | 'sort'>> &
   Omit<BlogsQuery, 'page' | 'perPage' | 'sort'>;
+
+export type RouteParams = { id: string | string[] };
+export interface BlogDetailPageProps {
+  params: Promise<RouteParams>;
+}

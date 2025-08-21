@@ -1,5 +1,3 @@
-'use client';
-
 import type { BlogLink } from '@fullstack-lab/types';
 
 const kindLabel: Record<NonNullable<BlogLink['kind']>, string> = {

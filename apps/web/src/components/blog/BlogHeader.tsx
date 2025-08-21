@@ -1,5 +1,3 @@
-'use client';
-
 import type { IBlogDto } from '@fullstack-lab/types';
 import { BlogMeta } from './BlogMeta';
 import { BlogTags } from './BlogTags';

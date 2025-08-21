@@ -3,7 +3,7 @@ name: Fly.io Keep-Alive Ping
 # Run every 10 minutes to prevent cold starts
 on:
   schedule:
-    - cron: '*/10 * * * *'  # every 10 minutes
+    - cron: '*/30 * * * *'  # every 10 minutes
   workflow_dispatch: {}  # Allow manual trigger for testing
 
 jobs:

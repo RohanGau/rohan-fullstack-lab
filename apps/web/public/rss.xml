@@ -4,10 +4,17 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Mon, 18 Aug 2025 20:23:40 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 21 Aug 2025 05:22:06 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[⚔️ Server-First Next.js vs React CSR: A Deep Dive for Builders]]></title>
+            <link>https://rohangautam.dev/blog/68a698958ada72477bd5132e</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/68a698958ada72477bd5132e</guid>
+            <pubDate>Thu, 21 Aug 2025 09:22:00 GMT</pubDate>
+            <description><![CDATA[**🚀 The Next.js App Router isn’t just SSR bolted onto React — it’s a server-first model that makes streaming, errors, caching, and SEO _the defaults_ rather th]]></description>
+        </item>
         <item>
             <title><![CDATA[🚀 Building a Scalable Monorepo: A Senior Engineer’s Tour of `fullstack-lab`]]></title>
             <link>https://rohangautam.dev/blog/68a37f91c3c0a211198a18f0</link>

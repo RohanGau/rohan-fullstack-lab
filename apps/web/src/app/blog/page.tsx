@@ -3,6 +3,7 @@
 import { withClientFallback } from '@/lib/hoc/withClientFallback';
 import { BlogCardSkeleton } from '@/components/blog/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+// import BlogList from '@/components/blog/list/BlogListContent';
 
 const BlogList = withClientFallback(() => import('@/components/blog/list/BlogListContent'), {
   fallback: (

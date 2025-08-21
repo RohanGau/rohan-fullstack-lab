@@ -1,9 +1,21 @@
+/** @type {import('next-sitemap').IConfig} */
+const siteUrl = 'https://rohangautam.dev';
+
 module.exports = {
-  siteUrl: 'https://rohangautam.dev', // Your domain
-  generateRobotsTxt: true, // Also creates robots.txt for you
-  // Optional customizations:
-  changefreq: 'weekly',
-  priority: 0.7,
-  sitemapSize: 7000,
-  exclude: ['/api/*', '/404'], // Exclude API and error pages
+  siteUrl,
+  generateRobotsTxt: true,
+  transform: async (config, path) => {
+    const priority = path.startsWith('/blog') ? 0.7 : 0.5;
+    return {
+      loc: path,
+      changefreq: 'weekly',
+      priority,
+      lastmod: new Date().toISOString(),
+      alternateRefs: [],
+    };
+  },
+  exclude: ['/admin', '/api/*', '/404'],
+  robotsTxtOptions: {
+    policies: [{ userAgent: '*', allow: '/' }],
+  },
 };
