@@ -2,7 +2,7 @@ name: Web Deploy (Cloudflare Pages)
 
 on:
   push:
-    branches: [develop]
+    branches: [main, develop]
     paths:
       - "apps/web/**"
       - "packages/**"
@@ -20,20 +20,37 @@ jobs:
 
     steps:
       - name: Prevent interactive login
-        run: |
-          rm -rf ~/.wrangler 2>/dev/null || true
+        run: rm -rf ~/.wrangler 2>/dev/null || true
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Choose Environment by Branch
+      - name: Set Environment Variables by Branch
         run: |
           if [ "${GITHUB_REF##*/}" = "main" ]; then
             echo "DEPLOY_ENV=production" >> $GITHUB_ENV
             echo "BRANCH_NAME=main" >> $GITHUB_ENV
+            # Production environment variables
+            echo "NEXT_PUBLIC_API_URL=https://api.rohangautam.dev" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SITE_URL=https://rohangautam.dev" >> $GITHUB_ENV
           else
             echo "DEPLOY_ENV=preview" >> $GITHUB_ENV
             echo "BRANCH_NAME=develop" >> $GITHUB_ENV
+            # Preview/Stage environment variables
+            echo "NEXT_PUBLIC_API_URL=https://rohan-backend-api-stage.fly.dev" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SITE_URL=https://develop.rohan-fullstack-lab.pages.dev" >> $GITHUB_ENV
           fi
+          # Common environment variables (same for both)
+          echo "NEXT_PUBLIC_CDN_URL=https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAABsqCmqlPQbsTFKY" >> $GITHUB_ENV
+          echo "R2_PUBLIC_BASE_URL=https://assets.rohangautam.dev" >> $GITHUB_ENV
+
+      - name: Debug - Show Environment
+        run: |
+          echo "Deploy Environment: $DEPLOY_ENV"
+          echo "Branch: $BRANCH_NAME"
+          echo "API URL: $NEXT_PUBLIC_API_URL"
+          echo "Site URL: $NEXT_PUBLIC_SITE_URL"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -57,63 +74,65 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
-      - name: Install dependencies (workspace root)
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 🔑 Build your workspace types BEFORE web build
       - name: Build @fullstack-lab/types
         run: pnpm -F @fullstack-lab/types build
 
-      # (Optional) Debug: verify the package is linked in web
       - name: Verify workspace link
         run: |
           ls -la apps/web/node_modules/@fullstack-lab || true
           pnpm why @fullstack-lab/types
 
-      - name: Cloudflare-compatible Next.js build
+      - name: Build Next.js for Cloudflare
         run: pnpm web:build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ env.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_CDN_URL: ${{ env.NEXT_PUBLIC_CDN_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ env.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          R2_PUBLIC_BASE_URL: ${{ env.R2_PUBLIC_BASE_URL }}
 
-      - name: Verify build output (robust)
+      - name: Verify build output
         run: |
-            set -e
-            ROOT="apps/web/.vercel/output"
-            echo "Listing $ROOT:"
-            ls -la "$ROOT" || true
-            echo "Listing $ROOT/static:"
-            ls -la "$ROOT/static" || true
-            echo "Listing $ROOT/functions (if any):"
-            ls -la "$ROOT/functions" || true
-
-            if [ -f "$ROOT/static/_worker.js" ] || [ -f "$ROOT/static/_worker.mjs" ] || [ -d "$ROOT/functions" ]; then
+          set -e
+          ROOT="apps/web/.vercel/output"
+          echo "Listing $ROOT:"
+          ls -la "$ROOT" || true
+          echo "Listing $ROOT/static:"
+          ls -la "$ROOT/static" || true
+          
+          if [ -f "$ROOT/static/_worker.js" ] || [ -f "$ROOT/static/_worker.mjs" ] || [ -d "$ROOT/functions" ]; then
             echo "✅ Worker/functions present (SSR/edge build)."
             exit 0
-            fi
-
-            # Static-only builds are valid if there's a config + static assets
-            if [ -f "$ROOT/config.json" ] && [ -d "$ROOT/static" ]; then
-            echo "✅ Static build detected (no worker needed)."
+          fi
+          
+          if [ -f "$ROOT/config.json" ] && [ -d "$ROOT/static" ]; then
+            echo "✅ Static build detected."
             exit 0
-            fi
-
-            echo "❌ Could not find expected Pages artifacts."
-            exit 1
+          fi
+          
+          echo "❌ Could not find expected Pages artifacts."
+          exit 1
 
       - name: Deploy to Cloudflare Pages
         env:
-            CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}      # what wrangler reads
-            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}    # what wrangler reads
-            NO_COLOR: "1"
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          NO_COLOR: "1"
         run: |
-            cd apps/web
-            npx wrangler@4.29.0 --version
-            if [ "$DEPLOY_ENV" = "production" ]; then
+          cd apps/web
+          npx wrangler@4.29.0 --version
+          if [ "$DEPLOY_ENV" = "production" ]; then
+            echo "🚀 Deploying to PRODUCTION"
             npx wrangler@4.29.0 pages deploy .vercel/output/static \
-                --project-name="${{ env.PAGES_PROJECT }}" \
-                --commit-dirty=true
-            else
+              --project-name="${{ env.PAGES_PROJECT }}" \
+              --commit-dirty=true
+          else
+            echo "🔧 Deploying to PREVIEW ($BRANCH_NAME)"
             npx wrangler@4.29.0 pages deploy .vercel/output/static \
-                --project-name="${{ env.PAGES_PROJECT }}" \
-                --branch="${BRANCH_NAME}" \
-                --commit-dirty=true
-            fi
-
+              --project-name="${{ env.PAGES_PROJECT }}" \
+              --branch="${BRANCH_NAME}" \
+              --commit-dirty=true
+          fi
