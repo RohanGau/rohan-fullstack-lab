@@ -41,6 +41,18 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 // ============================================
+// Trust Proxy (Required for Fly.io, Cloudflare, etc.)
+// ============================================
+// This tells Express to trust X-Forwarded-* headers from the first proxy
+// Required for:
+// - Rate limiting to use real client IP (not proxy IP)
+// - Correct req.ip and req.protocol values
+// - Secure cookies to work behind HTTPS proxy
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
+  app.set('trust proxy', 1); // Trust first proxy (Fly.io)
+}
+
+// ============================================
 // Security Middleware (MUST be first)
 // ============================================
 

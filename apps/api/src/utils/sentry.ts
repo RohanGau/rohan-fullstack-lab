@@ -22,20 +22,28 @@ import logger from './logger';
 /**
  * Initialize Sentry error tracking
  * Call this at app startup, before any other code
+ * Only enabled in production environment
  */
 export function initSentry(): void {
   const dsn = process.env.SENTRY_DSN;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // Only enable Sentry in production
+  if (!isProduction) {
+    logger.info('Sentry disabled - only enabled in production environment');
+    return;
+  }
 
   if (!dsn) {
-    logger.info('Sentry DSN not configured - error tracking disabled');
+    logger.warn('Sentry DSN not configured - error tracking disabled in production!');
     return;
   }
 
   Sentry.init({
     dsn,
 
-    // Environment (production, staging, development)
-    environment: process.env.NODE_ENV || 'development',
+    // Environment (production)
+    environment: 'production',
 
     // Release version (use git commit hash or package version)
     release: process.env.npm_package_version || '1.0.0',

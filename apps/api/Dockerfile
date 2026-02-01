@@ -15,7 +15,8 @@ COPY apps/api/package.json apps/api/package.json
 COPY packages/types/package.json packages/types/package.json
 
 # Install deps for the filtered workspaces only (api + types)
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: Skip prepare script (husky) which is not needed in Docker
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ---------- Build (compile types first, then API) ----------
 FROM base AS build
@@ -42,7 +43,8 @@ COPY apps/api/package.json apps/api/package.json
 COPY packages/types/package.json packages/types/package.json
 
 # Install ONLY production deps for API (and its local workspaces)
-RUN pnpm install --prod --frozen-lockfile
+# --ignore-scripts: Skip prepare script (husky) which is not needed in Docker
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Bring in compiled output (no sources from other apps)
 COPY --from=build /app/packages/types/dist packages/types/dist

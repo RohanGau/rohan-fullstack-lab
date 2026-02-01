@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { checkLiveness, checkReadiness, checkDeepHealth } from '../utils/health';
+import { captureException, captureMessage } from '../utils/sentry';
 import logger from '../utils/logger';
 
 const router = Router();
