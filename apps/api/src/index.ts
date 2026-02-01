@@ -59,34 +59,39 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
 // Helmet - Security headers
 app.use(helmet());
 
-// Rate limiting - Multi-tier approach
-// Tier 1: General API rate limit (generous for read-heavy apps)
+// Rate limiting - Environment-aware approach
+// Production: Strict limits to protect against abuse
+// Stage/Dev: Disabled or very lenient for development workflow
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Tier 1: General API rate limit
 const generalLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // 500 requests per window (allows ~30+ page loads)
+  max: isProduction ? 500 : 5000, // 500 in prod, 5000 in stage/dev
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks (load balancer calls these frequently)
-    return req.path.startsWith('/health');
+    // Skip rate limiting for health checks
+    if (req.path.startsWith('/health')) return true;
+    // Skip for localhost in non-production (development convenience)
+    if (!isProduction && req.headers.origin?.includes('localhost')) return true;
+    return false;
   },
 });
 
 // Tier 2: Stricter limit for write operations (POST, PUT, DELETE)
 const writeLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // 50 write operations per window
+  max: isProduction ? 50 : 500, // 50 in prod, 500 in stage/dev
   message: { error: 'Too many write requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => req.method === 'GET' || req.method === 'OPTIONS',
 });
 
-// Apply general limiter to all routes
+// Apply rate limiters
 app.use(generalLimiter as unknown as express.RequestHandler);
-
-// Apply write limiter to all routes (it skips GET/OPTIONS internally)
 app.use(writeLimiter as unknown as express.RequestHandler);
 
 // ============================================
