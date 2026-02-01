@@ -107,7 +107,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       >
         <ThemeProvider>
           <Header />
-          <main id="content" className="flex-1 container max-w-5xl px-4 py-10 mx-auto">
+          <main id="content" className="flex-1 container max-w-5xl px-4 mx-auto">
             {children}
           </main>
           <Footer />

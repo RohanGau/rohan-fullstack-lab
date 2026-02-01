@@ -20,12 +20,12 @@ export function SkillsSection({ skills, fullStack, gridCols, isProfile }: Skills
 
   if (!skills || skills.length === 0) return null;
 
-  const base = gridCols?.base || 1;
+  const base = gridCols?.base || 2; // 2 columns on mobile
   const sm = gridCols?.sm || 2;
   const md = gridCols?.md || 3;
   const lg = gridCols?.lg || md;
 
-  const gridClass = `grid grid-cols-${base} sm:grid-cols-${sm} md:grid-cols-${md} lg:grid-cols-${lg} gap-4`;
+  const gridClass = `grid grid-cols-${base} sm:grid-cols-${sm} md:grid-cols-${md} lg:grid-cols-${lg} gap-2 sm:gap-4`;
 
   return (
     <section>
@@ -38,36 +38,41 @@ export function SkillsSection({ skills, fullStack, gridCols, isProfile }: Skills
 
           return (
             <Card key={skill.name} className="shadow-sm">
-              <CardHeader className="flex items-center gap-3 pb-2">
+              <CardHeader className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 pb-1 sm:pb-2">
                 {icon &&
                   (isDark ? (
                     <span
                       className="shrink-0 text-[var(--brand)]"
                       style={{ ['--brand' as any]: darkColor }}
                     >
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" role="img" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4 sm:h-5 sm:w-5"
+                        role="img"
+                        aria-hidden="true"
+                      >
                         <path d={icon.path} fill="currentColor" />
                       </svg>
                     </span>
                   ) : (
                     <svg
                       viewBox="0 0 24 24"
-                      className="h-5 w-5 shrink-0"
+                      className="h-4 w-4 sm:h-5 sm:w-5 shrink-0"
                       role="img"
                       aria-hidden="true"
                     >
                       <path d={icon.path} fill={`#${icon.hex}`} />
                     </svg>
                   ))}
-                <CardTitle className="text-base font-medium">{skill.name}</CardTitle>
+                <CardTitle className="text-sm sm:text-base font-medium">{skill.name}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <CardContent className="space-y-2 sm:space-y-3 px-3 sm:px-4 pb-3 sm:pb-4 pt-0">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
                   <span>Rating</span>
                   <span>{skill.rating}/10</span>
                 </div>
-                <Progress value={(skill.rating / 10) * 100} />
-                <div className="text-xs text-muted-foreground">
+                <Progress value={(skill.rating / 10) * 100} className="h-1.5 sm:h-2" />
+                <div className="text-[10px] sm:text-xs text-muted-foreground">
                   {skill.yearsOfExperience} year{skill.yearsOfExperience > 1 ? 's' : ''} experience
                 </div>
               </CardContent>
@@ -81,12 +86,12 @@ export function SkillsSection({ skills, fullStack, gridCols, isProfile }: Skills
               <CardTitle className="text-xl font-semibold">Want to know more?</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground space-y-3">
-              <p>Curious about my engineering principles, tech journey, and domain expertise?</p>
+              {/* <p>Curious about my engineering principles, tech journey, and domain expertise?</p> */}
               <Link
                 href="/about"
                 className="inline-block px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition"
               >
-                Read More About Me →
+                Read About Me →
               </Link>
             </CardContent>
           </Card>

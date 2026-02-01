@@ -16,16 +16,16 @@ export default function AboutContent() {
   if (!user) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <Card className="mb-10 shadow-lg">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
+      <Card className="mb-6 sm:mb-10 shadow-lg">
         <Hero title="About Me" description={user.title} heading={user.name} />
         <CardContent>
-          <div className="mb-8 text-base leading-relaxed space-y-2">
+          <div className="mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed space-y-2">
             <p>{user.bio}</p>
           </div>
           <SkillsSection skills={user.skills} fullStack={user.allTechStack} />
           <Knowledge areas={user.architectureAreas} />
-          <Separator className="my-8" />
+          <Separator className="my-6 sm:my-8" />
           <Philosophy text={user.philosophy} impact={user.impact} />
           <SocialLinksContainer user={user} />
         </CardContent>

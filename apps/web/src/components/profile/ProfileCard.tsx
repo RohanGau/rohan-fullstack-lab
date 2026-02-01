@@ -19,7 +19,7 @@ export function ProfileCard({ user }: { user: IProfileDto }) {
       />
 
       <div className="text-center md:text-left space-y-4 max-w-xl">
-        <h1 className="text-4xl font-bold leading-tight">{user.name}</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">{user.name}</h1>
         <p className="text-primary text-lg font-medium">{user.title}</p>
         {user.location && (
           <>
