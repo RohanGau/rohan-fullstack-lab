@@ -59,15 +59,35 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
 // Helmet - Security headers
 app.use(helmet());
 
-// Rate limiting - Prevent abuse
-const limiter: RateLimitRequestHandler = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // 100 requests per window
+// Rate limiting - Multi-tier approach
+// Tier 1: General API rate limit (generous for read-heavy apps)
+const generalLimiter: RateLimitRequestHandler = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // 500 requests per window (allows ~30+ page loads)
   message: { error: 'Too many requests, please try again later.' },
-  standardHeaders: true, // Return rate limit info in headers
-  legacyHeaders: false, // Disable X-RateLimit-* headers
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks (load balancer calls these frequently)
+    return req.path.startsWith('/health');
+  },
 });
-app.use(limiter as unknown as express.RequestHandler);
+
+// Tier 2: Stricter limit for write operations (POST, PUT, DELETE)
+const writeLimiter: RateLimitRequestHandler = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // 50 write operations per window
+  message: { error: 'Too many write requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'GET' || req.method === 'OPTIONS',
+});
+
+// Apply general limiter to all routes
+app.use(generalLimiter as unknown as express.RequestHandler);
+
+// Apply write limiter to all routes (it skips GET/OPTIONS internally)
+app.use(writeLimiter as unknown as express.RequestHandler);
 
 // ============================================
 // CORS Configuration
@@ -95,6 +115,19 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // JSON parsing error handler
 app.use(jsonErrorHandler);
+
+// ============================================
+// Cache Control Middleware
+// Prevents overly aggressive caching of API responses
+// ============================================
+app.use('/api', (_req, res, next) => {
+  // API responses should be revalidated, not cached indefinitely
+  // This helps with stale data issues (like new blogs not showing)
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
 
 // ============================================
 // Health Check Routes (no auth required)

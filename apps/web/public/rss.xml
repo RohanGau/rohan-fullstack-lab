@@ -4,10 +4,19 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Sun, 01 Feb 2026 15:07:34 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 01 Feb 2026 15:59:19 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Production Resilience Patterns: Deep Dive into Distributed Systems Fundamentals]]></title>
+            <link>https://rohangautam.dev/blog/697f74db15b65064210e30e0</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/697f74db15b65064210e30e0</guid>
+            <pubDate>Sun, 01 Feb 2026 21:14:00 GMT</pubDate>
+            <description><![CDATA[# Production Resilience Patterns: Deep Dive into Distributed Systems Fundamentals
+
+This isn't a tutorial. It's an exploration of *why* certain patterns exist, t]]></description>
+        </item>
         <item>
             <title><![CDATA[Mastering Next.js: From Fundamentals to Architect-Level Expertise]]></title>
             <link>https://rohangautam.dev/blog/68a72acccda4e7a79b4c2e5b</link>
