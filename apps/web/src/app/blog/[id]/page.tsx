@@ -5,6 +5,8 @@ import { stripMarkdown } from '@/lib/utils';
 import { siteUrl } from '@/lib/constant';
 import { BlogDetailPageProps } from '@/types/blog';
 
+// Required for Cloudflare Pages deployment
+export const runtime = 'edge';
 export const revalidate = 60;
 
 export default async function BlogDetailPage(props: BlogDetailPageProps) {
