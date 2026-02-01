@@ -8,7 +8,11 @@ const linkObj = Joi.object({
 
 export const blogSchema = Joi.object({
   title: Joi.string().trim().min(3).max(180).required(),
-  slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9-]+$/).optional(),
+  slug: Joi.string()
+    .trim()
+    .lowercase()
+    .pattern(/^[a-z0-9-]+$/)
+    .optional(),
   content: Joi.string().trim().min(10).required(),
   summary: Joi.string().trim().max(500).optional(),
   author: Joi.string().trim().required(),
@@ -23,7 +27,10 @@ export const blogSchema = Joi.object({
 
 export const blogUpdateSchema = Joi.object({
   title: Joi.string().trim().min(3).max(180),
-  slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9-]+$/),
+  slug: Joi.string()
+    .trim()
+    .lowercase()
+    .pattern(/^[a-z0-9-]+$/),
   content: Joi.string().trim().min(10),
   summary: Joi.string().trim().max(500),
   author: Joi.string().trim(),

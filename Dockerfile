@@ -16,17 +16,17 @@ WORKDIR /app
 # Copy entire monorepo into the container
 COPY . .
 
-# Set working dir to API app
-WORKDIR /app/apps/api
-
-# Install all dependencies in the monorepo
+# Install all dependencies from monorepo root (required for pnpm workspaces)
 RUN pnpm install --frozen-lockfile
 
 # Build shared types package first
 RUN pnpm --filter @fullstack-lab/types... run build
 
 # Build the API (this compiles TypeScript to dist/)
-RUN pnpm run build
+RUN pnpm --filter node-backend run build
+
+# Set working dir to API app for runtime
+WORKDIR /app/apps/api
 
 # Expose port (adjust if your API uses a different port)
 EXPOSE 5050

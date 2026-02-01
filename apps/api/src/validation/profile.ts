@@ -12,7 +12,10 @@ const architectureAreaSchema = Joi.object({
 });
 
 export const upadatedArchitectureAreaSchema = Joi.object({
-  _id: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional().allow(null),
+  _id: Joi.string()
+    .regex(/^[0-9a-fA-F]{24}$/)
+    .optional()
+    .allow(null),
   title: Joi.string().required(),
   topics: Joi.array().items(Joi.string()).required(),
 });

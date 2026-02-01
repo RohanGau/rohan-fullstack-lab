@@ -3,8 +3,7 @@ import { IProjectDb } from '@fullstack-lab/types';
 
 export type ProjectDocument = HydratedDocument<IProjectDb>;
 
-const urlRegex =
-  /^(https?:\/\/)([\w\-]+(\.[\w\-]+)+)(:[0-9]{2,5})?(\/[^\s]*)?$/i;
+const urlRegex = /^(https?:\/\/)([\w\-]+(\.[\w\-]+)+)(:[0-9]{2,5})?(\/[^\s]*)?$/i;
 
 const LinkSchema = new Schema(
   {
@@ -21,7 +20,17 @@ const LinkSchema = new Schema(
   { _id: false }
 );
 
-const allowedTypes = ['web', 'mobile', 'api', 'cli', 'tool', 'library', 'backend', 'frontend', 'desktop'] as const;
+const allowedTypes = [
+  'web',
+  'mobile',
+  'api',
+  'cli',
+  'tool',
+  'library',
+  'backend',
+  'frontend',
+  'desktop',
+] as const;
 
 // …imports
 
@@ -31,15 +40,26 @@ const ProjectSchema = new Schema<IProjectDb>(
     description: { type: String, required: true, trim: true, minlength: 10 },
     company: { type: String, trim: true, lowercase: true },
     role: { type: String, trim: true, lowercase: true },
-    techStack: { type: [String], default: [], set: (a: string[]) =>
-      Array.from(new Set((a ?? []).map(s => s.trim()).filter(Boolean))) },
-    features: { type: [String], default: [], set: (a: string[]) =>
-      Array.from(new Set((a ?? []).map(s => s.trim()).filter(Boolean))) },
+    techStack: {
+      type: [String],
+      default: [],
+      set: (a: string[]) => Array.from(new Set((a ?? []).map((s) => s.trim()).filter(Boolean))),
+    },
+    features: {
+      type: [String],
+      default: [],
+      set: (a: string[]) => Array.from(new Set((a ?? []).map((s) => s.trim()).filter(Boolean))),
+    },
     links: { type: [LinkSchema], default: [] },
     year: { type: Number, min: 1990, max: new Date().getFullYear() + 1 },
     thumbnailUrl: { type: String, trim: true, match: urlRegex },
-    types: { type: [String], default: [], enum: allowedTypes, set: (a: string[]) =>
-      Array.from(new Set((a ?? []).map(s => s.trim().toLowerCase()).filter(Boolean))) },
+    types: {
+      type: [String],
+      default: [],
+      enum: allowedTypes,
+      set: (a: string[]) =>
+        Array.from(new Set((a ?? []).map((s) => s.trim().toLowerCase()).filter(Boolean))),
+    },
     isFeatured: { type: Boolean, default: false, index: true }, // 👈 NEW
   },
   {
@@ -50,7 +70,8 @@ const ProjectSchema = new Schema<IProjectDb>(
       virtuals: true,
       transform: (_doc, ret: any) => {
         ret.id = ret._id?.toString();
-        delete ret._id; delete ret.__v;
+        delete ret._id;
+        delete ret.__v;
         return ret;
       },
     },

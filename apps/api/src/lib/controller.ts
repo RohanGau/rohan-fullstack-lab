@@ -8,7 +8,11 @@ import { parseListParams, setListHeaders } from './http';
 
 export function makeListHandler<T>(opts: ListOptions<T>) {
   const {
-    ns, model, buildQuery, transform = defaultTransform, allowedSort = ['createdAt', 'updatedAt', 'year', 'title'],
+    ns,
+    model,
+    buildQuery,
+    transform = defaultTransform,
+    allowedSort = ['createdAt', 'updatedAt', 'year', 'title'],
     ttlSeconds = cache.DEFAULT_TTL,
   } = opts;
 
@@ -33,9 +37,11 @@ export function makeListHandler<T>(opts: ListOptions<T>) {
 
       // DB
       const total = await model.countDocuments(mongoFilter);
-      const docs  = await model.find(mongoFilter)
+      const docs = await model
+        .find(mongoFilter)
         .sort({ [sortField]: sortOrder })
-        .skip(skip).limit(limit)
+        .skip(skip)
+        .limit(limit)
         .lean({ virtuals: true });
 
       const data = docs.map(transform);
@@ -89,7 +95,9 @@ export function makeCreateHandler<T>(opts: WriteOptions<T>) {
       const result = await doc.save();
 
       if (typeof afterCreate === 'function') {
-        try { await afterCreate(result as any); } catch (e) {}
+        try {
+          await afterCreate(result as any);
+        } catch (e) {}
       }
 
       await cache.bumpVersionNS(ns);
@@ -126,7 +134,11 @@ export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
       if (!updated) return res.status(404).json({ error: 'NOT_FOUND' });
 
       if (typeof afterUpdate === 'function') {
-        try { await afterUpdate(updated); } catch (e) { /* log but don’t crash */ }
+        try {
+          await afterUpdate(updated);
+        } catch (e) {
+          /* log but don’t crash */
+        }
       }
 
       await cache.bumpVersionNS(ns);
@@ -139,7 +151,11 @@ export function makeUpdateHandler<T>(opts: WriteOptions<T>) {
   };
 }
 
-export function makeDeleteHandler<T>(opts: { ns: string; model: Model<T>; afterDelete?: (doc: T) => Promise<void> }) {
+export function makeDeleteHandler<T>(opts: {
+  ns: string;
+  model: Model<T>;
+  afterDelete?: (doc: T) => Promise<void>;
+}) {
   const { ns, model, afterDelete } = opts;
 
   return async function remove(req: Request, res: Response) {
@@ -152,7 +168,11 @@ export function makeDeleteHandler<T>(opts: { ns: string; model: Model<T>; afterD
       if (!deleted) return res.status(404).json({ error: 'NOT_FOUND' });
 
       if (typeof afterDelete === 'function') {
-        try { await afterDelete(deleted); } catch (e) { /* log but don’t crash */ }
+        try {
+          await afterDelete(deleted);
+        } catch (e) {
+          /* log but don’t crash */
+        }
       }
 
       await cache.bumpVersionNS(ns);

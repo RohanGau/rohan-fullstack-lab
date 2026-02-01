@@ -3,8 +3,7 @@ import { IBlogDb, BlogLink } from '@fullstack-lab/types';
 
 export type BlogDocument = HydratedDocument<IBlogDb>;
 
-const urlRegex =
-  /^(https?:\/\/)([\w\-]+(\.[\w\-]+)+)(:[0-9]{2,5})?(\/[^\s]*)?$/i;
+const urlRegex = /^(https?:\/\/)([\w\-]+(\.[\w\-]+)+)(:[0-9]{2,5})?(\/[^\s]*)?$/i;
 
 const LinkSchema = new Schema<BlogLink>(
   {
@@ -32,13 +31,18 @@ const BlogSchema = new Schema<IBlogDb>(
       type: [String],
       default: [],
       set: (arr: string[]) =>
-        Array.from(new Set((arr ?? []).map(s => s.trim().toLowerCase()).filter(Boolean))),
+        Array.from(new Set((arr ?? []).map((s) => s.trim().toLowerCase()).filter(Boolean))),
     },
     links: { type: [LinkSchema], default: [] },
     coverImageUrl: { type: String, trim: true, match: urlRegex },
     readingTime: { type: Number, min: 1, max: 120 },
     isFeatured: { type: Boolean, default: false },
-    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft', index: true },
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'draft',
+      index: true,
+    },
     publishedAt: { type: Date, index: true },
   },
   {

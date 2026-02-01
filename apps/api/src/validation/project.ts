@@ -1,11 +1,21 @@
 import Joi from 'joi';
 
-const allowedTypes = ['web', 'mobile', 'api', 'cli', 'tool', 'library', 'backend', 'frontend', 'desktop'] as const;
+const allowedTypes = [
+  'web',
+  'mobile',
+  'api',
+  'cli',
+  'tool',
+  'library',
+  'backend',
+  'frontend',
+  'desktop',
+] as const;
 
 const linkObj = Joi.object({
   url: Joi.string().uri().required(),
   label: Joi.string().trim().max(80).optional(),
-  kind: Joi.string().valid('live','repo','docs','demo','design','other').default('other'),
+  kind: Joi.string().valid('live', 'repo', 'docs', 'demo', 'design', 'other').default('other'),
 });
 
 export const projectSchema = Joi.object({
@@ -17,9 +27,14 @@ export const projectSchema = Joi.object({
   features: Joi.array().items(Joi.string().trim()).default([]),
   links: Joi.array().items(linkObj).default([]),
   link: Joi.string().uri(),
-  year: Joi.number().integer().min(1990).max(new Date().getFullYear() + 1),
+  year: Joi.number()
+    .integer()
+    .min(1990)
+    .max(new Date().getFullYear() + 1),
   thumbnailUrl: Joi.string().uri(),
-  types: Joi.array().items(Joi.string().valid(...allowedTypes)).default([]),
+  types: Joi.array()
+    .items(Joi.string().valid(...allowedTypes))
+    .default([]),
   type: Joi.string().valid(...allowedTypes),
   isFeatured: Joi.boolean().default(false),
 });
@@ -33,7 +48,10 @@ export const projectUpdateSchema = Joi.object({
   features: Joi.array().items(Joi.string().trim()),
   links: Joi.array().items(linkObj),
   link: Joi.string().uri(),
-  year: Joi.number().integer().min(1990).max(new Date().getFullYear() + 1),
+  year: Joi.number()
+    .integer()
+    .min(1990)
+    .max(new Date().getFullYear() + 1),
   thumbnailUrl: Joi.string().uri(),
   types: Joi.array().items(Joi.string().valid(...allowedTypes)),
   type: Joi.string().valid(...allowedTypes),

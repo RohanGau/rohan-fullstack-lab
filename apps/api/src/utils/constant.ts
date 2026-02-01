@@ -20,7 +20,6 @@ export const allowedOrigins = [
   'http://localhost:5050',
 ].filter(Boolean);
 
-
 export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Validation Error',
   INVALID_JSON: 'Invalid JSON in request body',

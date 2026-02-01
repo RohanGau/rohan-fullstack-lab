@@ -1,7 +1,7 @@
 import type { Model, FilterQuery, Document } from 'mongoose';
 
 export type BuildQuery<T> = (raw: Record<string, any>) => FilterQuery<T>;
-type Transform<T>  = (doc: any) => any;
+type Transform<T> = (doc: any) => any;
 
 export type ListOptions<T> = {
   ns: string;

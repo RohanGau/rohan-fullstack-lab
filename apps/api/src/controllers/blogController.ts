@@ -5,8 +5,11 @@ import { normalizeBlogBody } from '../utils/blog';
 import { buildBlogQuery } from '../utils/blog';
 
 import {
-  makeListHandler, makeGetByIdHandler,
-  makeCreateHandler, makeUpdateHandler, makeDeleteHandler
+  makeListHandler,
+  makeGetByIdHandler,
+  makeCreateHandler,
+  makeUpdateHandler,
+  makeDeleteHandler,
 } from '../lib/controller';
 
 export const validateBlogCreate = validateSchema(blogSchema);
@@ -18,7 +21,7 @@ export const getAllBlogs = makeListHandler({
   ns: NS,
   model: Blog,
   buildQuery: buildBlogQuery,
-  allowedSort: ['createdAt','updatedAt','publishedAt','title'],
+  allowedSort: ['createdAt', 'updatedAt', 'publishedAt', 'title'],
 });
 
 export const getBlogById = makeGetByIdHandler({
@@ -38,9 +41,18 @@ export const updateBlog = makeUpdateHandler({
   model: Blog,
   normalize: normalizeBlogBody,
   allowedFields: [
-    'title','slug','content','summary','author',
-    'tags','links','coverImageUrl','readingTime',
-    'isFeatured','status','publishedAt',
+    'title',
+    'slug',
+    'content',
+    'summary',
+    'author',
+    'tags',
+    'links',
+    'coverImageUrl',
+    'readingTime',
+    'isFeatured',
+    'status',
+    'publishedAt',
   ],
 });
 

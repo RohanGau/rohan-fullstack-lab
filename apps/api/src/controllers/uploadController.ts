@@ -1,8 +1,7 @@
-
 import { Request, Response } from 'express';
-import { PutObjectCommand , HeadObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3';
+import { PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { s3, BUCKET, ALLOWED_MIME, buildObjectKey, toCdnUrl } from "../services/r2"
+import { s3, BUCKET, ALLOWED_MIME, buildObjectKey, toCdnUrl } from '../services/r2';
 import { deleteAssetSchema, generateUploadUrlSchema } from '../validation/documents';
 import { validateSchema } from '../validation';
 import logger from '../utils/logger';
@@ -18,11 +17,11 @@ export const generateUploadUrl = async (req: Request, res: Response) => {
   try {
     // req.validatedBody set by validateSchema
     // @ts-ignore
-     const { filename, contentType } = (req.validatedBody ?? {}) as {
+    const { filename, contentType } = (req.validatedBody ?? {}) as {
       filename?: string;
       contentType?: string;
     };
-    
+
     if (!filename || !contentType) {
       return res.status(400).json({ error: 'Filename and contentType are required' });
     }

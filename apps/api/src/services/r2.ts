@@ -1,6 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
-import { env } from "../config/env"
+import { env } from '../config/env';
 
 export const s3 = new S3Client({
   region: 'auto',
@@ -22,7 +22,11 @@ export const ALLOWED_MIME = new Set([
 ]);
 
 export function sanitizeBaseName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-').slice(0, 100).toLowerCase();
+  return name
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 100)
+    .toLowerCase();
 }
 
 export function buildObjectKey(filename: string) {

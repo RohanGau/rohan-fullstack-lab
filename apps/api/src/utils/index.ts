@@ -71,10 +71,13 @@ export function normalizeSlotBody(body: any) {
   return out;
 }
 
-
 export function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== 'string') return fallback;
-  try { return JSON.parse(value) as T; } catch { return fallback; }
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 export function escapeRegex(input: string) {
@@ -89,9 +92,14 @@ export function buildProjectQuery(filter: any = {}) {
   if (typeof f.q === 'string' && f.q.trim()) {
     const rx = new RegExp(escapeRegex(f.q.trim()), 'i');
     q.$or = [
-      { title: rx }, { description: rx }, { techStack: rx },
-      { company: rx }, { role: rx }, { types: rx },
-      { 'links.label': rx }, { 'links.kind': rx },
+      { title: rx },
+      { description: rx },
+      { techStack: rx },
+      { company: rx },
+      { role: rx },
+      { types: rx },
+      { 'links.label': rx },
+      { 'links.kind': rx },
     ];
   }
 

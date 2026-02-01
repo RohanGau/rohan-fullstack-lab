@@ -20,8 +20,8 @@ const router = Express.Router();
  *     description: >
  *       Supports react-admin style query params:
  *
- *       - **filter**: JSON string, e.g. `{"q":"text","slug":"my-slug","status":"published","isFeatured":true,"tags":["nodejs"]}`  
- *       - **sort**: JSON tuple, e.g. `["publishedAt","DESC"]` (allowed fields: createdAt, updatedAt, publishedAt, title)  
+ *       - **filter**: JSON string, e.g. `{"q":"text","slug":"my-slug","status":"published","isFeatured":true,"tags":["nodejs"]}`
+ *       - **sort**: JSON tuple, e.g. `["publishedAt","DESC"]` (allowed fields: createdAt, updatedAt, publishedAt, title)
  *       - **range**: JSON pair `[start,end]` (0-based, inclusive) used for pagination. Response includes `X-Total-Count`.
  *
  *       To fetch by **slug**, use the list endpoint with filter:

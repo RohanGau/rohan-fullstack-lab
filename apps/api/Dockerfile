@@ -42,7 +42,7 @@ COPY apps/api/package.json apps/api/package.json
 COPY packages/types/package.json packages/types/package.json
 
 # Install ONLY production deps for API (and its local workspaces)
-RUN pnpm install --prod --frozen-lockfile --filter node-backend...
+RUN pnpm install --prod --frozen-lockfile
 
 # Bring in compiled output (no sources from other apps)
 COPY --from=build /app/packages/types/dist packages/types/dist

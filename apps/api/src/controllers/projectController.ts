@@ -3,8 +3,11 @@ import { validateSchema } from '../validation';
 import { projectSchema, projectUpdateSchema } from '../validation/project';
 import { buildProjectQuery, normalizeBody } from '../utils';
 import {
-  makeListHandler, makeGetByIdHandler,
-  makeCreateHandler, makeUpdateHandler, makeDeleteHandler
+  makeListHandler,
+  makeGetByIdHandler,
+  makeCreateHandler,
+  makeUpdateHandler,
+  makeDeleteHandler,
 } from '../lib/controller';
 
 export const validateProjectCreate = validateSchema(projectSchema);
@@ -35,9 +38,17 @@ export const updateProject = makeUpdateHandler({
   model: Project,
   normalize: normalizeBody,
   allowedFields: [
-    'title','description','company','role',
-    'techStack','features','links','year','thumbnailUrl',
-    'types','isFeatured',
+    'title',
+    'description',
+    'company',
+    'role',
+    'techStack',
+    'features',
+    'links',
+    'year',
+    'thumbnailUrl',
+    'types',
+    'isFeatured',
   ],
 });
 

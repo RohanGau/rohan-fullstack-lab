@@ -12,7 +12,7 @@ const apiGlobs = isDev
   : [fromRoot('dist/routes/**/*.js'), fromRoot('dist/controllers/**/*.js')];
 
 if (process.env.SWAGGER_DEBUG === '1') {
-  const matched = apiGlobs.flatMap(g => glob.sync(g));
+  const matched = apiGlobs.flatMap((g) => glob.sync(g));
   console.log('Swagger files:', matched);
 }
 

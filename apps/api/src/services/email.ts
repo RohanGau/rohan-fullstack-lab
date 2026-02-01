@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 import { SlotNotificationFields, SlotUserNotificationFields } from '../types/email';
 
 const transporter = nodemailer.createTransport({

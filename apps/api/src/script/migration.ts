@@ -29,7 +29,7 @@ async function migrateSkills() {
     const oldSkills = profile.skills as unknown as string[];
 
     // 💡 Convert string skills → full skill objects
-    const newSkills = oldSkills.map(s => ({
+    const newSkills = oldSkills.map((s) => ({
       name: String(s).trim(),
       rating: 5,
       yearsOfExperience: 1,
@@ -50,7 +50,7 @@ async function migrateSkills() {
   process.exit(0);
 }
 
-migrateSkills().catch(err => {
+migrateSkills().catch((err) => {
   logger.error('❌ Migration failed:', err);
   process.exit(1);
 });

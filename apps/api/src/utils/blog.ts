@@ -45,13 +45,14 @@ export function buildBlogQuery(filter: AnyObj): FilterQuery<typeof Blog> {
   return q;
 }
 
-
 export function normalizeBlogBody(body: any) {
   const copy = { ...(body || {}) };
 
   // Normalize tags
   if (Array.isArray(copy.tags)) {
-    copy.tags = Array.from(new Set(copy.tags.map((t: any) => String(t).trim().toLowerCase()).filter(Boolean)));
+    copy.tags = Array.from(
+      new Set(copy.tags.map((t: any) => String(t).trim().toLowerCase()).filter(Boolean))
+    );
   }
 
   // Normalize links
@@ -77,4 +78,3 @@ export function normalizeBlogBody(body: any) {
 
   return copy;
 }
-

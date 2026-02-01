@@ -1,5 +1,10 @@
 import Express from 'express';
-import { deleteAsset, generateUploadUrl, validateDeleteAsset, validateGenerateUploadUrl } from '../controllers/uploadController';
+import {
+  deleteAsset,
+  generateUploadUrl,
+  validateDeleteAsset,
+  validateGenerateUploadUrl,
+} from '../controllers/uploadController';
 import { requireAdmin } from '../middleware/requireAuth';
 
 const router = Express.Router();

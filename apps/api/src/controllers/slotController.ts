@@ -3,8 +3,11 @@ import { slotSchema, slotUpdateSchema } from '../validation/slot';
 import Slot from '../models/Slot';
 import { normalizeSlotBody } from '../utils';
 import {
-  makeListHandler, makeGetByIdHandler,
-  makeCreateHandler, makeUpdateHandler, makeDeleteHandler
+  makeListHandler,
+  makeGetByIdHandler,
+  makeCreateHandler,
+  makeUpdateHandler,
+  makeDeleteHandler,
 } from '../lib/controller';
 import { buildSlotQuery } from '../utils';
 import { sendAdminNotification, sendUserNotification } from '../services/email';
@@ -32,11 +35,11 @@ export const createSlot = makeCreateHandler({
   normalize: normalizeSlotBody,
   allowedFields: ['name', 'email', 'date', 'duration', 'message', 'status'],
   afterCreate: async (slot) => {
-  await sendAdminNotification({
-    ...slot.toObject(),
-    message: slot.message ?? undefined,
-  });
-}
+    await sendAdminNotification({
+      ...slot.toObject(),
+      message: slot.message ?? undefined,
+    });
+  },
 });
 
 export const updateSlot = makeUpdateHandler({

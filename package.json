@@ -1,7 +1,7 @@
 {
   "name": "rohan-fullstack-lab",
   "version": "1.0.0",
-  "description": "",
+  "description": "Full-stack portfolio monorepo with Next.js, Express, and React Admin",
   "main": "index.js",
   "scripts": {
     "build:types": "pnpm --filter @fullstack-lab/types... build",
@@ -9,12 +9,17 @@
     "build:web": "pnpm --filter web... build",
     "build:admin": "pnpm --filter admin... build",
     "build": "pnpm build:types && pnpm build:api && pnpm run build:web & pnpm run build:admin & wait",
-    "deploy:stage": "fly deploy --config ./apps/api/fly.stage.toml --dockerfile ./apps/api/Dockerfile --remote-only .",
-    "deploy:prod": "fly deploy --config ./apps/api/fly.toml --dockerfile ./apps/api/Dockerfile --remote-only .",
+    "deploy:stage": "fly deploy --config ./apps/api/fly.stage.toml --dockerfile ./apps/api/Dockerfile --remote-only",
+    "deploy:prod": "fly deploy --config ./apps/api/fly.toml --dockerfile ./apps/api/Dockerfile --remote-only",
     "web:build": "cd apps/web && npx @cloudflare/next-on-pages@latest",
     "web:deploy": "cd apps/web && npx wrangler pages deploy .vercel/output/static --project-name=rohan-fullstack-lab",
     "web:preview": "cd apps/web && npx wrangler pages deploy .vercel/output/static --project-name=rohan-fullstack-lab --branch=develop",
-    "web:dev": "cd apps/web && npx wrangler pages dev .vercel/output/static --config wrangler.toml"
+    "web:dev": "cd apps/web && npx wrangler pages dev .vercel/output/static --config wrangler.toml",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test",
+    "test:api": "pnpm --filter node-backend test",
+    "prepare": "husky"
   },
   "pnpm": {
     "overrides": {
@@ -22,12 +27,26 @@
       "react-router": "7.8.0"
     }
   },
-  "keywords": [],
-  "author": "",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "portfolio",
+    "monorepo",
+    "nextjs",
+    "express",
+    "typescript"
+  ],
+  "author": "Rohan Kumar",
   "license": "ISC",
   "packageManager": "pnpm@10.14.0",
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.13",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
+    "prettier": "^3.6.2",
     "wrangler": "^4.28.1"
   }
 }
