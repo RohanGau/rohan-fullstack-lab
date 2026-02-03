@@ -19,38 +19,30 @@ jobs:
       PAGES_PROJECT: rohan-fullstack-lab
 
     steps:
-      - name: Prevent interactive login
-        run: rm -rf ~/.wrangler 2>/dev/null || true
-
+      # ─────────────────────────────────────────────────────────────
+      # SETUP
+      # ─────────────────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Environment Variables by Branch
+      - name: Determine environment
+        id: env
         run: |
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
-            echo "BRANCH_NAME=main" >> $GITHUB_ENV
-            # Production environment variables
-            echo "NEXT_PUBLIC_API_URL=https://api.rohangautam.dev" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_SITE_URL=https://rohangautam.dev" >> $GITHUB_ENV
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "ENV_FILE=.env.production" >> $GITHUB_OUTPUT
+            echo "DEPLOY_ENV=production" >> $GITHUB_OUTPUT
+            echo "BRANCH=" >> $GITHUB_OUTPUT
           else
-            echo "DEPLOY_ENV=preview" >> $GITHUB_ENV
-            echo "BRANCH_NAME=develop" >> $GITHUB_ENV
-            # Preview/Stage environment variables
-            echo "NEXT_PUBLIC_API_URL=https://rohan-backend-api-stage.fly.dev" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_SITE_URL=https://develop.rohan-fullstack-lab.pages.dev" >> $GITHUB_ENV
+            echo "ENV_FILE=.env.stage" >> $GITHUB_OUTPUT
+            echo "DEPLOY_ENV=preview" >> $GITHUB_OUTPUT
+            echo "BRANCH=develop" >> $GITHUB_OUTPUT
           fi
-          # Common environment variables (same for both)
-          echo "NEXT_PUBLIC_CDN_URL=https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAABsqCmqlPQbsTFKY" >> $GITHUB_ENV
-          echo "R2_PUBLIC_BASE_URL=https://assets.rohangautam.dev" >> $GITHUB_ENV
 
-      - name: Debug - Show Environment
+      - name: Show deployment info
         run: |
-          echo "Deploy Environment: $DEPLOY_ENV"
-          echo "Branch: $BRANCH_NAME"
-          echo "API URL: $NEXT_PUBLIC_API_URL"
-          echo "Site URL: $NEXT_PUBLIC_SITE_URL"
+          echo "🎯 Environment: ${{ steps.env.outputs.DEPLOY_ENV }}"
+          echo "📁 Using: apps/web/${{ steps.env.outputs.ENV_FILE }}"
+          echo "🌿 Branch: ${{ steps.env.outputs.BRANCH || 'production' }}"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -64,82 +56,66 @@ jobs:
           run_install: false
 
       - name: Get pnpm store path
-        id: pnpm-store
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build @fullstack-lab/types
-        run: pnpm -F @fullstack-lab/types build
+      # ─────────────────────────────────────────────────────────────
+      # BUILD
+      # ─────────────────────────────────────────────────────────────
+      - name: Build shared types
+        run: pnpm build:types
 
-      - name: Verify workspace link
+      - name: Clean previous build
+        run: rm -rf apps/web/.vercel apps/web/.next apps/web/.wrangler
+
+      - name: Build for Cloudflare
         run: |
-          ls -la apps/web/node_modules/@fullstack-lab || true
-          pnpm why @fullstack-lab/types
-
-      - name: Clean previous build artifacts
-        run: |
-          rm -rf apps/web/.vercel
-          rm -rf apps/web/.next
-          rm -rf apps/web/.wrangler
-
-      - name: Build Next.js for Cloudflare
-        run: pnpm web:build
-        env:
-          NEXT_PUBLIC_API_URL: ${{ env.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_CDN_URL: ${{ env.NEXT_PUBLIC_CDN_URL }}
-          NEXT_PUBLIC_SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ env.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
-          R2_PUBLIC_BASE_URL: ${{ env.R2_PUBLIC_BASE_URL }}
+          if [ "${{ steps.env.outputs.DEPLOY_ENV }}" = "production" ]; then
+            pnpm web:build:prod
+          else
+            pnpm web:build:stage
+          fi
 
       - name: Verify build output
         run: |
-          set -e
           ROOT="apps/web/.vercel/output"
-          echo "Listing $ROOT:"
-          ls -la "$ROOT" || true
-          echo "Listing $ROOT/static:"
-          ls -la "$ROOT/static" || true
-          
-          if [ -f "$ROOT/static/_worker.js" ] || [ -f "$ROOT/static/_worker.mjs" ] || [ -d "$ROOT/functions" ]; then
-            echo "✅ Worker/functions present (SSR/edge build)."
-            exit 0
+          if [ -d "$ROOT/static" ]; then
+            echo "✅ Build successful"
+            ls -la "$ROOT/static" | head -20
+          else
+            echo "❌ Build failed - no output found"
+            exit 1
           fi
-          
-          if [ -f "$ROOT/config.json" ] && [ -d "$ROOT/static" ]; then
-            echo "✅ Static build detected."
-            exit 0
-          fi
-          
-          echo "❌ Could not find expected Pages artifacts."
-          exit 1
 
+      # ─────────────────────────────────────────────────────────────
+      # DEPLOY
+      # ─────────────────────────────────────────────────────────────
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          NO_COLOR: "1"
         run: |
           cd apps/web
-          # Use wrangler from devDependencies (installed via pnpm)
-          npx wrangler --version
-          if [ "$DEPLOY_ENV" = "production" ]; then
+          
+          if [ "${{ steps.env.outputs.DEPLOY_ENV }}" = "production" ]; then
             echo "🚀 Deploying to PRODUCTION"
             npx wrangler pages deploy .vercel/output/static \
-              --project-name="${{ env.PAGES_PROJECT }}" \
+              --project-name=${{ env.PAGES_PROJECT }} \
               --commit-dirty=true
           else
-            echo "🔧 Deploying to PREVIEW ($BRANCH_NAME)"
+            echo "🔧 Deploying to PREVIEW"
             npx wrangler pages deploy .vercel/output/static \
-              --project-name="${{ env.PAGES_PROJECT }}" \
-              --branch="${BRANCH_NAME}" \
+              --project-name=${{ env.PAGES_PROJECT }} \
+              --branch=${{ steps.env.outputs.BRANCH }} \
               --commit-dirty=true
           fi

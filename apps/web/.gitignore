@@ -30,16 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env
+# env files (local only - contains test keys)
 .env.local
-.env.*.local
 
 # vercel
 .vercel
 
-# Allow these env files to be committed (no secrets)
+# Allow these env files to be committed (no secrets, just URLs)
 !.env.example
+!.env.production
+!.env.stage
 
 # typescript
 *.tsbuildinfo
