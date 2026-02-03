@@ -147,6 +147,42 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             }),
           }}
         />
+        {/* JSON-LD: SiteNavigationElement - helps Google understand site structure for sitelinks */}
+        <Script
+          id="ld-navigation"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'SiteNavigationElement',
+                  '@id': `${siteUrl}/#navigation`,
+                  name: 'About',
+                  url: `${siteUrl}/about`,
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  '@id': `${siteUrl}/#navigation`,
+                  name: 'Blog',
+                  url: `${siteUrl}/blog`,
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  '@id': `${siteUrl}/#navigation`,
+                  name: 'Projects',
+                  url: `${siteUrl}/project`,
+                },
+                {
+                  '@type': 'SiteNavigationElement',
+                  '@id': `${siteUrl}/#navigation`,
+                  name: 'Contact',
+                  url: `${siteUrl}/contact`,
+                },
+              ],
+            }),
+          }}
+        />
       </body>
     </html>
   );

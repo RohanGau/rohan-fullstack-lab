@@ -85,6 +85,12 @@ jobs:
           ls -la apps/web/node_modules/@fullstack-lab || true
           pnpm why @fullstack-lab/types
 
+      - name: Clean previous build artifacts
+        run: |
+          rm -rf apps/web/.vercel
+          rm -rf apps/web/.next
+          rm -rf apps/web/.wrangler
+
       - name: Build Next.js for Cloudflare
         run: pnpm web:build
         env:
@@ -123,15 +129,16 @@ jobs:
           NO_COLOR: "1"
         run: |
           cd apps/web
-          npx wrangler@4.29.0 --version
+          # Use wrangler from devDependencies (installed via pnpm)
+          npx wrangler --version
           if [ "$DEPLOY_ENV" = "production" ]; then
             echo "🚀 Deploying to PRODUCTION"
-            npx wrangler@4.29.0 pages deploy .vercel/output/static \
+            npx wrangler pages deploy .vercel/output/static \
               --project-name="${{ env.PAGES_PROJECT }}" \
               --commit-dirty=true
           else
             echo "🔧 Deploying to PREVIEW ($BRANCH_NAME)"
-            npx wrangler@4.29.0 pages deploy .vercel/output/static \
+            npx wrangler pages deploy .vercel/output/static \
               --project-name="${{ env.PAGES_PROJECT }}" \
               --branch="${BRANCH_NAME}" \
               --commit-dirty=true
