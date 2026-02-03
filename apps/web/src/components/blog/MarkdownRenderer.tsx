@@ -5,6 +5,21 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const components: Components = {
+  // Image component for CDN and external images
+  // Using span wrapper to avoid <figure> inside <p> hydration error
+  img: ({ src, alt, ...props }) => (
+    <span className="block my-6">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt || ''}
+        className="rounded-lg border shadow-sm w-full max-w-2xl mx-auto"
+        loading="lazy"
+        {...props}
+      />
+      {alt && <span className="block mt-2 text-center text-sm text-muted-foreground">{alt}</span>}
+    </span>
+  ),
   h1: ({ children, ...props }) => (
     <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl" {...props}>
       {children}
