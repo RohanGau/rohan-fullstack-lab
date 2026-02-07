@@ -43,12 +43,10 @@
   - Decouple: `POST /contact` → Queue → Email Worker
   - Enables retry logic and better failure handling
 
-### 1.3 No Read Replica / Database Scaling Strategy
+### 1.3 Read Replica / Database Scaling Strategy (Partially Addressed)
 
-- **Current**: Single MongoDB connection
-- **Issue**: No read/write splitting
-- **Issue**: No connection pooling configuration
-- **Recommendation**: Add connection pooling config
+- **Current**: Single MongoDB connection (primary), with connection pooling configured.
+- **Implemented**: Pooling + timeout config exists in `src/db/index.ts`:
   ```typescript
   mongoose.connect(MONGODB_URI, {
     maxPoolSize: 10,
@@ -57,16 +55,26 @@
     socketTimeoutMS: 45000,
   });
   ```
-
-### 1.4 Caching Layer is Incomplete
-
-- **Current**: Redis packages installed (`ioredis`, `@upstash/redis`) but NEVER used
-- **Issue**: Rate limiting uses in-memory store (won't work with multiple instances)
-- **Issue**: No API response caching
+- **Gap**: No read/write splitting and no explicit replica-read preference strategy for read-heavy endpoints.
 - **Recommendation**:
-  - Implement Redis-backed rate limiting
-  - Add cache layer for expensive queries (blog list, profile)
-  - Use cache-aside pattern with TTL
+  - Keep existing pooling settings.
+  - Add read preference strategy (`secondaryPreferred`) for safe read-only endpoints once replica set is enabled.
+  - Add Mongo connection-pool metrics to observability dashboards.
+
+### 1.4 Caching Layer is Partially Implemented
+
+- **Current**: `@upstash/redis` is actively used for cache-aside response caching and namespace version invalidation in shared CRUD handlers.
+- **Implemented**:
+  - TTL cache (`5 minutes`) and Redis wrapper in `src/lib/cache.ts`.
+  - Cached list/detail handlers via `src/lib/controller.ts` used by blogs/projects/slots.
+- **Gap**:
+  - Rate limiting still uses in-memory store (`express-rate-limit` default store), not Redis-backed.
+  - Some controllers (e.g., profile/contact) still bypass shared cached handlers.
+  - `ioredis` dependency appears unused and can be removed unless intentionally adopted.
+- **Recommendation**:
+  - Implement Redis-backed rate limiter store for multi-instance correctness.
+  - Migrate remaining high-read endpoints to shared cache-aside handlers.
+  - Remove unused Redis dependencies or standardize on one Redis client approach.
 
 ---
 

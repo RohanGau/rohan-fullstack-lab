@@ -22,6 +22,7 @@ import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
 import { allowedOrigins } from './utils/constant';
 import { initSentry, sentryErrorHandler, flushSentry } from './utils/sentry';
+import { createRedisRateLimitStore } from './lib/redis-rest';
 
 // ============================================
 // Environment Configuration
@@ -63,11 +64,28 @@ app.use(helmet());
 // Production: Strict limits to protect against abuse
 // Stage/Dev: Disabled or very lenient for development workflow
 const isProduction = process.env.NODE_ENV === 'production';
+const rateLimitWindowMs = 15 * 60 * 1000;
+
+const generalRateLimitStore = createRedisRateLimitStore({
+  prefix: 'rate-limit:general:',
+  windowMs: rateLimitWindowMs,
+});
+const writeRateLimitStore = createRedisRateLimitStore({
+  prefix: 'rate-limit:write:',
+  windowMs: rateLimitWindowMs,
+});
+
+if (!generalRateLimitStore || !writeRateLimitStore) {
+  logger.warn(
+    'Upstash Redis is not configured for rate limiting. Falling back to in-memory store (single-instance only).'
+  );
+}
 
 // Tier 1: General API rate limit
 const generalLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: rateLimitWindowMs, // 15 minutes
   max: isProduction ? 500 : 5000, // 500 in prod, 5000 in stage/dev
+  store: generalRateLimitStore,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -82,8 +100,9 @@ const generalLimiter: RateLimitRequestHandler = rateLimit({
 
 // Tier 2: Stricter limit for write operations (POST, PUT, DELETE)
 const writeLimiter: RateLimitRequestHandler = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: rateLimitWindowMs, // 15 minutes
   max: isProduction ? 50 : 500, // 50 in prod, 500 in stage/dev
+  store: writeRateLimitStore,
   message: { error: 'Too many write requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,

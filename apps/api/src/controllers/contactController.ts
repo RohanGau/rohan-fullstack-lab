@@ -5,12 +5,16 @@ import logger from '../utils/logger';
 import { validateSchema } from '../validation';
 import { contactSchema } from '../validation/contact';
 import { CONTACT_ERROR_MESSAGES } from '../utils/constant';
+import { makeListHandler } from '../lib/controller';
+import { cache } from '../lib/cache';
 
 export const validateContactCreate = validateSchema(contactSchema);
+const NS = 'contacts';
 
 export const createContact = async (req: Request, res: Response) => {
   try {
-    const contact = await Contact.create(req.body);
+    const contact = await Contact.create(req.validatedBody);
+    await cache.bumpVersionNS(NS);
     const result = contact.toObject();
     result.id = result._id;
     delete result._id;
@@ -22,35 +26,12 @@ export const createContact = async (req: Request, res: Response) => {
   }
 };
 
-export const getContacts = async (req: Request, res: Response) => {
-  try {
-    const { _start = 0, _end = 10, _sort = 'createdAt', _order = 'DESC' } = req.query;
-
-    const skip = Number(_start);
-    const limit = Number(_end) - skip;
-
-    const sort: any = { [_sort as string]: _order === 'DESC' ? -1 : 1 };
-
-    const total = await Contact.countDocuments();
-    const contacts = await Contact.find().sort(sort).skip(skip).limit(limit);
-
-    const data = contacts.map((item) => {
-      const obj = item.toObject();
-      obj.id = obj._id;
-      delete obj._id;
-      return obj;
-    });
-
-    res.set('X-Total-Count', total.toString());
-    res.set('Access-Control-Expose-Headers', 'X-Total-Count, Content-Range');
-    res.set('Content-Range', `blogs ${skip}-${skip + contacts.length - 1}/${total}`);
-
-    res.status(200).json(data);
-  } catch (err) {
-    logger.error('❌ Failed to fetch contacts:', err);
-    res.status(500).json({ error: CONTACT_ERROR_MESSAGES.FETCH_FAILED });
-  }
-};
+export const getContacts = makeListHandler({
+  ns: NS,
+  model: Contact,
+  buildQuery: (filter) => filter || {},
+  allowedSort: ['createdAt', 'updatedAt', 'name', 'email'],
+});
 
 export const deleteContact = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -63,6 +44,7 @@ export const deleteContact = async (req: Request, res: Response) => {
     if (!deleted) {
       return res.status(404).json({ error: 'Contact not found' });
     }
+    await cache.bumpVersionNS(NS);
     res.status(204).send();
   } catch (err) {
     logger.error('❌ Delete failed:', err);
