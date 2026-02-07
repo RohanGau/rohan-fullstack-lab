@@ -112,6 +112,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.863.0
         version: 3.863.0
+      '@fullstack-lab/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@fullstack-lab/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -405,6 +408,24 @@ importers:
       wrangler:
         specifier: ^4.62.0
         version: 4.62.0
+
+  apps/worker-email:
+    dependencies:
+      '@fullstack-lab/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
+      '@fullstack-lab/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.2
+      wrangler:
+        specifier: ^4.28.1
+        version: 4.62.0
+
+  packages/constants: {}
 
   packages/types:
     devDependencies:

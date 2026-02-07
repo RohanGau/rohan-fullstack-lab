@@ -11,6 +11,7 @@
 !apps/api/
 !packages/
 !packages/types/
+!packages/constants/
 
 # Ignore build artifacts and node_modules in apps/api
 apps/api/node_modules

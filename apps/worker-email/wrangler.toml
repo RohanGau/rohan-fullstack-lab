@@ -1,0 +1,10 @@
+name = "email-worker"
+main = "src/index.ts"
+compatibility_date = "2026-02-07"
+
+[[queues.consumers]]
+queue = "email-notifications-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+dead_letter_queue = "email-notifications-dlq"

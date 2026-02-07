@@ -19,6 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.863.0",
     "@aws-sdk/s3-request-presigner": "^3.863.0",
+    "@fullstack-lab/constants": "workspace:*",
     "@fullstack-lab/types": "workspace:*",
     "@sentry/node": "^8.55.0",
     "@upstash/redis": "^1.35.3",

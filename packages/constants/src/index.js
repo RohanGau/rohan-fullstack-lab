@@ -1,0 +1,41 @@
+const SLOT_EVENT_TYPES = Object.freeze({
+  BOOKED: 'SLOT_BOOKED',
+  UPDATED: 'SLOT_UPDATED',
+  DELETED: 'SLOT_DELETED',
+});
+
+const SLOT_EVENT_TYPE_VALUES = Object.freeze([
+  SLOT_EVENT_TYPES.BOOKED,
+  SLOT_EVENT_TYPES.UPDATED,
+  SLOT_EVENT_TYPES.DELETED,
+]);
+
+const EMAIL_DELIVERY_MODES = Object.freeze({
+  SYNC: 'sync',
+  QUEUE: 'queue',
+  DUAL: 'dual',
+});
+
+const EMAIL_DELIVERY_MODE_VALUES = Object.freeze([
+  EMAIL_DELIVERY_MODES.SYNC,
+  EMAIL_DELIVERY_MODES.QUEUE,
+  EMAIL_DELIVERY_MODES.DUAL,
+]);
+
+const QUEUE_EVENT_SOURCES = Object.freeze({
+  API: 'api',
+});
+
+const EMAIL_QUEUE_DEFAULTS = Object.freeze({
+  PRIMARY: 'email-notifications-queue',
+  DEAD_LETTER: 'email-notifications-dlq',
+});
+
+module.exports = {
+  SLOT_EVENT_TYPES,
+  SLOT_EVENT_TYPE_VALUES,
+  EMAIL_DELIVERY_MODES,
+  EMAIL_DELIVERY_MODE_VALUES,
+  QUEUE_EVENT_SOURCES,
+  EMAIL_QUEUE_DEFAULTS,
+};

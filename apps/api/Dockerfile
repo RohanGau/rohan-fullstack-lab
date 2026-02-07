@@ -13,6 +13,7 @@ COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
 COPY apps/api/package.json apps/api/package.json
 COPY packages/types/package.json packages/types/package.json
+COPY packages/constants/package.json packages/constants/package.json
 
 # Install deps for the filtered workspaces only (api + types)
 # --ignore-scripts: Skip prepare script (husky) which is not needed in Docker
@@ -20,8 +21,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ---------- Build (compile types first, then API) ----------
 FROM base AS build
-# Now bring in only the source for types and the API
+# Now bring in only the source for workspace deps and the API
 COPY packages/types/ packages/types/
+COPY packages/constants/ packages/constants/
 RUN pnpm -F @fullstack-lab/types build
 
 COPY apps/api/ apps/api/
@@ -41,6 +43,7 @@ COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
 COPY apps/api/package.json apps/api/package.json
 COPY packages/types/package.json packages/types/package.json
+COPY packages/constants/package.json packages/constants/package.json
 
 # Install ONLY production deps for API (and its local workspaces)
 # --ignore-scripts: Skip prepare script (husky) which is not needed in Docker
@@ -48,6 +51,7 @@ RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Bring in compiled output (no sources from other apps)
 COPY --from=build /app/packages/types/dist packages/types/dist
+COPY --from=build /app/packages/constants packages/constants
 COPY --from=build /app/apps/api/dist apps/api/dist
 
 WORKDIR /app/apps/api
