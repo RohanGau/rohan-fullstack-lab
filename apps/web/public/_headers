@@ -1,0 +1,24 @@
+# Cloudflare Pages Security Headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  # HSTS: Force HTTPS for 1 year, including subdomains
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+  # CSP: Content Security Policy to prevent XSS
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.rohangautam.dev https://challenges.cloudflare.com https://*.sentry.io; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+  # X-Frame-Options: Prevent clickjacking (legacy, CSP frame-ancestors is preferred)
+  X-Frame-Options: DENY
+
+  # X-Content-Type-Options: Prevent MIME sniffing
+  X-Content-Type-Options: nosniff
+
+  # Referrer-Policy: Control referrer information
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Permissions-Policy: Restrict browser features
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # X-XSS-Protection: Legacy XSS protection (modern browsers use CSP)
+  X-XSS-Protection: 1; mode=block

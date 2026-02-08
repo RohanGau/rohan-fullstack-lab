@@ -17,6 +17,8 @@ export const getAllProfiles = makeListHandler({
   model: Profile,
   buildQuery: (filter) => filter || {},
   allowedSort: ['createdAt', 'updatedAt', 'name', 'email', 'yearsOfExperience'],
+  // SECURITY: Explicit allowlist for filterable fields to prevent NoSQL injection
+  allowedFilterFields: ['name', 'email', 'title', 'location', 'yearsOfExperience'],
 });
 
 export const getProfileById = makeGetByIdHandler({

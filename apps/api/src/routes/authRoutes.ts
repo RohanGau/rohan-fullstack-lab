@@ -11,6 +11,7 @@ import {
   validateAuthTokenExchange,
 } from '../controllers/authController';
 import { requireAuth } from '../middleware/requireAuth';
+import { loginIpRateLimit, loginAccountRateLimit } from '../middleware/authRateLimit';
 
 const router = express.Router();
 
@@ -18,7 +19,14 @@ const router = express.Router();
 router.post('/token', validateAuthTokenExchange, exchangeLegacyToken);
 
 // Username/email + password login
-router.post('/login', validateAuthLogin, loginWithCredentials);
+// SECURITY: Dual-layer rate limiting to prevent brute-force attacks
+router.post(
+  '/login',
+  loginIpRateLimit as any,
+  loginAccountRateLimit as any,
+  validateAuthLogin,
+  loginWithCredentials
+);
 
 // Refresh rotation
 router.post('/refresh', validateAuthRefresh, refreshAccessToken);

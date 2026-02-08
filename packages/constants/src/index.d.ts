@@ -59,3 +59,14 @@ export declare const HTTP_HEADERS: {
   readonly IDEMPOTENCY_STATUS: 'x-idempotency-status';
   readonly API_VERSION: 'x-api-version';
 };
+
+export declare const MUTATION_HTTP_METHODS: readonly ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+export type MutationHttpMethod = (typeof MUTATION_HTTP_METHODS)[number];
+
+export declare const AUDIT_LOG_DEFAULTS: {
+  readonly MAX_CHANGED_FIELDS: 50;
+  readonly MAX_QUERY_KEYS: 20;
+  readonly MAX_USER_AGENT_LENGTH: 256;
+  readonly MAX_PATH_LENGTH: 512;
+};

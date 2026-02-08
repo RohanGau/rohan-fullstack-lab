@@ -31,6 +31,8 @@ export const getContacts = makeListHandler({
   model: Contact,
   buildQuery: (filter) => filter || {},
   allowedSort: ['createdAt', 'updatedAt', 'name', 'email'],
+  // SECURITY: Explicit allowlist for filterable fields to prevent NoSQL injection
+  allowedFilterFields: ['name', 'email', 'subject', 'message'],
 });
 
 export const deleteContact = async (req: Request, res: Response) => {

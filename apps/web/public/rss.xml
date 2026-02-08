@@ -4,10 +4,18 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Sun, 08 Feb 2026 11:11:32 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 08 Feb 2026 13:29:08 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[From Portfolio App to Production-Grade Frontend: A Senior Engineer’s Before/After Playbook]]></title>
+            <link>https://rohangautam.dev/blog/69887b673101b63fab516035</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/69887b673101b63fab516035</guid>
+            <pubDate>Sun, 08 Feb 2026 17:31:00 GMT</pubDate>
+            <description><![CDATA[Most frontend systems do not fail because React code is “wrong.”  
+They fail because reliability, observability, performance, and security are treated as option]]></description>
+        </item>
         <item>
             <title><![CDATA[Designing Resilient Asynchronous Systems: From Synchronous APIs to Event-Driven Architecture at Scale]]></title>
             <link>https://rohangautam.dev/blog/6987849d93983da8c1b7dc92</link>

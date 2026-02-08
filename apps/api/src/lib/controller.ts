@@ -5,6 +5,7 @@ import logger from '../utils/logger';
 import { cache } from './cache';
 import { ListOptions, ByIdOptions, WriteOptions } from '../types/controller';
 import { parseListParams, setListHeaders } from './http';
+import { sanitizeMongoFilter } from '../utils/sanitizeFilter';
 
 export function makeListHandler<T>(opts: ListOptions<T>) {
   const {
@@ -13,6 +14,7 @@ export function makeListHandler<T>(opts: ListOptions<T>) {
     buildQuery,
     transform = defaultTransform,
     allowedSort = ['createdAt', 'updatedAt', 'year', 'title'],
+    allowedFilterFields = [], // SECURITY: Default to empty (no filtering unless explicit)
     ttlSeconds = cache.DEFAULT_TTL,
   } = opts;
 
@@ -22,7 +24,9 @@ export function makeListHandler<T>(opts: ListOptions<T>) {
       const sortField = allowedSort.includes(sort[0]) ? sort[0] : 'createdAt';
       const sortOrder = sort[1] === 'DESC' ? -1 : 1;
 
-      const mongoFilter = buildQuery(filter);
+      // SECURITY: Sanitize filter to prevent NoSQL injection
+      const sanitizedFilter = sanitizeMongoFilter(filter, allowedFilterFields);
+      const mongoFilter = buildQuery(sanitizedFilter);
 
       // cache key
       const version = await cache.getVersionNS(ns);

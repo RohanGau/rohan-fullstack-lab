@@ -56,6 +56,15 @@ const HTTP_HEADERS = Object.freeze({
   API_VERSION: 'x-api-version',
 });
 
+const MUTATION_HTTP_METHODS = Object.freeze(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+const AUDIT_LOG_DEFAULTS = Object.freeze({
+  MAX_CHANGED_FIELDS: 50,
+  MAX_QUERY_KEYS: 20,
+  MAX_USER_AGENT_LENGTH: 256,
+  MAX_PATH_LENGTH: 512,
+});
+
 module.exports = {
   SLOT_EVENT_TYPES,
   SLOT_EVENT_TYPE_VALUES,
@@ -67,4 +76,6 @@ module.exports = {
   AUTH_TOKEN_TYPES,
   AUTH_TOKEN_DEFAULTS,
   HTTP_HEADERS,
+  MUTATION_HTTP_METHODS,
+  AUDIT_LOG_DEFAULTS,
 };
