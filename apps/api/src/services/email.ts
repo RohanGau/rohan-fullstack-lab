@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import { SlotNotificationFields, SlotUserNotificationFields } from '../types/email';
+import { createCircuitBreaker } from '../lib/circuitBreaker';
+import logger from '../utils/logger';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -9,7 +11,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendAdminNotification({
+// Core email sending function (without circuit breaker)
+async function _sendAdminNotificationInternal({
   name,
   email,
   date,
@@ -17,7 +20,7 @@ export async function sendAdminNotification({
   message,
 }: SlotNotificationFields): Promise<void> {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.ADMIN_EMAIL) {
-    console.warn('Email not configured—email not sent.');
+    logger.warn('Email not configured—admin notification skipped');
     return;
   }
   await transporter.sendMail({
@@ -36,7 +39,30 @@ Message: ${message || '(none)'}
   });
 }
 
-export async function sendUserNotification({
+// Circuit breaker wrapped version
+const adminNotificationBreaker = createCircuitBreaker(_sendAdminNotificationInternal, {
+  name: 'sendAdminNotification',
+  timeout: 10000, // 10 second timeout
+  errorThresholdPercentage: 50, // Open after 50% failure rate
+  resetTimeout: 30000, // Retry after 30 seconds
+});
+
+// Exported function with circuit breaker protection
+export async function sendAdminNotification(fields: SlotNotificationFields): Promise<void> {
+  try {
+    await adminNotificationBreaker.fire(fields);
+  } catch (error) {
+    // Circuit breaker will handle failures gracefully
+    // Don't throw - we don't want email failures to block slot booking
+    logger.error(
+      { error, name: fields.name, email: fields.email },
+      'Admin notification failed, but slot booking succeeded'
+    );
+  }
+}
+
+// Core email sending function (without circuit breaker)
+async function _sendUserNotificationInternal({
   email,
   type = 'updated',
   date,
@@ -47,7 +73,7 @@ export async function sendUserNotification({
   let subject: string, text: string;
 
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.ADMIN_EMAIL) {
-    console.warn('Email not configured—email not sent.');
+    logger.warn('Email not configured—user notification skipped');
     return;
   }
 
@@ -77,4 +103,28 @@ If this was a mistake, please book again.`;
     subject,
     text,
   });
+}
+
+// Circuit breaker wrapped version
+const userNotificationBreaker = createCircuitBreaker(_sendUserNotificationInternal, {
+  name: 'sendUserNotification',
+  timeout: 10000, // 10 second timeout
+  errorThresholdPercentage: 50, // Open after 50% failure rate
+  resetTimeout: 30000, // Retry after 30 seconds
+});
+
+// Exported function with circuit breaker protection
+export async function sendUserNotification(
+  fields: SlotUserNotificationFields & { status?: string; message?: string }
+): Promise<void> {
+  try {
+    await userNotificationBreaker.fire(fields);
+  } catch (error) {
+    // Circuit breaker will handle failures gracefully
+    // Don't throw - we don't want email failures to block slot updates
+    logger.error(
+      { error, email: fields.email, type: fields.type },
+      'User notification failed, but slot operation succeeded'
+    );
+  }
 }
