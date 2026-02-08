@@ -149,6 +149,34 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             }),
           }}
         />
+        {/* JSON-LD: Organization - SEO: Better entity understanding for publisher */}
+        <Script
+          id="ld-organization"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Rohan Kumar',
+              url: siteUrl,
+              logo: logoUrl,
+              description:
+                'Senior Software Engineer specializing in frontend architecture, performance, and scalable design systems.',
+              founder: {
+                '@type': 'Person',
+                name: 'Rohan Kumar',
+                jobTitle: 'Senior Software Engineer (Frontend)',
+              },
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'General Inquiries',
+                email: 'security@rohangautam.dev',
+                url: `${siteUrl}/contact`,
+              },
+              sameAs: ['https://github.com/rohan', 'https://www.linkedin.com/in/rohan-gautam'],
+            }),
+          }}
+        />
         {/* JSON-LD: SiteNavigationElement - helps Google understand site structure for sitelinks */}
         <Script
           id="ld-navigation"

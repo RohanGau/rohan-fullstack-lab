@@ -1,6 +1,8 @@
+import type { Metadata } from 'next';
 import BlogListContent from '@/components/blog/list/BlogListContent';
 import { getBlogList } from '@/lib/server/blogApi';
 import type { BlogsQueryRequired } from '@/types/blog';
+import { siteUrl } from '@/lib/constant';
 
 type SearchParamValue = string | string[] | undefined;
 type SearchParams = Record<string, SearchParamValue>;
@@ -51,6 +53,45 @@ function parseBlogSearchParams(searchParams: SearchParams): BlogsQueryRequired {
 }
 
 export const runtime = 'edge';
+
+// SEO: Canonical + noindex strategy for pagination and filters
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const page = Number(pickOne(params.page)) || 1;
+  const hasFilters =
+    params.tags || params.q || params.status || params.featured || params.sortField;
+
+  // Build title
+  let title = 'Blog';
+  if (page > 1) title += ` - Page ${page}`;
+  if (params.tags) title += ` - ${pickOne(params.tags)}`;
+
+  return {
+    title,
+    description:
+      'Technical articles on frontend development, React, Next.js, TypeScript, system design, and software architecture by Rohan Kumar.',
+    alternates: {
+      canonical: `${siteUrl}/blog`, // Always canonical to main listing (no query params)
+    },
+    robots: {
+      // SEO: Only index page 1 without filters to avoid duplicate content
+      // All other pages (page=2+, filtered, sorted) are noindex but follow links
+      index: page === 1 && !hasFilters,
+      follow: true, // Always follow links to discover content
+    },
+    openGraph: {
+      title: 'Blog - Rohan Kumar',
+      description:
+        'Technical articles on frontend development, React, Next.js, TypeScript, system design, and software architecture.',
+      url: `${siteUrl}/blog`,
+      type: 'website',
+    },
+  };
+}
 
 export default async function BlogListPage({
   searchParams,

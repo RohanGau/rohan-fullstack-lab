@@ -1,6 +1,8 @@
+import type { Metadata } from 'next';
 import ProjectListContent from '@/components/project/list/ProjectListContent';
 import { getProjectList } from '@/lib/server/projectApi';
 import type { ProjectsQueryRequired } from '@/types/project';
+import { siteUrl } from '@/lib/constant';
 
 type SearchParamValue = string | string[] | undefined;
 type SearchParams = Record<string, SearchParamValue>;
@@ -45,6 +47,42 @@ function parseProjectSearchParams(searchParams: SearchParams): ProjectsQueryRequ
 }
 
 export const runtime = 'edge';
+
+// SEO: Canonical + noindex strategy for pagination and filters
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const page = Number(pickOne(params.page)) || 1;
+  const hasFilters = params.types || params.q || params.featured || params.sortField;
+
+  // Build title
+  let title = 'Projects';
+  if (page > 1) title += ` - Page ${page}`;
+  if (params.types) title += ` - ${pickOne(params.types)}`;
+
+  return {
+    title,
+    description:
+      'Portfolio of production-grade projects, open-source contributions, and side projects by Rohan Kumar.',
+    alternates: {
+      canonical: `${siteUrl}/project`, // Always canonical to main listing
+    },
+    robots: {
+      // SEO: Only index page 1 without filters
+      index: page === 1 && !hasFilters,
+      follow: true,
+    },
+    openGraph: {
+      title: 'Projects - Rohan Kumar',
+      description: 'Portfolio of production-grade projects and open-source contributions.',
+      url: `${siteUrl}/project`,
+      type: 'website',
+    },
+  };
+}
 
 export default async function ProjectListPage({
   searchParams,

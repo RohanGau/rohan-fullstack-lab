@@ -31,7 +31,7 @@ export default async function BlogDetailPage(props: BlogDetailPageProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'Article',
+            '@type': 'BlogPosting', // SEO: BlogPosting is more specific than Article
             headline: blog.title,
             description: blog.summary || stripMarkdown(blog.content).slice(0, 160),
             author: blog.author ? { '@type': 'Person', name: blog.author } : undefined,
@@ -45,6 +45,10 @@ export default async function BlogDetailPage(props: BlogDetailPageProps) {
               name: 'Rohan Kumar',
               logo: { '@type': 'ImageObject', url: `${siteUrl}/icon.png` },
             },
+            // Additional BlogPosting-specific fields for Rich Results
+            wordCount: stripMarkdown(blog.content).split(/\s+/).length,
+            articleSection: blog.tags?.[0] || 'Technology',
+            inLanguage: 'en-US',
           }),
         }}
       />

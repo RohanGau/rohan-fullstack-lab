@@ -4,7 +4,7 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Sun, 08 Feb 2026 19:28:52 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 08 Feb 2026 19:51:57 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
@@ -22,9 +22,9 @@ Most frontend systems don’t fail because React code is “wrong.” They fail 
             <link>https://rohangautam.dev/blog/6987849d93983da8c1b7dc92</link>
             <guid isPermaLink="false">https://rohangautam.dev/blog/6987849d93983da8c1b7dc92</guid>
             <pubDate>Sat, 07 Feb 2026 23:48:00 GMT</pubDate>
-            <description><![CDATA[Most systems don’t fail because business logic is wrong. They fail because side effects are tightly coupled to user requests.
+            <description><![CDATA[## Async Email Notifications with Queue + Worker + Retry/DLQ (Industry-Grade Deep Dive)
 
-📧 A classic example is email not]]></description>
+Most systems don’t fail because business logic is wrong. They fail beca]]></description>
         </item>
         <item>
             <title><![CDATA[News Feed (e.g., Facebook)]]></title>
