@@ -4,6 +4,7 @@ import swaggerUi from 'swagger-ui-express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
+import { API_VERSIONS, HTTP_HEADERS } from '@fullstack-lab/constants';
 import helmet from 'helmet';
 import express from 'express';
 import http from 'http';
@@ -15,6 +16,7 @@ import projectRoutes from './routes/projectRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import slotRoutes from './routes/slotRoutes';
 import healthRoutes from './routes/healthRoutes';
+import authRoutes from './routes/authRoutes';
 import cors from 'cors';
 import { connectDB } from './db';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
@@ -23,6 +25,9 @@ import swaggerSpec from './swagger/swagger';
 import { allowedOrigins } from './utils/constant';
 import { initSentry, sentryErrorHandler, flushSentry } from './utils/sentry';
 import { createRedisRateLimitStore } from './lib/redis-rest';
+import { requestContextMiddleware, requestLoggingMiddleware } from './middleware/requestContext';
+import { requestTimeoutMiddleware } from './middleware/requestTimeout';
+import { idempotencyMiddleware } from './middleware/idempotency';
 
 // ============================================
 // Environment Configuration
@@ -40,6 +45,11 @@ initSentry();
 
 const app = express();
 const PORT = process.env.PORT || 5050;
+const requestTimeoutFromEnv = Number(process.env.REQUEST_TIMEOUT_MS);
+const REQUEST_TIMEOUT_MS =
+  Number.isFinite(requestTimeoutFromEnv) && requestTimeoutFromEnv > 0
+    ? requestTimeoutFromEnv
+    : 30_000;
 
 // ============================================
 // Trust Proxy (Required for Fly.io, Cloudflare, etc.)
@@ -56,6 +66,9 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
 // ============================================
 // Security Middleware (MUST be first)
 // ============================================
+app.use(requestContextMiddleware);
+app.use(requestLoggingMiddleware);
+app.use(requestTimeoutMiddleware(REQUEST_TIMEOUT_MS));
 
 // Helmet - Security headers
 app.use(helmet());
@@ -126,8 +139,17 @@ app.use(
       return callback(new Error('Not allowed by CORS'), false);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-    exposedHeaders: ['X-Total-Count', 'Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Idempotency-Key', 'X-Request-Id'],
+    exposedHeaders: [
+      'X-Total-Count',
+      'Content-Range',
+      HTTP_HEADERS.REQUEST_ID,
+      'X-Idempotency-Key',
+      HTTP_HEADERS.IDEMPOTENCY_STATUS,
+      HTTP_HEADERS.API_VERSION,
+      'Deprecation',
+      'Link',
+    ],
   })
 );
 
@@ -139,6 +161,9 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // JSON parsing error handler
 app.use(jsonErrorHandler);
+
+// Idempotency key support for mutation requests (POST/PUT/PATCH/DELETE)
+app.use(idempotencyMiddleware);
 
 // ============================================
 // Cache Control Middleware
@@ -166,6 +191,7 @@ app.get('/', (_, res) => {
     message: 'Server is running',
     docs: '/api-docs',
     health: '/health',
+    apiVersion: API_VERSIONS.CURRENT_PREFIX,
   });
 });
 
@@ -177,13 +203,27 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: t
 // ============================================
 // API Routes
 // ============================================
-app.use('/api/todos', todoRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/profiles', profileRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/uploads', uploadRoutes);
-app.use('/api/slots', slotRoutes);
+const apiV1Router = express.Router();
+apiV1Router.use('/auth', authRoutes);
+apiV1Router.use('/todos', todoRoutes);
+apiV1Router.use('/blogs', blogRoutes);
+apiV1Router.use('/profiles', profileRoutes);
+apiV1Router.use('/contact', contactRoutes);
+apiV1Router.use('/projects', projectRoutes);
+apiV1Router.use('/uploads', uploadRoutes);
+apiV1Router.use('/slots', slotRoutes);
+
+// Preferred versioned API
+app.use(API_VERSIONS.CURRENT_PREFIX, apiV1Router);
+
+// Legacy alias for backward compatibility while clients migrate to /api/v1
+app.use(API_VERSIONS.LEGACY_PREFIX, (req, res, next) => {
+  res.setHeader(HTTP_HEADERS.API_VERSION, API_VERSIONS.CURRENT);
+  res.setHeader('Deprecation', 'true');
+  res.setHeader('Link', `<${API_VERSIONS.CURRENT_PREFIX}>; rel="successor-version"`);
+  next();
+});
+app.use(API_VERSIONS.LEGACY_PREFIX, apiV1Router);
 
 // ============================================
 // Error Handling (MUST be last)

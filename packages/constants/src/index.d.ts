@@ -34,3 +34,28 @@ export declare const EMAIL_QUEUE_DEFAULTS: {
   readonly PRIMARY: 'email-notifications-queue';
   readonly DEAD_LETTER: 'email-notifications-dlq';
 };
+
+export declare const API_VERSIONS: {
+  readonly CURRENT: 'v1';
+  readonly CURRENT_PREFIX: '/api/v1';
+  readonly LEGACY_PREFIX: '/api';
+};
+
+export declare const AUTH_TOKEN_TYPES: {
+  readonly ACCESS: 'access';
+  readonly REFRESH: 'refresh';
+};
+
+export declare const AUTH_TOKEN_DEFAULTS: {
+  readonly ISSUER: 'rohan-fullstack-lab';
+  readonly AUDIENCE: 'rohan-fullstack-lab-admin';
+  readonly ACCESS_TTL: '15m';
+  readonly REFRESH_TTL: '7d';
+};
+
+export declare const HTTP_HEADERS: {
+  readonly REQUEST_ID: 'x-request-id';
+  readonly IDEMPOTENCY_KEY: 'idempotency-key';
+  readonly IDEMPOTENCY_STATUS: 'x-idempotency-status';
+  readonly API_VERSION: 'x-api-version';
+};

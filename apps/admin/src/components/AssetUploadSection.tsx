@@ -13,19 +13,18 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import { ALLOWED, MAX_BYTES } from '../utils/Constant';
-import { ADMIN_TOKEN_KEY } from '../AuthDataProvider';
+import { getStoredAccessToken } from '../AuthDataProvider';
 
-const isImageUrl = (url?: string | null) =>
-  !!url && /\.(png|jpe?g|webp|avif)(\?|$)/i.test(url);
+const isImageUrl = (url?: string | null) => !!url && /\.(png|jpe?g|webp|avif)(\?|$)/i.test(url);
 
 const authHeaders = (): HeadersInit => {
-  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  const token = getStoredAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
-}
+};
 
-export default function AssetUploadSection({ apiUrl = "" } : { apiUrl: string }) {
-  const PRESIGN_URL = `${apiUrl}/api/uploads/generate-upload-url`;
-  const DELETE_URL = `${apiUrl}/api/uploads`;
+export default function AssetUploadSection({ apiUrl = '' }: { apiUrl: string }) {
+  const PRESIGN_URL = `${apiUrl}/api/v1/uploads/generate-upload-url`;
+  const DELETE_URL = `${apiUrl}/api/v1/uploads`;
   const [file, setFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -219,7 +218,7 @@ export default function AssetUploadSection({ apiUrl = "" } : { apiUrl: string })
                 />
                 {progress !== null && (
                   <Typography variant="caption" color="text.secondary">
-                    {progress}% 
+                    {progress}%
                   </Typography>
                 )}
               </Box>

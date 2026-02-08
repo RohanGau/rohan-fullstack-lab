@@ -1,10 +1,12 @@
-// eslint-disable-next-line no-unused-vars
-import { Request } from 'express';
+import { AuthUser } from '@fullstack-lab/types';
+
 declare global {
   namespace Express {
     interface Request {
       validatedBody?: any;
-      user?: Partial<IUserDb> & { id: string };
+      user?: AuthUser;
+      requestId?: string;
+      idempotencyKey?: string;
     }
   }
 }

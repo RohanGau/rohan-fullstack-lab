@@ -5,3 +5,4 @@ export * from './contact';
 export * from './user';
 export * from './slot';
 export * from './queue';
+export * from './auth';

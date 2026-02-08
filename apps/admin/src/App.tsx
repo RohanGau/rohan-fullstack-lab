@@ -23,31 +23,41 @@ import SlotList from './pages/slot/SlotList';
 import SlotEdit from './pages/slot/SlotEdit';
 import SlotShow from './pages/slot/SlotShow';
 
-
 import { CustomLayout } from './layout/CustomLayout';
-import { ADMIN_TOKEN_KEY } from './AuthDataProvider';
+import { getStoredAccessToken, refreshAccessToken } from './AuthDataProvider';
 
 import authProvider from './AuthDataProvider';
 import LoginPage from './login';
 
-const httpClient  = (url: string, options: any = {}) => {
+const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
+
+const httpClient = async (url: string, options: any = {}) => {
   if (!options.headers) {
     options.headers = new Headers();
   }
   if (!(options.headers instanceof Headers)) {
     options.headers = new Headers(options.headers);
   }
-  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  const token = getStoredAccessToken();
   if (token) {
     options.headers.set('Authorization', `Bearer ${token}`);
   }
-  return fetchUtils.fetchJson(url, options);
+
+  try {
+    return await fetchUtils.fetchJson(url, options);
+  } catch (error: any) {
+    if (error?.status === 401) {
+      const newAccessToken = await refreshAccessToken(apiUrl);
+      if (newAccessToken) {
+        options.headers.set('Authorization', `Bearer ${newAccessToken}`);
+        return fetchUtils.fetchJson(url, options);
+      }
+    }
+    throw error;
+  }
 };
 
-// Replace with backend URL if deployed
-const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
-const dataProvider = simpleRestProvider(`${apiUrl}/api`, httpClient);
-
+const dataProvider = simpleRestProvider(`${apiUrl}/api/v1`, httpClient);
 
 function App() {
   return (
@@ -60,13 +70,7 @@ function App() {
       <CustomRoutes>
         <Route path="/assets" element={<AssetUploadSection apiUrl={apiUrl} />} />
       </CustomRoutes>
-      <Resource
-        name="blogs"
-        list={BlogList}
-        create={BlogCreate}
-        edit={BlogEdit}
-        show={BlogShow}
-      />
+      <Resource name="blogs" list={BlogList} create={BlogCreate} edit={BlogEdit} show={BlogShow} />
       <Resource
         name="profiles"
         list={ProfileList}
@@ -82,12 +86,7 @@ function App() {
         edit={ProjectEdit}
         show={ProjectShow}
       />
-      <Resource
-        name="slots"
-        list={SlotList}
-        edit={SlotEdit}
-        show={SlotShow}
-      />
+      <Resource name="slots" list={SlotList} edit={SlotEdit} show={SlotShow} />
     </Admin>
   );
 }

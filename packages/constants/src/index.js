@@ -31,6 +31,31 @@ const EMAIL_QUEUE_DEFAULTS = Object.freeze({
   DEAD_LETTER: 'email-notifications-dlq',
 });
 
+const API_VERSIONS = Object.freeze({
+  CURRENT: 'v1',
+  CURRENT_PREFIX: '/api/v1',
+  LEGACY_PREFIX: '/api',
+});
+
+const AUTH_TOKEN_TYPES = Object.freeze({
+  ACCESS: 'access',
+  REFRESH: 'refresh',
+});
+
+const AUTH_TOKEN_DEFAULTS = Object.freeze({
+  ISSUER: 'rohan-fullstack-lab',
+  AUDIENCE: 'rohan-fullstack-lab-admin',
+  ACCESS_TTL: '15m',
+  REFRESH_TTL: '7d',
+});
+
+const HTTP_HEADERS = Object.freeze({
+  REQUEST_ID: 'x-request-id',
+  IDEMPOTENCY_KEY: 'idempotency-key',
+  IDEMPOTENCY_STATUS: 'x-idempotency-status',
+  API_VERSION: 'x-api-version',
+});
+
 module.exports = {
   SLOT_EVENT_TYPES,
   SLOT_EVENT_TYPE_VALUES,
@@ -38,4 +63,8 @@ module.exports = {
   EMAIL_DELIVERY_MODE_VALUES,
   QUEUE_EVENT_SOURCES,
   EMAIL_QUEUE_DEFAULTS,
+  API_VERSIONS,
+  AUTH_TOKEN_TYPES,
+  AUTH_TOKEN_DEFAULTS,
+  HTTP_HEADERS,
 };
