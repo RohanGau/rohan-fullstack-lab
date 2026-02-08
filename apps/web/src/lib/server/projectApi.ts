@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { IProjectDto } from '@fullstack-lab/types';
 import { apiFetch, apiFetchWithMeta } from '../apiClient';
 import { API } from '../constant';
@@ -43,3 +44,36 @@ export async function getProjectById(
     throw error;
   }
 }
+
+/**
+ * Get related projects based on shared types/tech stack
+ * SEO: Internal linking improves crawl depth and topic authority
+ */
+export async function getRelatedProjects(
+  currentProjectId: string,
+  types: string[] = [],
+  limit: number = 3
+): Promise<IProjectDto[]> {
+  if (!types || types.length === 0) {
+    // Fallback: Get recent projects if no types
+    const { data } = await getProjectList({
+      page: 1,
+      perPage: limit,
+      sort: ['createdAt', 'DESC'],
+    });
+    return data.filter((project) => project.id !== currentProjectId).slice(0, limit);
+  }
+
+  // Get projects with matching types
+  const { data } = await getProjectList({
+    page: 1,
+    perPage: limit + 5, // Fetch extra to account for current project
+    types,
+    sort: ['createdAt', 'DESC'],
+  });
+
+  // Filter out current project and limit results
+  return data.filter((project) => project.id !== currentProjectId).slice(0, limit);
+}
+
+export const getRelatedProjectsCached = cache(getRelatedProjects);

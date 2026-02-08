@@ -6,7 +6,7 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
   # CSP: Content Security Policy to prevent XSS
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.rohangautam.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io; frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io; frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
 
   # X-Frame-Options: Prevent clickjacking (legacy, CSP frame-ancestors is preferred)
   X-Frame-Options: DENY

@@ -1,9 +1,10 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import BlogDetail from '@/components/blog/detail';
-import { getBlogDetailCached } from '@/lib/server/blogApi';
+import { getBlogDetailCached, getRelatedPostsCached } from '@/lib/server/blogApi';
 import { stripMarkdown } from '@/lib/utils';
 import { siteUrl } from '@/lib/constant';
 import { BlogDetailPageProps } from '@/types/blog';
+import { RelatedPosts } from '@/components/blog/RelatedPosts';
 
 // Required for Cloudflare Pages deployment
 export const runtime = 'edge';
@@ -22,9 +23,14 @@ export default async function BlogDetailPage(props: BlogDetailPageProps) {
     permanentRedirect(`/blog/${blog.slug}`);
   }
 
+  // SEO: Fetch related posts for internal linking
+  const relatedPosts = await getRelatedPostsCached(blog.id, blog.tags, 3);
+
   return (
     <>
       <BlogDetail blog={blog} />
+      {/* SEO: Related posts for internal linking and topic clustering */}
+      <RelatedPosts posts={relatedPosts} />
       <script
         type="application/ld+json"
         suppressHydrationWarning

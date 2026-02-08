@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'", // Next.js requires unsafe-inline for CSS
               "img-src 'self' data: https: blob:", // Allow images from CDNs
               "font-src 'self' data:",
-              "connect-src 'self' https://api.rohangautam.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io", // API + Turnstile + Cloudflare Analytics + Sentry
+              "connect-src 'self' https://api.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io", // API (prod + staging) + Turnstile + Cloudflare Analytics + Sentry
               'frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com', // Cloudflare Turnstile + Google services (Search Console, Maps, etc.)
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",

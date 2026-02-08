@@ -73,3 +73,38 @@ export async function getBlogDetail(param: string, signal?: AbortSignal): Promis
 
 // Dedupes across page.tsx + generateMetadata in the same request
 export const getBlogDetailCached = cache(getBlogDetail);
+
+/**
+ * Get related blog posts based on shared tags
+ * SEO: Internal linking improves crawl depth and topic authority
+ */
+export async function getRelatedPosts(
+  currentBlogId: string,
+  tags: string[] = [],
+  limit: number = 3
+): Promise<IBlogDto[]> {
+  if (!tags || tags.length === 0) {
+    // Fallback: Get recent posts if no tags
+    const { data } = await getBlogList({
+      page: 1,
+      perPage: limit,
+      status: 'published',
+      sort: ['publishedAt', 'DESC'],
+    });
+    return data.filter((post) => post.id !== currentBlogId).slice(0, limit);
+  }
+
+  // Get posts with matching tags
+  const { data } = await getBlogList({
+    page: 1,
+    perPage: limit + 5, // Fetch extra to account for current post + unpublished
+    status: 'published',
+    tags,
+    sort: ['publishedAt', 'DESC'],
+  });
+
+  // Filter out current post and limit results
+  return data.filter((post) => post.id !== currentBlogId).slice(0, limit);
+}
+
+export const getRelatedPostsCached = cache(getRelatedPosts);
