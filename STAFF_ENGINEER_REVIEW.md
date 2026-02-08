@@ -232,51 +232,284 @@
 
 ## 5. Observability & Monitoring
 
-### 5.1 No Application Performance Monitoring (APM)
+### ✅ 5.1 Application Performance Monitoring (APM) - IMPLEMENTED
 
-- **Issue**: Can't identify slow endpoints
-- **Issue**: No distributed tracing
-- **Issue**: No database query performance tracking
-- **Recommendation**:
-  - Add OpenTelemetry instrumentation
-  - Use Grafana Cloud, Datadog, or New Relic
-  - Add custom metrics (request duration, cache hit rate)
+**What You Have:**
 
-### 5.2 No Structured Logging Strategy
+- ✅ **Sentry APM** fully integrated on both API and Web
+  - Performance tracing (10% sample rate in production)
+  - Profiling (10% sample rate in production)
+  - Error tracking with stack traces
+  - Request context capturing
+  - Web Vitals monitoring (CLS, FID, LCP, FCP, TTFB, INP)
+- ✅ **Health checks** for MongoDB, liveness, and readiness
+- ✅ **Request correlation** via `X-Request-Id` header
 
-- **Current**: Pino configured but underutilized
-- **Issue**: No correlation IDs across requests
-- **Issue**: Logs aren't shipped anywhere
-- **Recommendation**:
-  ```typescript
-  logger.info({
-    requestId: req.id,
-    userId: req.user?.id,
-    action: 'blog.create',
-    duration: Date.now() - startTime,
-    status: 'success',
-  });
-  ```
+**Evidence:**
 
-### 5.3 No Alerting
+```typescript
+// API: apps/api/src/utils/sentry.ts
+tracesSampleRate: 0.1,        // 10% of transactions
+profilesSampleRate: 0.1,      // 10% of profiles
+integrations: [
+  Sentry.captureConsoleIntegration({ levels: ['error'] })
+]
 
-- **Issue**: Keep-alive cron pings but doesn't alert on failure
-- **Issue**: No Slack/email alerts for errors
-- **Recommendation**:
-  - Add uptime monitoring (Better Uptime, Checkly)
-  - Set up PagerDuty/OpsGenie for on-call
-  - Create Slack webhook for critical errors
+// Web: apps/web/src/lib/monitoring/sentry.ts
+captureWebVitalMetric(metric); // Tracks CLS, FID, LCP, etc.
 
-### 5.4 No Dashboards
+// Request ID tracking: apps/api/src/middleware/requestContext.ts
+req.requestId = resolveRequestId(req);
+logger.info({ requestId: req.requestId, method, path, statusCode, durationMs });
+```
 
-- **Issue**: No visualization of API metrics
-- **Issue**: No business metrics (blog views, contact conversion rate)
-- **Recommendation**: Set up Grafana or use Fly.io metrics
+**Gaps Remaining:**
 
-### 5.5 No Log Aggregation
+- ❌ No custom business metrics (cache hit rate, queue depth, etc.)
+- ❌ No database query performance tracking (slow query detection)
+- ❌ No Redis connection health check (only MongoDB checked)
+- ⚠️ Sentry sample rate might be too low (10%) - consider 20-30% for better visibility
 
-- **Issue**: Logs are ephemeral on Fly.io
-- **Recommendation**: Ship logs to Logtail, Papertrail, or Loki
+**Recommendations:**
+
+1. Add Redis health check to `checkReadiness()`:
+
+   ```typescript
+   // Check Redis connection
+   if (redisRest) {
+     const redisStart = Date.now();
+     try {
+       await redisRest.ping();
+       checks.redis = { status: 'up', latency: Date.now() - redisStart };
+     } catch (error) {
+       checks.redis = { status: 'down', message: error.message };
+       overallStatus = 'degraded'; // Not critical, rate limiting degrades to memory
+     }
+   }
+   ```
+
+2. Add custom Sentry metrics for business events:
+
+   ```typescript
+   Sentry.metrics.increment('blog.published', 1, { tags: { author: 'rohan' } });
+   Sentry.metrics.distribution('cache.hit_rate', hitRate, { unit: 'percent' });
+   ```
+
+3. Consider increasing trace sample rate to 20-30% if budget allows
+
+### ✅ 5.2 Structured Logging Strategy - IMPLEMENTED
+
+**What You Have:**
+
+- ✅ **Pino** configured with pretty printing in dev, JSON in production
+- ✅ **Request ID correlation** across all logs
+- ✅ **Request logging middleware** with duration tracking
+- ✅ **Sentry data scrubbing** (removes passwords, tokens, auth headers)
+
+**Evidence:**
+
+```typescript
+// Request logging with correlation ID
+logger.info(
+  {
+    requestId: req.requestId,
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: res.statusCode,
+    durationMs: Number(durationMs.toFixed(2)),
+    ip: req.ip,
+  },
+  'HTTP request completed'
+);
+```
+
+**Gaps Remaining:**
+
+- ❌ Logs aren't shipped anywhere (ephemeral on Fly.io)
+- ❌ No log retention policy
+- ❌ No user ID correlation in logs (only requestId)
+- ❌ No action/event tracking (e.g., `action: 'blog.create'`)
+
+**Recommendations:**
+
+1. Ship logs to log aggregation service:
+   - **Logtail** (simple, Fly.io friendly): https://betterstack.com/logtail
+   - **Axiom** (generous free tier): https://axiom.co
+   - **Grafana Loki** (self-hosted)
+2. Add user context to logger:
+
+   ```typescript
+   // In requireAuth middleware
+   if (req.user) {
+     logger = logger.child({ userId: req.user.id, role: req.user.role });
+   }
+   ```
+
+3. Add structured action logging:
+   ```typescript
+   logger.info(
+     {
+       requestId: req.requestId,
+       userId: req.user?.id,
+       action: 'blog.create',
+       resourceId: blog.id,
+       duration: Date.now() - startTime,
+     },
+     'Blog created'
+   );
+   ```
+
+### ⚠️ 5.3 Alerting - PARTIALLY IMPLEMENTED
+
+**What You Have:**
+
+- ✅ **Sentry error alerts** (can be configured in Sentry dashboard)
+- ✅ **Health check endpoints** (`/health/live`, `/health/ready`, `/health/deep`)
+- ⚠️ No uptime monitoring configured
+
+**Gaps Remaining:**
+
+- ❌ No uptime monitoring (Better Uptime, Checkly, UptimeRobot)
+- ❌ No PagerDuty/OpsGenie for on-call rotation
+- ❌ No Slack webhook for critical errors
+- ❌ No alerting on health check failures
+- ❌ No performance degradation alerts (e.g., p95 > 1s)
+
+**Recommendations:**
+
+1. **Configure Sentry Alerts** (you already have Sentry!):
+   - Go to Sentry → Alerts → Create Alert
+   - Set up:
+     - New error alert (Slack notification)
+     - Error spike alert (> 100 errors/hour)
+     - Performance degradation alert (p95 > 1000ms)
+
+2. **Add uptime monitoring** (5 minutes):
+
+   ```bash
+   # Better Uptime (free tier: 10 monitors)
+   # 1. Sign up at https://betterstack.com/better-uptime
+   # 2. Add monitors:
+   #    - https://api.rohangautam.dev/health/ready (every 1 min)
+   #    - https://rohangautam.dev (every 1 min)
+   # 3. Set up Slack/email notifications
+   ```
+
+3. **Add Slack webhook for critical errors**:
+   ```typescript
+   // In Sentry beforeSend hook
+   if (event.level === 'fatal' || event.level === 'error') {
+     await fetch(process.env.SLACK_WEBHOOK_URL, {
+       method: 'POST',
+       body: JSON.stringify({
+         text: `🚨 Error in ${process.env.NODE_ENV}: ${event.message}`,
+         blocks: [
+           { type: 'section', text: { type: 'mrkdwn', text: `*Error:* ${event.message}` } },
+           {
+             type: 'section',
+             text: { type: 'mrkdwn', text: `*Environment:* ${process.env.NODE_ENV}` },
+           },
+         ],
+       }),
+     });
+   }
+   ```
+
+### ❌ 5.4 No Dashboards
+
+**Gaps:**
+
+- ❌ No visualization of API metrics (request rate, error rate, latency)
+- ❌ No business metrics (blog views, contact submissions, slot bookings)
+- ❌ No infrastructure metrics (CPU, memory, disk)
+
+**What You Can Use:**
+
+- **Sentry Performance Dashboard** (you already have access!)
+  - Go to Performance → check transaction throughput, p95, error rate
+- **Fly.io Metrics** (built-in): https://fly.io/dashboard → Metrics tab
+  - Shows CPU, memory, request count per region
+
+**Recommendations:**
+
+1. **Use existing Sentry dashboards first** (zero setup):
+   - Sentry → Performance → view transaction performance
+   - Sentry → Discover → create custom queries for business metrics
+
+2. **Add Grafana Cloud (free tier: 10k metrics)** for custom dashboards:
+
+   ```bash
+   # Export metrics from Sentry to Grafana
+   # Or use Fly.io's Prometheus metrics
+   ```
+
+3. **Simple business metrics endpoint**:
+   ```typescript
+   // apps/api/src/routes/metricsRoutes.ts
+   router.get('/metrics', requireAuth, async (req, res) => {
+     const [blogCount, contactCount, slotCount] = await Promise.all([
+       Blog.countDocuments({ status: 'published' }),
+       Contact.countDocuments(),
+       Slot.countDocuments({ status: 'booked' }),
+     ]);
+     res.json({ blogs: blogCount, contacts: contactCount, slots: slotCount });
+   });
+   ```
+
+### ⚠️ 5.5 Log Aggregation - NOT IMPLEMENTED
+
+**Current State:**
+
+- ❌ Logs are ephemeral on Fly.io (lost on container restart)
+- ❌ No centralized log search/filtering
+- ❌ No log retention beyond 24-48 hours
+
+**Impact:**
+
+- Can't debug issues that happened > 48 hours ago
+- Can't correlate errors across multiple instances
+- Can't analyze trends over time
+
+**Recommendation: Add Logtail (5 minutes setup):**
+
+1. **Sign up for Logtail** (free tier: 1GB/month, 3 days retention)
+
+   ```bash
+   # 1. Create account at https://betterstack.com/logtail
+   # 2. Create new source "fullstack-lab-api"
+   # 3. Copy source token
+   ```
+
+2. **Add Pino transport for Logtail:**
+
+   ```typescript
+   // apps/api/src/utils/logger.ts
+   import pino from 'pino';
+
+   const transports = [];
+
+   if (process.env.LOGTAIL_SOURCE_TOKEN) {
+     transports.push({
+       target: '@logtail/pino',
+       options: { sourceToken: process.env.LOGTAIL_SOURCE_TOKEN },
+     });
+   }
+
+   const logger = pino({
+     transport:
+       process.env.NODE_ENV !== 'production'
+         ? { target: 'pino-pretty' }
+         : transports.length > 0
+           ? { targets: transports }
+           : undefined,
+   });
+   ```
+
+3. **Alternative: Axiom (better free tier)**
+   - Free: 500GB/month, 30 days retention
+   - Setup: https://axiom.co/docs/send-data/pino
+
+**Priority: MEDIUM** (logs expire quickly, but Sentry covers errors)
 
 ---
 

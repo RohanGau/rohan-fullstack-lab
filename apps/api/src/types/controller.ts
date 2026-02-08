@@ -9,6 +9,7 @@ export type ListOptions<T> = {
   buildQuery: BuildQuery<T>;
   transform?: Transform<T>;
   allowedSort?: string[];
+  allowedFilterFields?: string[]; // SECURITY: Explicit allowlist for filter fields
   ttlSeconds?: number;
 };
 

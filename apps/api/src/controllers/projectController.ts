@@ -19,6 +19,8 @@ export const getAllProjects = makeListHandler({
   ns: NS,
   model: Project,
   buildQuery: buildProjectQuery,
+  // SECURITY: Explicit allowlist for filterable fields to prevent NoSQL injection
+  allowedFilterFields: ['q', 'types', 'year', 'isFeatured'],
 });
 
 export const getProjectById = makeGetByIdHandler({

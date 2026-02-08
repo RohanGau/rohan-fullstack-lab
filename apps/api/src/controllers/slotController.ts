@@ -81,6 +81,8 @@ export const getAllSlots = makeListHandler({
   model: Slot,
   buildQuery: buildSlotQuery,
   allowedSort: ['date', 'createdAt', 'name', 'email'],
+  // SECURITY: Explicit allowlist for filterable fields to prevent NoSQL injection
+  allowedFilterFields: ['date_gte', 'date_lte', 'email', 'status'],
 });
 
 export const getSlotById = makeGetByIdHandler({

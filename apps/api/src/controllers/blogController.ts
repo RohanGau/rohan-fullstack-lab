@@ -22,6 +22,8 @@ export const getAllBlogs = makeListHandler({
   model: Blog,
   buildQuery: buildBlogQuery,
   allowedSort: ['createdAt', 'updatedAt', 'publishedAt', 'title'],
+  // SECURITY: Explicit allowlist for filterable fields to prevent NoSQL injection
+  allowedFilterFields: ['slug', 'status', 'isFeatured', 'tags', 'author', 'q'],
 });
 
 export const getBlogById = makeGetByIdHandler({

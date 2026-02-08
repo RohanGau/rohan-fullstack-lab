@@ -28,6 +28,7 @@ import { createRedisRateLimitStore } from './lib/redis-rest';
 import { requestContextMiddleware, requestLoggingMiddleware } from './middleware/requestContext';
 import { requestTimeoutMiddleware } from './middleware/requestTimeout';
 import { idempotencyMiddleware } from './middleware/idempotency';
+import { auditLogMiddleware } from './middleware/auditLog';
 
 // ============================================
 // Environment Configuration
@@ -69,6 +70,7 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
 app.use(requestContextMiddleware);
 app.use(requestLoggingMiddleware);
 app.use(requestTimeoutMiddleware(REQUEST_TIMEOUT_MS));
+app.use(auditLogMiddleware);
 
 // Helmet - Security headers
 app.use(helmet());
@@ -88,7 +90,16 @@ const writeRateLimitStore = createRedisRateLimitStore({
   windowMs: rateLimitWindowMs,
 });
 
+// SECURITY: Enforce Redis in production/stage environments
+// In-memory rate limiting only works for single-instance deployments
 if (!generalRateLimitStore || !writeRateLimitStore) {
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
+    logger.error(
+      'FATAL: Upstash Redis is required for rate limiting in production/stage. ' +
+        'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
+    );
+    process.exit(1);
+  }
   logger.warn(
     'Upstash Redis is not configured for rate limiting. Falling back to in-memory store (single-instance only).'
   );
