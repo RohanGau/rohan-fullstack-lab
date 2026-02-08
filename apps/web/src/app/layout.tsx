@@ -8,6 +8,7 @@ import { logoUrl, siteUrl } from '@/lib/constant';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { CloudflareWebAnalytics } from '@/components/monitoring/CloudflareWebAnalytics';
 import { WebVitalsReporter } from '@/components/monitoring/WebVitalsReporter';
+import { GoogleAnalytics } from '@/components/monitoring/GoogleAnalytics';
 import './globals.css';
 
 const inter = Inter({
@@ -215,6 +216,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
         <WebVitalsReporter />
         <CloudflareWebAnalytics />
+        <GoogleAnalytics />
       </body>
     </html>
   );

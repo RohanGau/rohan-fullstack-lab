@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import Turnstile from 'react-turnstile';
 import { useContactSubmit } from '@/hooks/useContactSubmit';
 import { TURNSTILE_SITE_KEY } from '@/lib/constant';
 import { useTurnstileResponsive } from '@/hooks/useTurnstileResponsive';
+import { trackEvent } from '@/components/monitoring/GoogleAnalytics';
 
 function ContactCard() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -32,9 +33,25 @@ function ContactCard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await submitContact(formData, captchaToken);
+    const result = await submitContact(formData, captchaToken);
     resetCaptcha();
+
+    // Track successful submission in Google Analytics
+    if (result) {
+      trackEvent('contact_form_submit', {
+        event_category: 'engagement',
+        event_label: 'Contact Form',
+      });
+    }
   };
+
+  // Track form view
+  useEffect(() => {
+    trackEvent('contact_form_view', {
+      event_category: 'engagement',
+      event_label: 'Contact Form Loaded',
+    });
+  }, []);
 
   return (
     <Card>
