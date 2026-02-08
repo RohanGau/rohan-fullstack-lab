@@ -70,6 +70,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # ─────────────────────────────────────────────────────────────
+      # SECURITY
+      # ─────────────────────────────────────────────────────────────
+      - name: Security audit
+        run: pnpm audit --audit-level high
+        continue-on-error: true # Don't fail deployment on audit warnings
+
+      # ─────────────────────────────────────────────────────────────
       # BUILD
       # ─────────────────────────────────────────────────────────────
       - name: Build shared types

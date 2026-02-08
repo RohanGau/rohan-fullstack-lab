@@ -1,40 +1,83 @@
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /
+  # Enable version updates for npm (pnpm uses npm registry)
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: weekly
-      day: monday
-      time: "06:00"
-      timezone: America/New_York
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
     open-pull-requests-limit: 10
+    reviewers:
+      - "rohankumar"
+    labels:
+      - "dependencies"
+      - "automated"
     commit-message:
-      prefix: deps
+      prefix: "chore"
+      include: "scope"
+    # Group updates by type
     groups:
-      react-next:
-        patterns:
-          - next
-          - react
-          - react-*
-          - "@types/react*"
-      sentry:
-        patterns:
-          - "@sentry/*"
-      tooling:
-        patterns:
-          - typescript
-          - eslint*
-          - prettier*
-          - "@typescript-eslint/*"
-          - wrangler
-          - vitest
-          - "@cloudflare/*"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "patch"
 
-  - package-ecosystem: github-actions
-    directory: /
+  # API workspace
+  - package-ecosystem: "npm"
+    directory: "/apps/api"
     schedule:
-      interval: weekly
-      day: monday
-      time: "06:30"
-      timezone: America/New_York
+      interval: "weekly"
+      day: "monday"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "api"
+
+  # Web workspace
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "web"
+
+  # Worker workspace
+  - package-ecosystem: "npm"
+    directory: "/apps/worker-email"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "worker"
+
+  # Admin workspace
+  - package-ecosystem: "npm"
+    directory: "/apps/admin"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "admin"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"

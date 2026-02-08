@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import logger from './logger';
+import { redisRest } from '../lib/redis-rest';
 
 /**
  * Health Check Utilities
@@ -89,8 +90,31 @@ export async function checkReadiness(): Promise<HealthStatus> {
     logger.error({ error }, 'MongoDB health check failed');
   }
 
+  // Check Redis connection (if configured)
+  if (redisRest) {
+    const redisStart = Date.now();
+    try {
+      await redisRest.ping();
+      checks.redis = {
+        status: 'up',
+        latency: Date.now() - redisStart,
+      };
+    } catch (error) {
+      checks.redis = {
+        status: 'down',
+        latency: Date.now() - redisStart,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      };
+      // Redis failure is not critical - rate limiting degrades to in-memory
+      // Don't mark overall status as unhealthy, just degraded
+      if (overallStatus === 'healthy') {
+        overallStatus = 'degraded';
+      }
+      logger.warn({ error }, 'Redis health check failed - rate limiting will use in-memory store');
+    }
+  }
+
   // Add more checks here as needed:
-  // - Redis connection
   // - External API availability
   // - Disk space
   // - Memory usage
