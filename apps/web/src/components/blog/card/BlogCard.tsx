@@ -8,6 +8,7 @@ import { Cover } from './Cover';
 import { FeaturedBadge, StatusBadge, ReadingTime } from './Badges';
 import { AuthorAndDate } from './Meta';
 import { TagChips } from './Tags';
+import { trackEvent } from '@/components/monitoring/GoogleAnalytics';
 
 export type BlogCardVariant = 'default' | 'compact';
 
@@ -18,6 +19,7 @@ export function BlogCard({
   priorityImage = false,
   showStatus = false,
   showTags = true,
+  onCardClick,
 }: {
   blog: IBlogDto;
   className?: string;
@@ -25,11 +27,28 @@ export function BlogCard({
   priorityImage?: boolean;
   showStatus?: boolean;
   showTags?: boolean;
+  onCardClick?: () => void;
 }) {
   const href = `/blog/${blog.slug || blog.id}`;
   const date = blog.publishedAt ?? blog.createdAt;
   const showSummary = variant === 'default' && !!blog.summary;
   const tagMax = variant === 'default' ? 5 : 3;
+
+  const handleClick = () => {
+    // Track blog card clicks for content performance insights
+    trackEvent('blog_card_click', {
+      event_category: 'engagement',
+      event_label: blog.title,
+      blog_id: blog.id,
+      has_cover: !!blog.coverImageUrl,
+      is_featured: blog.isFeatured,
+    });
+
+    // Call additional handler if provided (e.g., from RelatedPosts)
+    if (onCardClick) {
+      onCardClick();
+    }
+  };
 
   return (
     <Card
@@ -81,6 +100,7 @@ export function BlogCard({
           href={href}
           aria-label={`Read: ${blog.title}`}
           className="inline-block text-primary text-sm underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+          onClick={handleClick}
         >
           Read More →
         </Link>

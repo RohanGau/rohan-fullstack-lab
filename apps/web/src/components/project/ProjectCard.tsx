@@ -7,8 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IProjectDto } from '@fullstack-lab/types';
 import { stripMarkdown, pickPrimaryLink, truncate } from '@/lib/utils';
+import { trackEvent } from '@/components/monitoring/GoogleAnalytics';
 
-export function ProjectCard({ project }: { project: IProjectDto }) {
+export function ProjectCard({
+  project,
+  onCardClick,
+}: {
+  project: IProjectDto;
+  onCardClick?: () => void;
+}) {
   const primary = pickPrimaryLink(project);
   const desc = truncate(stripMarkdown(project.description || ''), 220);
 
@@ -17,6 +24,22 @@ export function ProjectCard({ project }: { project: IProjectDto }) {
 
   const tech = project.techStack?.slice(0, 4) || [];
   const techRest = (project.techStack?.length || 0) - tech.length;
+
+  const handleReadMoreClick = () => {
+    // Track project card clicks for content performance insights
+    trackEvent('project_card_click', {
+      event_category: 'engagement',
+      event_label: project.title,
+      project_id: project.id,
+      has_thumbnail: !!project.thumbnailUrl,
+      is_featured: project.isFeatured,
+    });
+
+    // Call additional handler if provided (e.g., from RelatedProjects)
+    if (onCardClick) {
+      onCardClick();
+    }
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -59,12 +82,27 @@ export function ProjectCard({ project }: { project: IProjectDto }) {
 
         <div className="flex items-center gap-3 pt-1">
           <Button asChild variant="link" className="px-0 h-auto text-xs">
-            <Link href={`/project/${project.id}`}>Read more →</Link>
+            <Link href={`/project/${project.id}`} onClick={handleReadMoreClick}>
+              Read more →
+            </Link>
           </Button>
 
           {primary?.url && (
             <Button asChild variant="link" className="px-0 h-auto text-xs">
-              <Link href={primary.url} target="_blank" rel="noopener noreferrer">
+              <Link
+                href={primary.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  // Track external project link clicks
+                  trackEvent('project_external_link_click', {
+                    event_category: 'outbound',
+                    event_label: project.title,
+                    link_type: primary.kind,
+                    destination: primary.url,
+                  });
+                }}
+              >
                 {primary.label?.trim() || (primary.kind === 'repo' ? 'Repository' : 'Live')} ↗
               </Link>
             </Button>

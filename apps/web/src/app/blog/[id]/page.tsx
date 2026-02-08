@@ -5,6 +5,7 @@ import { stripMarkdown } from '@/lib/utils';
 import { siteUrl } from '@/lib/constant';
 import { BlogDetailPageProps } from '@/types/blog';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
+import { BlogReadingTracker } from '@/components/blog/BlogReadingTracker';
 
 // Required for Cloudflare Pages deployment
 export const runtime = 'edge';
@@ -28,9 +29,11 @@ export default async function BlogDetailPage(props: BlogDetailPageProps) {
 
   return (
     <>
+      {/* Analytics: Track reading time and scroll depth */}
+      <BlogReadingTracker blogTitle={blog.title} blogId={blog.id} />
       <BlogDetail blog={blog} />
       {/* SEO: Related posts for internal linking and topic clustering */}
-      <RelatedPosts posts={relatedPosts} />
+      <RelatedPosts posts={relatedPosts} currentBlogTitle={blog.title} />
       <script
         type="application/ld+json"
         suppressHydrationWarning

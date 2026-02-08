@@ -37,7 +37,7 @@ export default async function ProjectDetailPage(props: ProjectDetailPageProps) {
     <>
       <ProjectArticle project={project} />
       {/* SEO: Related projects for internal linking and topic clustering */}
-      <RelatedProjects projects={relatedProjects} />
+      <RelatedProjects projects={relatedProjects} currentProjectTitle={project.title} />
       {/* SEO: BreadcrumbList structured data for better navigation understanding */}
       <script
         type="application/ld+json"
