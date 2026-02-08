@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: https: blob:", // Allow images from CDNs
               "font-src 'self' data:",
               "connect-src 'self' https://api.rohangautam.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io", // API + Turnstile + Cloudflare Analytics + Sentry
-              'frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com', // Turnstile + Google Maps embed iframe
+              'frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com', // Cloudflare Turnstile + Google services (Search Console, Maps, etc.)
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",
               "form-action 'self'",
