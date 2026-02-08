@@ -4,10 +4,19 @@
         <title>Rohan Kumar Blog</title>
         <link>https://rohangautam.dev/</link>
         <description>Senior Software Engineer. Building clean, scalable web experiences.</description>
-        <lastBuildDate>Sat, 07 Feb 2026 17:57:55 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 08 Feb 2026 06:29:22 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Designing Resilient Asynchronous Systems: From Synchronous APIs to Event-Driven Architecture at Scale]]></title>
+            <link>https://rohangautam.dev/blog/6987849d93983da8c1b7dc92</link>
+            <guid isPermaLink="false">https://rohangautam.dev/blog/6987849d93983da8c1b7dc92</guid>
+            <pubDate>Sat, 07 Feb 2026 23:48:00 GMT</pubDate>
+            <description><![CDATA[Most systems don’t fail because business logic is wrong. They fail because side effects are tightly coupled to user requests.
+
+📧 A classic example is email not]]></description>
+        </item>
         <item>
             <title><![CDATA[News Feed (e.g., Facebook)]]></title>
             <link>https://rohangautam.dev/blog/6984ed1511a88757fa33ea2f</link>
