@@ -3,6 +3,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, AlertTitle, AlertDescription } from './alert';
 import { ErrorBoundaryState, ErrorBoundaryProps, ErrorLike } from '@/types/hoc';
+import { captureClientException } from '@/lib/monitoring/sentry';
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false, error: null };
@@ -12,6 +13,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    captureClientException(error, {
+      tags: { boundary: 'component' },
+      extra: { componentStack: info.componentStack },
+    });
     console.error('ErrorBoundary caught an error:', error, info);
     this.props.onError?.(error, info);
   }

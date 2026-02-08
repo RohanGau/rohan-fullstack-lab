@@ -1,29 +1,66 @@
-'use client';
+import BlogListContent from '@/components/blog/list/BlogListContent';
+import { getBlogList } from '@/lib/server/blogApi';
+import type { BlogsQueryRequired } from '@/types/blog';
 
-import { withClientFallback } from '@/lib/hoc/withClientFallback';
-import { BlogCardSkeleton } from '@/components/blog/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-// import BlogList from '@/components/blog/list/BlogListContent';
+type SearchParamValue = string | string[] | undefined;
+type SearchParams = Record<string, SearchParamValue>;
 
-const BlogList = withClientFallback(() => import('@/components/blog/list/BlogListContent'), {
-  fallback: (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <BlogCardSkeleton key={i} />
-        ))}
-      </div>
-    </div>
-  ),
-  errorFallback: (
-    <Alert variant="destructive">
-      <AlertTitle>Failed to load blogs</AlertTitle>
-      <AlertDescription>Something went wrong.</AlertDescription>
-    </Alert>
-  ),
-  ssr: false,
-});
+function pickOne(value: SearchParamValue): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
 
-export default function ProjectListPage() {
-  return <BlogList />;
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+function parseBlogSearchParams(searchParams: SearchParams): BlogsQueryRequired {
+  const page = parsePositiveInt(pickOne(searchParams.page), 1);
+  const perPage = parsePositiveInt(pickOne(searchParams.perPage), 9);
+  const search = pickOne(searchParams.q)?.trim() || undefined;
+  const statusRaw = pickOne(searchParams.status);
+  const status =
+    statusRaw === 'draft' || statusRaw === 'archived' || statusRaw === 'published'
+      ? statusRaw
+      : 'published';
+  const featuredRaw = pickOne(searchParams.featured);
+  const isFeatured = featuredRaw === 'true' ? true : featuredRaw === 'false' ? false : undefined;
+  const sortFieldRaw = pickOne(searchParams.sortField);
+  const sortField =
+    sortFieldRaw === 'createdAt' || sortFieldRaw === 'updatedAt' || sortFieldRaw === 'title'
+      ? sortFieldRaw
+      : 'publishedAt';
+  const sortOrder = pickOne(searchParams.sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+  const tagsRaw = pickOne(searchParams.tags);
+  const tags = tagsRaw
+    ? tagsRaw
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : undefined;
+
+  return {
+    page,
+    perPage,
+    search,
+    tags,
+    isFeatured,
+    status,
+    sort: [sortField, sortOrder],
+  };
+}
+
+export const runtime = 'edge';
+export const revalidate = 60;
+
+export default async function BlogListPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const initialQuery = parseBlogSearchParams(resolvedSearchParams);
+  const { data, total } = await getBlogList(initialQuery);
+
+  return <BlogListContent initialQuery={initialQuery} initialResult={{ data, total }} />;
 }

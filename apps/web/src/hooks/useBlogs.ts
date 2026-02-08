@@ -6,10 +6,15 @@ import { API } from '@/lib/constant';
 import { useBlogStore } from '@/lib/store/blogStore';
 import type { IBlogDto } from '@fullstack-lab/types';
 import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
-import { makeBlogQueryString, blogKeyFromQuery } from '@/lib/utils';
-import { isAbort, getErrorMessage } from '@/lib/utils';
+import { makeBlogQueryString, blogKeyFromQuery, isAbort, getErrorMessage } from '@/lib/utils';
 
-export function useBlogs(initial?: BlogsQuery) {
+type InitialBlogsResult = {
+  query: BlogsQueryRequired;
+  data: IBlogDto[];
+  total: number;
+};
+
+export function useBlogs(initial?: BlogsQuery, initialResult?: InitialBlogsResult) {
   const [query, setQuery] = useState<BlogsQuery>({
     page: 1,
     perPage: 9,
@@ -29,10 +34,17 @@ export function useBlogs(initial?: BlogsQuery) {
 
   const { listCache, setListCache } = useBlogStore();
   const cached = listCache[cacheKey];
+  const seededCache = useMemo(() => {
+    if (!initialResult) return null;
+    const seededKey = blogKeyFromQuery(initialResult.query);
+    if (seededKey !== cacheKey) return null;
+    return { data: initialResult.data, total: initialResult.total };
+  }, [cacheKey, initialResult]);
+  const cacheSnapshot = cached ?? seededCache;
 
-  const [data, setData] = useState<IBlogDto[]>(cached?.data ?? []);
-  const [total, setTotal] = useState<number>(cached?.total ?? 0);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<IBlogDto[]>(cacheSnapshot?.data ?? []);
+  const [total, setTotal] = useState<number>(cacheSnapshot?.total ?? 0);
+  const [loading, setLoading] = useState(!cacheSnapshot);
   const [error, setError] = useState<string | null>(null);
 
   // guards
@@ -52,6 +64,12 @@ export function useBlogs(initial?: BlogsQuery) {
     [qs, cacheKey, setListCache]
   );
 
+  useEffect(() => {
+    if (!cached && seededCache) {
+      setListCache(cacheKey, seededCache);
+    }
+  }, [cacheKey, cached, seededCache, setListCache]);
+
   const refetch = useCallback(() => {
     const c = new AbortController();
     setLoading(true);
@@ -63,10 +81,11 @@ export function useBlogs(initial?: BlogsQuery) {
   }, [fetcher]);
 
   useEffect(() => {
-    // show cache immediately if present
-    if (cached) {
-      setData(cached.data);
-      setTotal(cached.total);
+    // show cached data immediately if present (store or server-seeded)
+    const resolvedCache = cached ?? seededCache;
+    if (resolvedCache) {
+      setData(resolvedCache.data);
+      setTotal(resolvedCache.total);
       setLoading(false);
 
       // revalidate at most once per cacheKey
@@ -90,7 +109,7 @@ export function useBlogs(initial?: BlogsQuery) {
       })
       .finally(() => setLoading(false));
     return () => c.abort();
-  }, [cacheKey, cached, fetcher]);
+  }, [cacheKey, cached, seededCache, fetcher]);
 
   const pages = useMemo(
     () => Math.max(1, Math.ceil(total / (query.perPage ?? 9))),

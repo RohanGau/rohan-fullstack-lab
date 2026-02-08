@@ -2,16 +2,13 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { getSimpleIconSlug } from '@/lib/utils';
-import * as simpleIcons from 'simple-icons';
+import { getSimpleIconByName } from '@/lib/simpleIcons';
 import { SkillsProps } from '@/types/profile';
 import Link from 'next/link';
 import { useEffectiveTheme } from '@/hooks/useEffectiveTheme';
 
 function getIconForName(name: string): { path: string; hex: string } | undefined {
-  const slug = getSimpleIconSlug(name);
-  const key = 'si' + slug.charAt(0).toUpperCase() + slug.slice(1);
-  return (simpleIcons as any)[key] as { path: string; hex: string } | undefined;
+  return getSimpleIconByName(name);
 }
 
 export function SkillsSection({ skills, fullStack, gridCols, isProfile }: SkillsProps) {

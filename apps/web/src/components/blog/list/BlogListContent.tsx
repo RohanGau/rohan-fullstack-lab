@@ -13,12 +13,22 @@ import { ChipToggleCloud } from '@/components/list/ChipToggleCloud';
 import { Pager } from '@/components/list/Pager';
 import { ResultsMeta } from '@/components/list/ResultsMeta';
 import { arrToCsv, csvToArr } from '@/lib/utils';
+import type { BlogsQueryRequired } from '@/types/blog';
+import type { IBlogDto } from '@fullstack-lab/types';
 
-function BlogListContent() {
+type BlogListContentProps = {
+  initialQuery?: BlogsQueryRequired;
+  initialResult?: {
+    data: IBlogDto[];
+    total: number;
+  };
+};
+
+function BlogListContent({ initialQuery, initialResult }: BlogListContentProps) {
   const router = useRouter();
   const sp = useSearchParams();
 
-  const initial = useMemo(() => {
+  const initialFromSearchParams = useMemo(() => {
     const page = Number(sp.get('page') ?? 1);
     const perPage = Number(sp.get('perPage') ?? 9);
     const q = sp.get('q') ?? '';
@@ -41,7 +51,17 @@ function BlogListContent() {
     };
   }, [sp]);
 
-  const { data, total, pages, loading, error, query, setQuery } = useBlogs(initial);
+  const seededResult = useMemo(() => {
+    if (!initialQuery || !initialResult) return undefined;
+    return {
+      query: initialQuery,
+      data: initialResult.data,
+      total: initialResult.total,
+    };
+  }, [initialQuery, initialResult]);
+
+  const initial = initialQuery ?? initialFromSearchParams;
+  const { data, total, pages, loading, error, query, setQuery } = useBlogs(initial, seededResult);
   const [search, setSearch] = useState(query.search ?? '');
   const debouncedSearch = useDebounced(search);
 

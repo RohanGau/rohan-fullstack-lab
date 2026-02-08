@@ -2,9 +2,11 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { captureClientException } from '@/lib/monitoring/sentry';
 
 export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
+    captureClientException(error, { tags: { boundary: 'global' } });
     console.error('Global error boundary:', error);
   }, [error]);
 

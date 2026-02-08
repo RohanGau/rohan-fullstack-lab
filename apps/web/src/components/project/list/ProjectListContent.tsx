@@ -13,12 +13,22 @@ import { ResultsMeta } from '@/components/list/ResultsMeta';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BlogCardSkeleton } from '@/components/blog/card';
 import { arrToCsv, csvToArr } from '@/lib/utils';
+import type { ProjectsQueryRequired } from '@/types/project';
+import type { IProjectDto } from '@fullstack-lab/types';
 
-function ProjectListContent() {
+type ProjectListContentProps = {
+  initialQuery?: ProjectsQueryRequired;
+  initialResult?: {
+    data: IProjectDto[];
+    total: number;
+  };
+};
+
+function ProjectListContent({ initialQuery, initialResult }: ProjectListContentProps) {
   const router = useRouter();
   const sp = useSearchParams();
 
-  const initial = useMemo(() => {
+  const initialFromSearchParams = useMemo(() => {
     const page = Number(sp.get('page') ?? 1);
     const perPage = Number(sp.get('perPage') ?? 9);
     const q = sp.get('q') ?? '';
@@ -31,7 +41,20 @@ function ProjectListContent() {
     return { page, perPage, search: q, types, isFeatured, sort: [sortField, sortOrder] as any };
   }, [sp]);
 
-  const { data, total, pages, loading, error, query, setQuery } = useProjects(initial);
+  const seededResult = useMemo(() => {
+    if (!initialQuery || !initialResult) return undefined;
+    return {
+      query: initialQuery,
+      data: initialResult.data,
+      total: initialResult.total,
+    };
+  }, [initialQuery, initialResult]);
+
+  const initial = initialQuery ?? initialFromSearchParams;
+  const { data, total, pages, loading, error, query, setQuery } = useProjects(
+    initial,
+    seededResult
+  );
   const [search, setSearch] = useState(query.search ?? '');
   const debouncedSearch = useDebounced(search);
 

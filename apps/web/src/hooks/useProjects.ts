@@ -6,10 +6,15 @@ import { apiFetchWithMeta } from '@/lib/apiClient';
 import { useProjectStore } from '@/lib/store/projectStore';
 import type { IProjectDto } from '@fullstack-lab/types';
 import type { ProjectsQuery, ProjectsQueryRequired } from '@/types/project';
-import { makeProjectQueryString, projectKeyFromQuery } from '@/lib/utils';
-import { getErrorMessage, isAbort } from '@/lib/utils';
+import { makeProjectQueryString, projectKeyFromQuery, getErrorMessage, isAbort } from '@/lib/utils';
 
-export function useProjects(initial?: ProjectsQuery) {
+type InitialProjectsResult = {
+  query: ProjectsQueryRequired;
+  data: IProjectDto[];
+  total: number;
+};
+
+export function useProjects(initial?: ProjectsQuery, initialResult?: InitialProjectsResult) {
   const [query, setQuery] = useState<ProjectsQuery>({
     page: 1,
     perPage: 8,
@@ -29,10 +34,17 @@ export function useProjects(initial?: ProjectsQuery) {
 
   const { listCache, setListCache } = useProjectStore();
   const cached = listCache[cacheKey];
+  const seededCache = useMemo(() => {
+    if (!initialResult) return null;
+    const seededKey = projectKeyFromQuery(initialResult.query);
+    if (seededKey !== cacheKey) return null;
+    return { data: initialResult.data, total: initialResult.total };
+  }, [cacheKey, initialResult]);
+  const cacheSnapshot = cached ?? seededCache;
 
-  const [data, setData] = useState<IProjectDto[]>(cached?.data ?? []);
-  const [total, setTotal] = useState<number>(cached?.total ?? 0);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<IProjectDto[]>(cacheSnapshot?.data ?? []);
+  const [total, setTotal] = useState<number>(cacheSnapshot?.total ?? 0);
+  const [loading, setLoading] = useState(!cacheSnapshot);
   const [error, setError] = useState<string | null>(null);
 
   const reqIdRef = useRef(0);
@@ -53,6 +65,12 @@ export function useProjects(initial?: ProjectsQuery) {
     [qs, cacheKey, setListCache]
   );
 
+  useEffect(() => {
+    if (!cached && seededCache) {
+      setListCache(cacheKey, seededCache);
+    }
+  }, [cacheKey, cached, seededCache, setListCache]);
+
   const refetch = useCallback(() => {
     const c = new AbortController();
     setLoading(true);
@@ -64,9 +82,10 @@ export function useProjects(initial?: ProjectsQuery) {
   }, [fetcher]);
 
   useEffect(() => {
-    if (cached) {
-      setData(cached.data);
-      setTotal(cached.total);
+    const resolvedCache = cached ?? seededCache;
+    if (resolvedCache) {
+      setData(resolvedCache.data);
+      setTotal(resolvedCache.total);
       setLoading(false);
 
       if (!revalidatedKeysRef.current.has(cacheKey)) {
@@ -88,7 +107,7 @@ export function useProjects(initial?: ProjectsQuery) {
       })
       .finally(() => setLoading(false));
     return () => c.abort();
-  }, [cacheKey, cached, fetcher]);
+  }, [cacheKey, cached, seededCache, fetcher]);
 
   const pages = Math.max(1, Math.ceil(total / (query.perPage ?? 8)));
 

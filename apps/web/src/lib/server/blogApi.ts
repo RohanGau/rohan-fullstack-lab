@@ -2,7 +2,38 @@ import { cache } from 'react';
 import { IBlogDto } from '@fullstack-lab/types';
 import { apiFetchWithMeta, apiFetch } from '../apiClient';
 import { API } from '../constant';
-import { isMongoId } from '../utils';
+import { isMongoId, makeBlogQueryString } from '../utils';
+import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
+
+function normalizeBlogQuery(input: BlogsQuery = {}): BlogsQueryRequired {
+  const page = Number.isFinite(input.page) && (input.page as number) > 0 ? Number(input.page) : 1;
+  const perPage =
+    Number.isFinite(input.perPage) && (input.perPage as number) > 0 ? Number(input.perPage) : 9;
+  const sort = (input.sort ?? ['publishedAt', 'DESC']) as BlogsQueryRequired['sort'];
+
+  return {
+    ...input,
+    page,
+    perPage,
+    sort,
+    status: input.status ?? 'published',
+  };
+}
+
+export async function getBlogList(input: BlogsQuery = {}): Promise<{
+  query: BlogsQueryRequired;
+  data: IBlogDto[];
+  total: number;
+}> {
+  const query = normalizeBlogQuery(input);
+  const qs = makeBlogQueryString(query);
+
+  const { data, total } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${qs}`, {
+    next: { revalidate: 60 },
+  });
+
+  return { query, data, total };
+}
 
 export async function getBlogById(id: string, signal?: AbortSignal): Promise<IBlogDto | null> {
   try {

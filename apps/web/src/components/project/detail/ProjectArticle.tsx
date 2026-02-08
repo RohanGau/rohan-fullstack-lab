@@ -1,3 +1,5 @@
+'use client';
+
 import type { IProjectDto } from '@fullstack-lab/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +13,7 @@ function ProjectArticle({ project }: { project: IProjectDto }) {
     <article className="max-w-3xl mx-auto px-4 py-12 space-y-6">
       <Button
         variant="outline"
-        onClick={() => (history.length > 1 ? router.back() : router.push('/projects'))}
+        onClick={() => (history.length > 1 ? router.back() : router.push('/project'))}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
