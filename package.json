@@ -59,11 +59,11 @@
   "license": "ISC",
   "packageManager": "pnpm@10.14.0",
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.13",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
-    "prettier": "^3.6.2",
-    "wrangler": "^4.28.1"
+    "prettier": "^3.8.1",
+    "wrangler": "^4.63.0"
   }
 }
