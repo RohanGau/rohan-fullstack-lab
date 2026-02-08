@@ -51,7 +51,6 @@ function parseBlogSearchParams(searchParams: SearchParams): BlogsQueryRequired {
 }
 
 export const runtime = 'edge';
-export const revalidate = 60;
 
 export default async function BlogListPage({
   searchParams,

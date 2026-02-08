@@ -28,16 +28,14 @@ export async function getBlogList(input: BlogsQuery = {}): Promise<{
   const query = normalizeBlogQuery(input);
   const qs = makeBlogQueryString(query);
 
-  const { data, total } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${qs}`, {
-    next: { revalidate: 60 },
-  });
+  const { data, total } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${qs}`);
 
   return { query, data, total };
 }
 
 export async function getBlogById(id: string, signal?: AbortSignal): Promise<IBlogDto | null> {
   try {
-    return await apiFetch<IBlogDto>(`${API.BLOGS}/${id}`, { signal, next: { revalidate: 60 } });
+    return await apiFetch<IBlogDto>(`${API.BLOGS}/${id}`, { signal });
   } catch (err) {
     if ((err as any).status === 400) return null;
     throw err;
@@ -53,7 +51,6 @@ export async function getBlogBySlug(slug: string, signal?: AbortSignal): Promise
   try {
     const { data: rows } = await apiFetchWithMeta<IBlogDto[]>(`${API.BLOGS}?${param.toString()}`, {
       signal,
-      next: { revalidate: 60 },
     });
     return rows?.[0] ?? null;
   } catch (err) {

@@ -26,9 +26,7 @@ export async function getProjectList(input: ProjectsQuery = {}): Promise<{
   const query = normalizeProjectQuery(input);
   const qs = makeProjectQueryString(query);
 
-  const { data, total } = await apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`, {
-    next: { revalidate: 60 },
-  });
+  const { data, total } = await apiFetchWithMeta<IProjectDto[]>(`${API.PROJECTS}?${qs}`);
 
   return { query, data, total };
 }
@@ -38,10 +36,7 @@ export async function getProjectById(
   signal?: AbortSignal
 ): Promise<IProjectDto | null> {
   try {
-    return await apiFetch<IProjectDto>(`${API.PROJECTS}/${id}`, {
-      signal,
-      next: { revalidate: 60 },
-    });
+    return await apiFetch<IProjectDto>(`${API.PROJECTS}/${id}`, { signal });
   } catch (error) {
     const status = (error as { status?: number })?.status;
     if (status === 400 || status === 404) return null;

@@ -45,7 +45,6 @@ function parseProjectSearchParams(searchParams: SearchParams): ProjectsQueryRequ
 }
 
 export const runtime = 'edge';
-export const revalidate = 60;
 
 export default async function ProjectListPage({
   searchParams,
