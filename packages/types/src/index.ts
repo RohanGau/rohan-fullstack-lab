@@ -7,3 +7,5 @@ export * from './slot';
 export * from './queue';
 export * from './auth';
 export * from './audit';
+export * from './mcp';
+export * from './agent';

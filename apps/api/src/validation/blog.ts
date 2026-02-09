@@ -1,9 +1,12 @@
 import Joi from 'joi';
+import { BLOG_LINK_KIND_VALUES, BLOG_STATUS_VALUES } from '@fullstack-lab/constants';
 
 const linkObj = Joi.object({
   url: Joi.string().uri().required(),
   label: Joi.string().trim().max(80).optional(),
-  kind: Joi.string().valid('repo', 'ref', 'demo', 'other').default('other'),
+  kind: Joi.string()
+    .valid(...BLOG_LINK_KIND_VALUES)
+    .default('other'),
 });
 
 export const blogSchema = Joi.object({
@@ -21,7 +24,9 @@ export const blogSchema = Joi.object({
   coverImageUrl: Joi.string().uri().optional(),
   readingTime: Joi.number().integer().min(1).max(120).optional(),
   isFeatured: Joi.boolean().default(false),
-  status: Joi.string().valid('draft', 'published', 'archived').default('draft'),
+  status: Joi.string()
+    .valid(...BLOG_STATUS_VALUES)
+    .default('draft'),
   publishedAt: Joi.date().optional(), // will be set if status === 'published'
 });
 
@@ -39,7 +44,7 @@ export const blogUpdateSchema = Joi.object({
   coverImageUrl: Joi.string().uri(),
   readingTime: Joi.number().integer().min(1).max(120),
   isFeatured: Joi.boolean(),
-  status: Joi.string().valid('draft', 'published', 'archived'),
+  status: Joi.string().valid(...BLOG_STATUS_VALUES),
   publishedAt: Joi.date(),
 })
   .min(1)
