@@ -139,4 +139,79 @@ router.get('/', async (_req: Request, res: Response) => {
  *                 type: string
  */
 
+/**
+ * @openapi
+ * /health/sentry-test:
+ *   get:
+ *     tags: [Health]
+ *     summary: Test Sentry integration (requires admin token)
+ *     description: |
+ *       Triggers a test error to verify Sentry is working.
+ *       Requires ADMIN_TOKEN in Authorization header.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Test error sent to Sentry
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/sentry-test', (req: Request, res: Response) => {
+  // Require admin token for security
+  const authHeader = req.headers.authorization;
+  const adminToken = process.env.ADMIN_TOKEN;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== adminToken) {
+    res.status(401).json({ error: 'Unauthorized - Admin token required' });
+    return;
+  }
+
+  const testType = req.query.type || 'error';
+
+  if (testType === 'message') {
+    // Send a test message (not an error)
+    const eventId = captureMessage('Sentry test message from health endpoint', 'info');
+    logger.info({ eventId }, 'Sentry test message sent');
+    res.json({
+      success: true,
+      type: 'message',
+      eventId,
+      message: 'Test message sent to Sentry. Check your Sentry dashboard!',
+    });
+    return;
+  }
+
+  // Send a test error
+  try {
+    const testError = new Error('Sentry test error - This is a test from /health/sentry-test');
+    (testError as Error & { customData: object }).customData = {
+      triggeredBy: 'admin',
+      endpoint: '/health/sentry-test',
+      timestamp: new Date().toISOString(),
+    };
+
+    const eventId = captureException(testError, {
+      source: 'sentry-test-endpoint',
+      testMode: true,
+    });
+
+    logger.info({ eventId }, 'Sentry test error sent');
+
+    res.json({
+      success: true,
+      type: 'error',
+      eventId,
+      message: 'Test error sent to Sentry. Check your Sentry dashboard!',
+      dashboardUrl: 'https://sentry.io',
+    });
+  } catch (error) {
+    logger.error({ error }, 'Failed to send test error to Sentry');
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send test error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
 export default router;
