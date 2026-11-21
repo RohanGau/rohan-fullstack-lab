@@ -1,0 +1,6 @@
+export const AUDIT_LOG_DEFAULTS = Object.freeze({
+  MAX_CHANGED_FIELDS: 50,
+  MAX_QUERY_KEYS: 20,
+  MAX_USER_AGENT_LENGTH: 256,
+  MAX_PATH_LENGTH: 512,
+} as const);

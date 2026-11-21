@@ -4,12 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "pnpm --filter @fullstack-lab/types build",
     "dev": "tsx src/index.ts",
-    "prebuild": "pnpm --filter @fullstack-lab/types build",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "precheck": "pnpm --filter @fullstack-lab/types build",
     "check": "tsc --noEmit"
   },
   "dependencies": {

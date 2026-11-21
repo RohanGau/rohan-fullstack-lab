@@ -24,7 +24,7 @@ FROM base AS build
 # Now bring in only the source for workspace deps and the API
 COPY packages/types/ packages/types/
 COPY packages/constants/ packages/constants/
-RUN pnpm -F @fullstack-lab/types build
+RUN pnpm --filter "./packages/*" run build
 
 COPY apps/api/ apps/api/
 RUN pnpm -F node-backend build
