@@ -1,143 +1,132 @@
 /**
- * API Endpoint Tests
- *
- * Basic tests for API endpoints to ensure they:
- * - Return correct status codes
- * - Return proper JSON responses
- * - Handle errors gracefully
+ * Public API behaviour, exercised through the real createApp() middleware stack
+ * against an in-memory MongoDB. Assertions are exact: no status-code ranges.
  */
-
-import { describe, it, expect } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import app from './app';
+import { buildTestApp } from './helpers/app';
+import { startTestDb, stopTestDb } from './helpers/db';
+import Blog from '../src/models/Blog';
 
-describe('Root Endpoint', () => {
-  it('GET / should return status ok', async () => {
-    const response = await request(app).get('/').expect('Content-Type', /json/).expect(200);
+const app = buildTestApp();
+const API = '/api/v1';
+const MISSING_ID = '000000000000000000000000';
 
-    expect(response.body).toHaveProperty('status', 'ok');
+const blogSeed = (n: number, status: 'draft' | 'published') => ({
+  title: `Post number ${n}`,
+  slug: `post-${n}`,
+  content: 'Some sufficiently long content body',
+  author: 'Rohan',
+  status,
+});
+
+beforeAll(async () => {
+  await startTestDb();
+  await Blog.insertMany([blogSeed(1, 'published'), blogSeed(2, 'published'), blogSeed(3, 'draft')]);
+}, 60000);
+
+afterAll(async () => {
+  await stopTestDb();
+});
+
+describe('Root endpoint', () => {
+  it('GET / returns status ok', async () => {
+    const res = await request(app).get('/').expect('Content-Type', /json/);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('status', 'ok');
   });
 });
 
-describe('Blog Endpoints', () => {
-  describe('GET /api/blogs', () => {
-    it('should return an array (even if empty)', async () => {
-      const response = await request(app).get('/api/blogs').expect('Content-Type', /json/);
-
-      // Could be 200 with data or 500 if DB not connected
-      if (response.status === 200) {
-        expect(Array.isArray(response.body)).toBe(true);
-      }
-    });
-
-    it('should support pagination with range header', async () => {
-      const response = await request(app)
-        .get('/api/blogs')
-        .query({ range: JSON.stringify([0, 9]) });
-
-      // Should have X-Total-Count header for pagination
-      if (response.status === 200) {
-        expect(response.headers).toHaveProperty('x-total-count');
-      }
-    });
-
-    it('should support filtering by status', async () => {
-      const response = await request(app)
-        .get('/api/blogs')
-        .query({ filter: JSON.stringify({ status: 'published' }) });
-
-      // Should not error out
-      expect([200, 500]).toContain(response.status);
-    });
+describe('Blog endpoints', () => {
+  it('GET /blogs returns the seeded posts with a total count header', async () => {
+    const res = await request(app).get(`${API}/blogs`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(3);
+    expect(res.headers['x-total-count']).toBe('3');
   });
 
-  describe('GET /api/blogs/:id', () => {
-    it('should return 404 for non-existent blog', async () => {
-      const response = await request(app).get('/api/blogs/000000000000000000000000');
+  it('GET /blogs honours the range pagination parameter', async () => {
+    const res = await request(app)
+      .get(`${API}/blogs`)
+      .query({ range: JSON.stringify([0, 1]) });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.headers['x-total-count']).toBe('3');
+  });
 
-      // Should be 404 or 500 (if DB not connected)
-      expect([404, 500]).toContain(response.status);
-    });
+  it('GET /blogs filters by status', async () => {
+    const res = await request(app)
+      .get(`${API}/blogs`)
+      .query({ filter: JSON.stringify({ status: 'published' }) });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body.every((b: { status: string }) => b.status === 'published')).toBe(true);
+  });
 
-    it('should return 400 for invalid ID format', async () => {
-      const response = await request(app).get('/api/blogs/invalid-id');
+  it('GET /blogs/:id returns 404 for a well-formed unknown id', async () => {
+    const res = await request(app).get(`${API}/blogs/${MISSING_ID}`);
+    expect(res.status).toBe(404);
+  });
 
-      // Should handle gracefully
-      expect([400, 404, 500]).toContain(response.status);
-    });
+  it('GET /blogs/:id returns 404 for a malformed id', async () => {
+    const res = await request(app).get(`${API}/blogs/invalid-id`);
+    expect(res.status).toBe(404);
   });
 });
 
-describe('Project Endpoints', () => {
-  describe('GET /api/projects', () => {
-    it('should return an array', async () => {
-      const response = await request(app).get('/api/projects').expect('Content-Type', /json/);
+describe('Project and profile endpoints', () => {
+  it('GET /projects returns an empty array on an empty collection', async () => {
+    const res = await request(app).get(`${API}/projects`).expect('Content-Type', /json/);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
 
-      if (response.status === 200) {
-        expect(Array.isArray(response.body)).toBe(true);
-      }
-    });
+  it('GET /profiles returns an empty array on an empty collection', async () => {
+    const res = await request(app).get(`${API}/profiles`).expect('Content-Type', /json/);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
   });
 });
 
-describe('Profile Endpoints', () => {
-  describe('GET /api/profiles', () => {
-    it('should return profile data', async () => {
-      const response = await request(app).get('/api/profiles').expect('Content-Type', /json/);
+describe('Contact endpoint', () => {
+  it('rejects an empty body because the captcha token is missing', async () => {
+    const res = await request(app).post(`${API}/contact`).send({});
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ msg: 'Captcha missing' });
+  });
 
-      // Should return array or error
-      expect([200, 500]).toContain(response.status);
-    });
+  it('rejects a submission without a captcha token even when the email is invalid', async () => {
+    const res = await request(app)
+      .post(`${API}/contact`)
+      .send({ name: 'Test User', email: 'invalid-email', message: 'Test message' });
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ msg: 'Captcha missing' });
   });
 });
 
-describe('Contact Endpoints', () => {
-  describe('POST /api/contact', () => {
-    it('should reject empty body', async () => {
-      const response = await request(app)
-        .post('/api/contact')
-        .send({})
-        .expect('Content-Type', /json/);
-
-      // Should return validation error
-      expect([400, 401, 403, 500]).toContain(response.status);
-    });
-
-    it('should reject invalid email', async () => {
-      const response = await request(app).post('/api/contact').send({
-        name: 'Test User',
-        email: 'invalid-email',
-        message: 'Test message',
-      });
-
-      expect([400, 401, 403, 500]).toContain(response.status);
-    });
-  });
-});
-
-describe('Error Handling', () => {
-  it('should return 404 for unknown routes', async () => {
-    const response = await request(app).get('/api/unknown-route');
-
-    expect(response.status).toBe(404);
+describe('Error handling', () => {
+  it('returns 404 for unknown routes', async () => {
+    const res = await request(app).get(`${API}/unknown-route`);
+    expect(res.status).toBe(404);
   });
 
-  it('should handle malformed JSON gracefully', async () => {
-    const response = await request(app)
-      .post('/api/contact')
+  it('returns 400 for malformed JSON', async () => {
+    const res = await request(app)
+      .post(`${API}/contact`)
       .set('Content-Type', 'application/json')
       .send('{ invalid json }');
-
-    expect([400, 500]).toContain(response.status);
+    expect(res.status).toBe(400);
   });
 });
 
-describe('Security Headers', () => {
-  it('should include security headers from helmet', async () => {
-    const response = await request(app).get('/');
+describe('Security headers', () => {
+  it('sets nosniff via helmet', async () => {
+    const res = await request(app).get('/');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+  });
 
-    // Helmet adds various security headers
-    expect(response.headers).toHaveProperty('x-content-type-options');
-    expect(response.headers['x-content-type-options']).toBe('nosniff');
+  it('echoes a request id on every response', async () => {
+    const res = await request(app).get('/').set('X-Request-Id', 'req-abc-123');
+    expect(res.headers['x-request-id']).toBe('req-abc-123');
   });
 });
