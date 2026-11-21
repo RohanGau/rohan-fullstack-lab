@@ -10,6 +10,7 @@ import {
   validateAuthRefresh,
   validateAuthTokenExchange,
 } from '../controllers/authController';
+import { createGoogleNonce, signInWithGoogle } from '../controllers/googleAuthController';
 import { requireAuth } from '../middleware/requireAuth';
 import { loginIpRateLimit, loginAccountRateLimit } from '../middleware/authRateLimit';
 
@@ -27,6 +28,10 @@ router.post(
   validateAuthLogin,
   loginWithCredentials
 );
+
+// Google sign-in for Operators: one-time nonce the ID token must carry
+router.post('/google/nonce', createGoogleNonce);
+router.post('/google', signInWithGoogle);
 
 // Refresh rotation
 router.post('/refresh', validateAuthRefresh, refreshAccessToken);

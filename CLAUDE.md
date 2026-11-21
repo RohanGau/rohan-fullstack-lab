@@ -31,7 +31,8 @@ rohan-fullstack-lab/
 
 ### Shared Packages
 
-- `pnpm build:types` — Build `@fullstack-lab/types` (run first if modifying shared contracts)
+- `pnpm build:packages` — Build every shared package in `packages/*` (types, constants) in dependency order. Root scripts (`api:dev`, `mcp:dev`, `test`, `test:api`, `build`, `worker:email:*`) run it automatically; a new package only needs a `build` script. Constants is TypeScript: one folder per feature with a single `index.ts`, shared helpers in `utils/`.
+- `pnpm api:dev` — Build shared packages, then start the API dev server
 
 ### Web Frontend (`apps/web`)
 

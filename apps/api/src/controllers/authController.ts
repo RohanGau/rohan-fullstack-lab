@@ -10,6 +10,7 @@ import {
   authTokenExchangeSchema,
 } from '../validation/auth';
 import { getAuthorizationToken } from '../middleware/requireAuth';
+import { resolveOperatorAccess } from '../services/operatorAccess';
 import {
   getLegacyAdminUser,
   isLegacyAdminToken,
@@ -115,10 +116,13 @@ export async function getCurrentSession(req: Request, res: Response) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  const access = await resolveOperatorAccess(req.user.id);
+
   res.status(200).json({
     id: req.user.id,
     role: req.user.role,
     email: req.user.email,
     username: req.user.username,
+    ...(access ?? {}),
   });
 }
