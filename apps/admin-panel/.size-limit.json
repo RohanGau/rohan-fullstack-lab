@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Initial JavaScript (gzip)",
+    "path": "dist/admin/assets/*.js",
+    "gzip": true,
+    "limit": "180 kB"
+  },
+  {
+    "name": "Stylesheets (gzip)",
+    "path": "dist/admin/assets/*.css",
+    "gzip": true,
+    "limit": "20 kB"
+  }
+]

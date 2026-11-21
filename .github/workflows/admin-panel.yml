@@ -1,0 +1,125 @@
+name: Admin Panel (CI and Cloudflare Pages)
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "apps/admin-panel/**"
+      - "packages/**"
+      - ".github/workflows/admin-panel.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/admin-panel/**"
+      - "packages/**"
+      - ".github/workflows/admin-panel.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: admin-panel-${{ github.ref }}
+  # Never cancel an in-flight deploy of main; newer pushes to other refs supersede older ones.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Format, lint, typecheck, test, build, size
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders: the quality gate needs the build to run, not real endpoints.
+      VITE_API_URL: https://api.example.com
+      VITE_GOOGLE_CLIENT_ID: ci-placeholder.apps.googleusercontent.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm build:packages
+
+      - name: Format check
+        run: pnpm --filter admin-panel format:check
+
+      - name: Lint
+        run: pnpm --filter admin-panel lint
+
+      - name: Typecheck
+        run: pnpm --filter admin-panel typecheck
+
+      - name: Test
+        run: pnpm --filter admin-panel test
+
+      - name: Build
+        run: pnpm --filter admin-panel build
+
+      - name: Bundle size budget
+        run: pnpm --filter admin-panel size
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: quality
+    # Fork pull requests have no access to secrets.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      PAGES_PROJECT: rohan-admin-panel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Choose environment
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "main" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "develop" ]; then
+            echo "name=stage" >> "$GITHUB_OUTPUT"
+            echo "branch=develop" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=preview" >> "$GITHUB_OUTPUT"
+            echo "branch=pr-${{ github.event.pull_request.number || github.run_id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build:packages
+
+      - name: Build with environment values
+        # Production uses the production values; stage and previews use the stage values.
+        env:
+          VITE_API_URL: ${{ steps.target.outputs.name == 'production' && vars.ADMIN_PANEL_API_URL_PROD || vars.ADMIN_PANEL_API_URL_STAGE }}
+          VITE_GOOGLE_CLIENT_ID: ${{ steps.target.outputs.name == 'production' && vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_PROD || vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_STAGE }}
+        run: pnpm --filter admin-panel build
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          cd apps/admin-panel
+          npx wrangler pages deploy dist \
+            --project-name="$PAGES_PROJECT" \
+            --branch="${{ steps.target.outputs.branch }}" \
+            --commit-dirty=true
