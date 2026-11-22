@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { config } from '../config';
-import styles from './Home.module.scss';
+import styles from './Page.module.scss';
 
 async function fetchApiLiveness(): Promise<{ alive: boolean }> {
   const response = await fetch(`${config.apiUrl}/health/live`);

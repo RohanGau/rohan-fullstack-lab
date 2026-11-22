@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import type { RouterHistory } from '@tanstack/react-router';
 import { useState } from 'react';
+import { AuthProvider } from './auth/AuthProvider';
 import { createAppRouter } from './router';
 import { theme } from './theme';
 
@@ -14,7 +15,9 @@ export function App({ history }: { history?: RouterHistory }) {
     <ThemeProvider theme={theme} defaultMode="system">
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

@@ -39,3 +39,29 @@ export interface RefreshTokenClaims {
   aud?: string | string[];
   iss?: string;
 }
+
+/** Response of GET /auth/me: who is signed in and what they may do. */
+export interface CurrentOperator {
+  id: string;
+  role: AuthRole;
+  email?: string;
+  username?: string;
+  roles: string[];
+  permissions: string[];
+}
+
+/** POST /auth/google/nonce response. The nonce is single use and bound into the Google ID token. */
+export interface GoogleNonceResponse {
+  nonce: string;
+}
+
+/** POST /auth/google request body. */
+export interface GoogleSignInRequest {
+  idToken: string;
+  nonce: string;
+}
+
+/** POST /auth/refresh and POST /auth/logout request body. */
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}

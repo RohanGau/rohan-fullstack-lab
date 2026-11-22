@@ -1,6 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import { Link } from '@tanstack/react-router';
-import styles from './Home.module.scss';
+import styles from './Page.module.scss';
 
 export function NotFound() {
   return (
