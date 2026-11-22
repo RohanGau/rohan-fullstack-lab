@@ -32,11 +32,12 @@ export async function signInWithGoogle(req: Request, res: Response): Promise<voi
   }
 
   // Known Google account first; otherwise claim an Operator that has no account bound yet.
-  // The claim is one atomic update so two first logins can't both bind.
+  // The claim is one atomic update so two first logins can't both bind. A deactivated
+  // Operator matches neither lookup, so they are refused exactly like an unknown account.
   const operator =
-    (await Operator.findOne({ googleSub: identity.sub })) ??
+    (await Operator.findOne({ googleSub: identity.sub, active: true })) ??
     (await Operator.findOneAndUpdate(
-      { email: identity.email.toLowerCase(), googleSub: { $exists: false } },
+      { email: identity.email.toLowerCase(), googleSub: { $exists: false }, active: true },
       { $set: { googleSub: identity.sub } },
       { new: true }
     ));
