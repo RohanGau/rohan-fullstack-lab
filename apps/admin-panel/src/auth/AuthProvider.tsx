@@ -9,11 +9,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { config } from '../config';
+import { useNotice } from '../shell/notice';
 import {
+  ForbiddenError,
   SessionEndedError,
-  UnauthorizedError,
+  describeApiError,
   endServerSession,
-  fetchCurrentOperator,
+  parseCurrentOperator,
   refreshTokens,
 } from './authApi';
 import { currentGoogleIdentity } from './googleIdentity';
@@ -29,6 +32,14 @@ export interface AuthContextValue {
   /** Takes the tokens from a successful Google sign-in and loads who signed in. */
   completeSignIn(tokens: AuthTokenPair): Promise<void>;
   signOut(): Promise<void>;
+  /**
+   * A request to the API with the Operator's access token. An expired token is refreshed
+   * once and the request retried; if the API still refuses it the Operator is signed out
+   * (SessionEndedError). A 403 throws ForbiddenError. Use this for every authenticated call.
+   */
+  authorizedFetch(path: string, init?: RequestInit): Promise<Response>;
+  /** Asks the API who is signed in and what they may do now (their Roles may have changed). */
+  reloadOperator(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -39,6 +50,7 @@ const REFRESH_AT_FRACTION = 0.8;
 const RETRY_AFTER_MS = 15_000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { showNotice } = useNotice();
   const [state, setState] = useState<AuthState>({ status: 'restoring' });
   const accessToken = useRef<string | null>(null);
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -124,19 +136,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshSessionRef.current = refreshSession;
   });
 
-  /** Loads the identity; an expired access token is refreshed once and retried. */
-  const loadOperator = useCallback(async (): Promise<CurrentOperator | null> => {
-    let token = accessToken.current;
-    for (let attempt = 0; attempt < 2 && token; attempt += 1) {
-      try {
-        return await fetchCurrentOperator(token);
-      } catch (error) {
-        if (!(error instanceof UnauthorizedError)) throw error;
-        token = await refreshSession();
+  const signOut = useCallback(async () => {
+    const refreshToken = readStoredRefreshToken();
+    generation.current += 1;
+    inFlightRefresh.current = null;
+    forgetSession();
+    setState({ status: 'signedOut' });
+    currentGoogleIdentity()?.disableAutoSelect();
+    if (refreshToken) await endServerSession(refreshToken);
+  }, [forgetSession]);
+
+  const authorizedFetch = useCallback(
+    async (path: string, init: RequestInit = {}): Promise<Response> => {
+      const startedIn = generation.current;
+      const send = (token: string) => {
+        const headers = new Headers(init.headers);
+        headers.set('Authorization', `Bearer ${token}`);
+        return fetch(`${config.apiUrl}${path}`, { ...init, headers });
+      };
+      // No access token (a failed background refresh): get one, or find the session is over.
+      const noSession = () =>
+        readStoredRefreshToken()
+          ? new Error('Could not refresh the session')
+          : new SessionEndedError();
+
+      const token = accessToken.current ?? (await refreshSession());
+      if (!token) throw noSession();
+
+      let response = await send(token);
+      if (response.status === 401) {
+        const fresh = await refreshSession();
+        if (!fresh) throw noSession();
+        response = await send(fresh);
+        if (response.status === 401) {
+          // Only end the session this request belonged to, never a newer one.
+          if (startedIn === generation.current) void signOut();
+          throw new SessionEndedError();
+        }
       }
-    }
-    return null;
-  }, [refreshSession]);
+      if (response.status === 403) {
+        // Any screen's refused request is explained the same way, without each one asking.
+        showNotice(describeApiError(new ForbiddenError()));
+        throw new ForbiddenError();
+      }
+      return response;
+    },
+    [refreshSession, signOut, showNotice]
+  );
+
+  const loadOperator = useCallback(
+    async (): Promise<CurrentOperator> =>
+      parseCurrentOperator(await authorizedFetch('/api/v1/auth/me')),
+    [authorizedFetch]
+  );
+
+  const reloadOperator = useCallback(async () => {
+    const startedIn = generation.current;
+    const operator = await loadOperator();
+    if (startedIn !== generation.current) return; // signed out meanwhile: do not bring it back
+    setState({ status: 'signedIn', operator });
+  }, [loadOperator]);
 
   const completeSignIn = useCallback(
     async (tokens: AuthTokenPair) => {
@@ -144,7 +203,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       adoptTokens(tokens);
       try {
         const operator = await loadOperator();
-        if (!operator) throw new Error('Could not load the signed-in Operator');
         if (startedIn !== generation.current) return;
         setState({ status: 'signedIn', operator });
       } catch (error) {
@@ -161,16 +219,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [adoptTokens, forgetSession, loadOperator]
   );
 
-  const signOut = useCallback(async () => {
-    const refreshToken = readStoredRefreshToken();
-    generation.current += 1;
-    inFlightRefresh.current = null;
-    forgetSession();
-    setState({ status: 'signedOut' });
-    currentGoogleIdentity()?.disableAutoSelect();
-    if (refreshToken) await endServerSession(refreshToken);
-  }, [forgetSession]);
-
   // Reload: the access token is gone, so trade the stored refresh token for a new one.
   useEffect(() => {
     if (restoreStarted.current) return;
@@ -186,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const operator = await loadOperator();
         if (startedIn !== generation.current) return;
-        setState(operator ? { status: 'signedIn', operator } : { status: 'signedOut' });
+        setState({ status: 'signedIn', operator });
       } catch {
         setState({ status: 'signedOut' });
       }
@@ -196,8 +244,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => clearTimeout(refreshTimer.current), []);
 
   const value = useMemo(
-    () => ({ state, completeSignIn, signOut }),
-    [state, completeSignIn, signOut]
+    () => ({ state, completeSignIn, signOut, authorizedFetch, reloadOperator }),
+    [state, completeSignIn, signOut, authorizedFetch, reloadOperator]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

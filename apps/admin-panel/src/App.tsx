@@ -5,6 +5,7 @@ import type { RouterHistory } from '@tanstack/react-router';
 import { useState } from 'react';
 import { AuthProvider } from './auth/AuthProvider';
 import { createAppRouter } from './router';
+import { NoticeProvider } from './shell/notice';
 import { theme } from './theme';
 
 export function App({ history }: { history?: RouterHistory }) {
@@ -15,9 +16,11 @@ export function App({ history }: { history?: RouterHistory }) {
     <ThemeProvider theme={theme} defaultMode="system">
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <NoticeProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </NoticeProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

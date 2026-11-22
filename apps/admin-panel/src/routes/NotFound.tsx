@@ -4,7 +4,7 @@ import styles from './Page.module.scss';
 
 export function NotFound() {
   return (
-    <main className={styles.page}>
+    <section className={styles.page}>
       <Typography variant="h4" component="h1">
         Page not found
       </Typography>
@@ -12,6 +12,6 @@ export function NotFound() {
       <Button component={Link} to="/" variant="contained" sx={{ alignSelf: 'flex-start' }}>
         Back to the start
       </Button>
-    </main>
+    </section>
   );
 }

@@ -17,13 +17,13 @@ export function Home() {
   });
 
   return (
-    <main className={styles.page}>
+    <section className={styles.page}>
       <Typography variant="h4" component="h1">
         Admin panel
       </Typography>
       {liveness.isPending && <Typography>Checking API…</Typography>}
       {liveness.isSuccess && <Typography>API reachable</Typography>}
       {liveness.isError && <Typography color="error">API unreachable</Typography>}
-    </main>
+    </section>
   );
 }

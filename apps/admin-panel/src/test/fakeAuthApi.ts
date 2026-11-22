@@ -1,16 +1,10 @@
 import type { AuthTokenPair, CurrentOperator } from '@fullstack-lab/types';
 import { http, HttpResponse } from 'msw';
 import { REFRESH_TOKEN_STORAGE_KEY } from '../auth/session';
+import { ROLE_ACCESS } from './roles';
 import { API_URL, server } from './server';
 
 export const OPERATOR_EMAIL = 'owner@example.com';
-const OPERATOR: CurrentOperator = {
-  id: 'operator-1',
-  role: 'admin',
-  email: OPERATOR_EMAIL,
-  roles: ['super_admin'],
-  permissions: ['blog:create', 'contact:read'],
-};
 
 type Recorded = { url: string; body?: Record<string, string>; authorization?: string | null };
 
@@ -19,7 +13,16 @@ type Recorded = { url: string; body?: Record<string, string>; authorization?: st
  * rotating refresh tokens, a bearer-checked identity endpoint and logout.
  * Credentials 'good-token' sign in; 'unregistered-token' is refused.
  */
-export function fakeAuthApi(options: { accessTtlSeconds?: number } = {}) {
+export function fakeAuthApi(
+  options: { accessTtlSeconds?: number; access?: { roles: string[]; permissions: string[] } } = {}
+) {
+  let access = options.access ?? ROLE_ACCESS.super_admin;
+  const operator = (): CurrentOperator => ({
+    id: 'operator-1',
+    role: 'admin',
+    email: OPERATOR_EMAIL,
+    ...access,
+  });
   const accessTtlSeconds = options.accessTtlSeconds ?? 900;
   const issuedNonces = new Set<string>();
   const validAccess = new Set<string>();
@@ -32,13 +35,14 @@ export function fakeAuthApi(options: { accessTtlSeconds?: number } = {}) {
     logout: [],
   };
   let counter = 0;
-  let rejectNextMe = false;
+  let meOverride: { status: number; remaining: number } | null = null;
   let signInNetworkFailure = false;
   let logoutNetworkFailure = false;
   let meNetworkFailure = false;
   let refreshNetworkFailure = false;
   let otherTabRotates = false;
   let refreshGate: Promise<void> | null = null;
+  let meGate: Promise<void> | null = null;
 
   function issuePair(): AuthTokenPair {
     counter += 1;
@@ -95,19 +99,21 @@ export function fakeAuthApi(options: { accessTtlSeconds?: number } = {}) {
       if (refreshGate) await refreshGate;
       return HttpResponse.json(pair);
     }),
-    http.get(`${API_URL}/api/v1/auth/me`, ({ request }) => {
+    http.get(`${API_URL}/api/v1/auth/me`, async ({ request }) => {
       const authorization = request.headers.get('authorization');
       calls.me.push({ url: '/auth/me', authorization });
       if (meNetworkFailure) return HttpResponse.error();
-      if (rejectNextMe) {
-        rejectNextMe = false;
-        return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      if (meOverride && meOverride.remaining > 0) {
+        meOverride.remaining -= 1;
+        return HttpResponse.json({ message: 'Refused' }, { status: meOverride.status });
       }
       const token = authorization?.replace(/^Bearer /, '') ?? '';
       if (!validAccess.has(token)) {
         return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
       }
-      return HttpResponse.json(OPERATOR);
+      const body = operator();
+      if (meGate) await meGate;
+      return HttpResponse.json(body);
     }),
     http.post(`${API_URL}/api/v1/auth/logout`, async ({ request }) => {
       const body = (await request.json()) as Record<string, string>;
@@ -136,6 +142,17 @@ export function fakeAuthApi(options: { accessTtlSeconds?: number } = {}) {
       });
       return release;
     },
+    /** The next identity response is slow to arrive until the returned function is called. */
+    holdNextMe(): () => void {
+      let release!: () => void;
+      meGate = new Promise<void>((resolve) => {
+        release = () => {
+          meGate = null;
+          resolve();
+        };
+      });
+      return release;
+    },
     failNextRefreshNetwork() {
       refreshNetworkFailure = true;
     },
@@ -147,7 +164,15 @@ export function fakeAuthApi(options: { accessTtlSeconds?: number } = {}) {
       meNetworkFailure = true;
     },
     rejectNextMeWith401() {
-      rejectNextMe = true;
+      meOverride = { status: 401, remaining: 1 };
+    },
+    /** The next `times` identity requests are answered with this status. */
+    respondToMeWith(status: number, times = 1) {
+      meOverride = { status, remaining: times };
+    },
+    /** The server changes what this Operator may do (an administrator edited their Roles). */
+    changeAccess(next: { roles: string[]; permissions: string[] }) {
+      access = next;
     },
     failSignInNetwork() {
       signInNetworkFailure = true;

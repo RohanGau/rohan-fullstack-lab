@@ -1,0 +1,45 @@
+.skip {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  z-index: 2000;
+  padding: 0.5rem 1rem;
+  background: var(--mui-palette-background-paper);
+  color: var(--mui-palette-text-primary);
+  border: 2px solid var(--mui-palette-primary-main);
+  border-radius: 4px;
+
+  &:focus {
+    top: 0.5rem;
+  }
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: calc(100vh - 64px);
+}
+
+.bodyNarrow {
+  display: block;
+}
+
+.sidebar {
+  border-right: 1px solid var(--mui-palette-divider);
+}
+
+.nav {
+  min-width: 15rem;
+}
+
+.content {
+  min-width: 0;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.group {
+  display: block;
+}

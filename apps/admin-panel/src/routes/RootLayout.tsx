@@ -1,13 +1,14 @@
 import { CircularProgress } from '@mui/material';
 import { Navigate, Outlet, useRouterState } from '@tanstack/react-router';
 import { useAuth } from '../auth/AuthProvider';
-import { Header } from './Header';
+import { Shell } from '../shell/Shell';
 import styles from './Page.module.scss';
 
 /** Signed-out visitors can only see sign-in; everything else waits for a session. */
 export function RootLayout() {
   const { state } = useAuth();
   const location = useRouterState({ select: (s) => s.location });
+  const onSignIn = location.pathname === '/sign-in';
 
   if (state.status === 'restoring') {
     return (
@@ -17,7 +18,7 @@ export function RootLayout() {
     );
   }
 
-  if (state.status === 'signedOut' && location.pathname !== '/sign-in') {
+  if (state.status === 'signedOut' && !onSignIn) {
     return (
       <Navigate
         to="/sign-in"
@@ -27,10 +28,5 @@ export function RootLayout() {
     );
   }
 
-  return (
-    <>
-      <Header />
-      <Outlet />
-    </>
-  );
+  return onSignIn ? <Outlet /> : <Shell />;
 }
