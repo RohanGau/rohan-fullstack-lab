@@ -1,12 +1,13 @@
 import type { Request, Response } from 'express';
 import type { IOperatorDto } from '@fullstack-lab/types';
 import type { HydratedDocument } from 'mongoose';
-import { PERMISSIONS } from '@fullstack-lab/constants';
+import { PERMISSIONS, SEEDED_ROLES } from '@fullstack-lab/constants';
 import { isValidObjectId } from 'mongoose';
 import Operator, { type IOperatorDb } from '../models/Operator';
 import Role, { type IRoleDb } from '../models/Role';
 import { canGrantRole, isSuperAdmin } from '../services/rolePolicy';
 import { validateSchema } from '../validation';
+import { assignRolesSchema } from '../validation/roles';
 import { createOperatorSchema } from '../validation/operators';
 import { CMS_ERROR_MESSAGES } from '../utils/constant';
 import logger from '../utils/logger';
@@ -54,6 +55,7 @@ export async function listOperators(req: Request, res: Response) {
 }
 
 export const validateCreateOperator = validateSchema(createOperatorSchema);
+export const validateAssignRoles = validateSchema(assignRolesSchema);
 
 const DUPLICATE_KEY = 11000;
 
@@ -114,5 +116,55 @@ export async function deactivateOperator(req: Request, res: Response) {
   } catch (error) {
     logger.error({ err: error }, 'Deactivating an Operator failed');
     return res.status(500).json({ message: 'Could not deactivate the Operator' });
+  }
+}
+
+/** Replaces an Operator's Roles, within what the caller is allowed to hand out or take away. */
+export async function assignRoles(req: Request, res: Response) {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) return res.status(404).json({ message: 'Operator not found' });
+  const { roles: roleNames } = req.validatedBody as { roles: string[] };
+  const callerRoles = req.operator!.roles;
+
+  try {
+    const target = await Operator.findById(id).populate<{ roles: IRoleDb[] }>('roles');
+    if (!target) return res.status(404).json({ message: 'Operator not found' });
+
+    const currentNames = target.roles.map((role) => role.name);
+    if (isSuperAdmin(currentNames) && !isSuperAdmin(callerRoles)) {
+      return res
+        .status(403)
+        .json({ message: "Only a Super Admin can change a Super Admin's Roles" });
+    }
+
+    const roles = await Role.find({ name: { $in: roleNames } });
+    const unknown = roleNames.filter((name) => !roles.some((role) => role.name === name));
+    if (unknown.length > 0) {
+      return res.status(400).json({
+        msg: CMS_ERROR_MESSAGES.VALIDATION_ERROR,
+        error: unknown.map((name) => ({ field: 'roles', message: `Unknown role: ${name}` })),
+      });
+    }
+
+    // Granting or taking away a protected Role is a Super Admin's call.
+    const changed = [
+      ...roleNames.filter((name) => !currentNames.includes(name)),
+      ...currentNames.filter((name) => !roleNames.includes(name)),
+    ];
+    if (changed.some((name) => !canGrantRole(callerRoles, name))) {
+      return res
+        .status(403)
+        .json({ message: 'Only a Super Admin can grant or remove a protected Role' });
+    }
+    if (target.isBootstrap && !roleNames.includes(SEEDED_ROLES.SUPER_ADMIN)) {
+      return res.status(403).json({ message: 'The bootstrap Super Admin cannot lose Super Admin' });
+    }
+
+    await Operator.updateOne({ _id: target._id }, { roles: roles.map((role) => role._id) });
+    const updated = await Operator.findById(id).populate<{ roles: IRoleDb[] }>('roles');
+    return res.status(200).json(toOperatorDto(updated as unknown as PopulatedOperator));
+  } catch (error) {
+    logger.error({ err: error }, 'Assigning Roles failed');
+    return res.status(500).json({ message: 'Could not change the Operator’s Roles' });
   }
 }
