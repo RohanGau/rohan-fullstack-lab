@@ -7,7 +7,9 @@ import type {
   AuthUser,
   RefreshTokenClaims,
 } from '@fullstack-lab/types';
+import { isValidObjectId } from 'mongoose';
 import { redisRest } from '../lib/redis-rest';
+import Operator from '../models/Operator';
 import logger from '../utils/logger';
 
 type RefreshSession = AuthUser & {
@@ -172,6 +174,17 @@ async function claimRefreshJti(jti: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * A deactivated Operator's sessions end the next time they try to refresh (their access token
+ * is refused at once by requirePermission, and lives at most minutes). The database is the
+ * authority, so there is no separate list of sessions to keep in step.
+ */
+async function isDeactivatedOperator(userId: string): Promise<boolean> {
+  return (
+    isValidObjectId(userId) && (await Operator.exists({ _id: userId, active: false })) !== null
+  );
+}
+
 function verifyRefreshToken(refreshToken: string): RefreshTokenClaims {
   const decoded = jwt.verify(refreshToken, getRefreshSecret(), {
     issuer: TOKEN_ISSUER,
@@ -255,6 +268,12 @@ export async function rotateRefreshToken(refreshToken: string): Promise<AuthToke
   const family = await getFamily(decoded.fid);
   if (!family || family.session.id !== decoded.sub) {
     throw new Error('Refresh token is revoked or expired');
+  }
+
+  // A deactivated Operator never gets new tokens, even if a refresh was already under way.
+  if (await isDeactivatedOperator(family.session.id)) {
+    await deleteFamily(decoded.fid);
+    throw new Error('Operator is deactivated');
   }
 
   if (family.currentJti !== decoded.jti || !(await claimRefreshJti(decoded.jti))) {
