@@ -9,3 +9,4 @@ export * from './auth';
 export * from './audit';
 export * from './mcp';
 export * from './agent';
+export * from './access';

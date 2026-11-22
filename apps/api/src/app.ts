@@ -15,6 +15,7 @@ import projectRoutes from './routes/projectRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import slotRoutes from './routes/slotRoutes';
 import healthRoutes from './routes/healthRoutes';
+import operatorRoutes from './routes/operatorRoutes';
 import authRoutes from './routes/authRoutes';
 import agentRoutes from './routes/agentRoutes';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
@@ -146,6 +147,7 @@ function registerRoutes(app: express.Express, config: ApiRuntimeConfig): void {
 
   const apiV1Router = express.Router();
   apiV1Router.use('/auth', authRoutes);
+  apiV1Router.use('/operators', operatorRoutes);
 
   if (config.agentGatewayEnabled) {
     apiV1Router.use('/agent', agentRoutes);

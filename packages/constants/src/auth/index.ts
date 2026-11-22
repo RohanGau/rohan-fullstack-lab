@@ -43,3 +43,51 @@ export const PERMISSIONS = Object.freeze({
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 export const PERMISSION_VALUES: readonly Permission[] = Object.freeze(Object.values(PERMISSIONS));
+
+/** The Roles every deployment starts with (created at boot if missing). */
+export const SEEDED_ROLES = Object.freeze({
+  SUPER_ADMIN: 'super_admin',
+  ADMIN: 'admin',
+  CONTENT_MANAGER: 'content_manager',
+  INBOX_MANAGER: 'inbox_manager',
+  VIEWER: 'viewer',
+} as const);
+
+/** Only a Super Admin may grant, edit or delete these. */
+export const PROTECTED_ROLE_NAMES: readonly string[] = Object.freeze([
+  SEEDED_ROLES.SUPER_ADMIN,
+  SEEDED_ROLES.ADMIN,
+]);
+
+/**
+ * What each seeded Role holds when first created. Super Admin holds every Permission
+ * implicitly (including future ones), so it stores none. Admin starts with the whole
+ * catalogue: what stops an Admin is the Protected role rules, not missing Permissions.
+ * Once created, a Role's Permissions are edited in the database and never reset by boot.
+ */
+export const SEEDED_ROLE_PERMISSIONS: Readonly<Record<string, readonly Permission[]>> =
+  Object.freeze({
+    [SEEDED_ROLES.SUPER_ADMIN]: [],
+    [SEEDED_ROLES.ADMIN]: PERMISSION_VALUES,
+    [SEEDED_ROLES.CONTENT_MANAGER]: [
+      PERMISSIONS.BLOG_CREATE,
+      PERMISSIONS.BLOG_UPDATE,
+      PERMISSIONS.BLOG_DELETE,
+      PERMISSIONS.PROJECT_CREATE,
+      PERMISSIONS.PROJECT_UPDATE,
+      PERMISSIONS.PROJECT_DELETE,
+      PERMISSIONS.PROFILE_CREATE,
+      PERMISSIONS.PROFILE_UPDATE,
+      PERMISSIONS.PROFILE_DELETE,
+      PERMISSIONS.UPLOAD_CREATE,
+      PERMISSIONS.UPLOAD_DELETE,
+    ],
+    [SEEDED_ROLES.INBOX_MANAGER]: [
+      PERMISSIONS.CONTACT_READ,
+      PERMISSIONS.CONTACT_DELETE,
+      PERMISSIONS.SLOT_READ,
+      PERMISSIONS.SLOT_UPDATE,
+      PERMISSIONS.SLOT_DELETE,
+    ],
+    [SEEDED_ROLES.VIEWER]: [PERMISSIONS.CONTACT_READ, PERMISSIONS.SLOT_READ],
+  });
