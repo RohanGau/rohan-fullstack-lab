@@ -18,4 +18,6 @@ export const API_PATHS = Object.freeze({
   PROJECTS: `${API_VERSIONS.CURRENT_PREFIX}/projects`,
   UPLOADS: `${API_VERSIONS.CURRENT_PREFIX}/uploads`,
   SLOTS: `${API_VERSIONS.CURRENT_PREFIX}/slots`,
+  OPERATORS: `${API_VERSIONS.CURRENT_PREFIX}/operators`,
+  ROLES: `${API_VERSIONS.CURRENT_PREFIX}/roles`,
 } as const);

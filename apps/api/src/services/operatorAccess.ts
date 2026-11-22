@@ -11,13 +11,14 @@ export interface OperatorAccess {
 
 /**
  * Resolves an Operator's effective access from the database on every call, so Role
- * edits take effect immediately. Returns null when the id is not an Operator.
+ * edits take effect immediately. Returns null when the id is not an active Operator.
  */
 export async function resolveOperatorAccess(operatorId: string): Promise<OperatorAccess | null> {
   if (!isValidObjectId(operatorId)) return null;
 
   const operator = await Operator.findById(operatorId).populate<{ roles: IRoleDb[] }>('roles');
-  if (!operator) return null;
+  // A deactivated Operator has no access, even with a token that has not yet expired.
+  if (!operator || !operator.active) return null;
 
   const roles = operator.roles.map((role) => role.name);
   if (roles.includes(SUPER_ADMIN_ROLE)) {
