@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { API_PATHS } from '@fullstack-lab/constants';
 import { config } from '../config';
 import { useNotice } from '../shell/notice';
 import {
@@ -48,6 +49,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const REFRESH_AT_FRACTION = 0.8;
 /** After a background refresh could not reach the API, try again this soon. */
 const RETRY_AFTER_MS = 15_000;
+const ME_PATH = `${API_PATHS.AUTH}/me`;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { showNotice } = useNotice();
@@ -67,6 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     accessToken.current = null;
     clearStoredRefreshToken();
   }, []);
+
+  // Holds the newest reloadOperator, which is defined after authorizedFetch needs it.
+  const reloadOperatorRef = useRef<() => Promise<void>>(async () => {});
 
   // Holds the newest refreshSession so timers never call a stale closure.
   const refreshSessionRef = useRef<() => Promise<string | null>>(async () => null);
@@ -177,6 +182,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.status === 403) {
         // Any screen's refused request is explained the same way, without each one asking.
         showNotice(describeApiError(new ForbiddenError()));
+        // Their Roles may have changed since sign-in: re-read them so navigation and
+        // controls catch up. (The identity request itself is the one that cannot recurse.)
+        if (path !== ME_PATH) void reloadOperatorRef.current().catch(() => undefined);
         throw new ForbiddenError();
       }
       return response;
@@ -185,8 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const loadOperator = useCallback(
-    async (): Promise<CurrentOperator> =>
-      parseCurrentOperator(await authorizedFetch('/api/v1/auth/me')),
+    async (): Promise<CurrentOperator> => parseCurrentOperator(await authorizedFetch(ME_PATH)),
     [authorizedFetch]
   );
 
@@ -196,6 +203,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (startedIn !== generation.current) return; // signed out meanwhile: do not bring it back
     setState({ status: 'signedIn', operator });
   }, [loadOperator]);
+
+  useEffect(() => {
+    reloadOperatorRef.current = reloadOperator;
+  });
 
   const completeSignIn = useCallback(
     async (tokens: AuthTokenPair) => {

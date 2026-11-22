@@ -5,9 +5,10 @@ import type {
   GoogleSignInRequest,
   RefreshTokenRequest,
 } from '@fullstack-lab/types';
+import { API_PATHS } from '@fullstack-lab/constants';
 import { config } from '../config';
 
-const AUTH_URL = `${config.apiUrl}/api/v1/auth`;
+const AUTH_URL = `${config.apiUrl}${API_PATHS.AUTH}`;
 
 /** The API understood the request and said no (unregistered, deactivated, unverified...). */
 export class SignInRefusedError extends Error {}

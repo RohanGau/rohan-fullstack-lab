@@ -9,7 +9,9 @@ import { NoticeProvider } from './shell/notice';
 import { theme } from './theme';
 
 export function App({ history }: { history?: RouterHistory }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  );
   const [router] = useState(() => createAppRouter(history));
 
   return (

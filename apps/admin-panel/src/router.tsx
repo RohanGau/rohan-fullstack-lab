@@ -1,8 +1,14 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  lazyRouteComponent,
+} from '@tanstack/react-router';
 import type { RouterHistory } from '@tanstack/react-router';
 import { RequirePermission } from './access/permissions';
 import { SECTIONS, type Section } from './access/sections';
 import { SignInPage } from './auth/SignInPage';
+import { contactsListSearch } from './resources/contacts';
 import { Account } from './routes/Account';
 import { Home } from './routes/Home';
 import { NotFound } from './routes/NotFound';
@@ -40,6 +46,14 @@ function sectionRoute<P extends string>(section: Section & { path: P }) {
   });
 }
 
+// The data grid is large, so a list screen is only downloaded when the Operator opens it.
+const contactsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: SECTIONS.contacts.path,
+  validateSearch: contactsListSearch.validate,
+  component: lazyRouteComponent(() => import('./resources/ContactsScreen'), 'ContactsScreen'),
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   accountRoute,
@@ -48,7 +62,7 @@ const routeTree = rootRoute.addChildren([
   sectionRoute(SECTIONS.projects),
   sectionRoute(SECTIONS.profiles),
   sectionRoute(SECTIONS.assets),
-  sectionRoute(SECTIONS.contacts),
+  contactsRoute,
   sectionRoute(SECTIONS.slots),
   sectionRoute(SECTIONS.operators),
   sectionRoute(SECTIONS.roles),

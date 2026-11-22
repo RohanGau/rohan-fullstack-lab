@@ -40,7 +40,8 @@ export const SECTIONS = {
     path: '/contacts',
     label: 'Contacts',
     group: 'Inbox',
-    anyOf: [P.CONTACT_READ, P.CONTACT_DELETE],
+    // Listing needs read; delete alone would open a screen that can show nothing.
+    anyOf: [P.CONTACT_READ],
   },
   slots: {
     path: '/slots',

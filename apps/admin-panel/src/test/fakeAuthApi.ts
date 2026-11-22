@@ -35,6 +35,7 @@ export function fakeAuthApi(
     logout: [],
   };
   let counter = 0;
+  let rejectedRefreshes = 0;
   let meOverride: { status: number; remaining: number } | null = null;
   let signInNetworkFailure = false;
   let logoutNetworkFailure = false;
@@ -92,6 +93,7 @@ export function fakeAuthApi(
         return HttpResponse.json({ message: 'Invalid or expired refresh token' }, { status: 401 });
       }
       if (!validRefresh.delete(body.refreshToken ?? '')) {
+        rejectedRefreshes += 1;
         return HttpResponse.json({ message: 'Invalid or expired refresh token' }, { status: 401 });
       }
       const pair = issuePair();
@@ -126,10 +128,20 @@ export function fakeAuthApi(
 
   return {
     calls,
+    /** Refresh requests the API refused, e.g. because the token had already been used. */
+    rejectedRefreshCount: () => rejectedRefreshes,
+    /** Whether the API would accept this bearer token right now (other fakes use it to answer 401). */
+    acceptsAccessToken(token: string): boolean {
+      return validAccess.has(token);
+    },
     /** A refresh token the API will accept, as if left by an earlier visit. */
     seedRefreshToken(token = 'refresh-seed') {
       validRefresh.add(token);
       return token;
+    },
+    /** Access tokens stop working (they expired); refresh tokens still do. */
+    expireAccessTokens() {
+      validAccess.clear();
     },
     /** The next refresh request waits until the returned function is called. */
     holdNextRefresh(): () => void {
