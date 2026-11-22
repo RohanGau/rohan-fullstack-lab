@@ -47,6 +47,30 @@ describe('POST /api/v1/auth/google/nonce', () => {
   });
 });
 
+describe('booting more than once', () => {
+  it('leaves exactly one Super Admin Role and one bootstrap Operator, who still signs in', async () => {
+    await bootstrapAccessControl();
+    await bootstrapAccessControl();
+    const nonce = await getNonce();
+    fakeVerify.mockResolvedValue({
+      sub: 'google-sub-owner',
+      email: SUPER_ADMIN_EMAIL,
+      emailVerified: true,
+      nonce,
+    });
+
+    const signedIn = await request(app)
+      .post('/api/v1/auth/google')
+      .send({ idToken: 'fake-google-id-token', nonce });
+    const me = await request(app)
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${signedIn.body.accessToken}`);
+
+    expect(signedIn.status).toBe(200);
+    expect(me.body.roles).toEqual(['super_admin']);
+  });
+});
+
 describe('POST /api/v1/auth/google', () => {
   it('signs in the bootstrap Super Admin and issues tokens that identify them', async () => {
     const nonce = await getNonce();

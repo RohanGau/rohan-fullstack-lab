@@ -62,8 +62,29 @@ export const loginAccountRateLimit: RateLimitRequestHandler = rateLimit({
   skipSuccessfulRequests: true,
 });
 
+// Operator Google sign-in: one budget per client shared by the nonce and sign-in endpoints.
+// A normal sign-in costs two requests (nonce, then sign-in), so 30 allows many honest retries.
+const googleAuthStore = createRedisRateLimitStore({
+  prefix: 'rate-limit:google-auth:ip:',
+  windowMs: rateLimitWindowMs,
+});
+
+export const GOOGLE_AUTH_MAX_REQUESTS = isProduction ? 30 : 100;
+
+export const googleAuthRateLimit: RateLimitRequestHandler = rateLimit({
+  windowMs: rateLimitWindowMs,
+  max: GOOGLE_AUTH_MAX_REQUESTS,
+  store: googleAuthStore,
+  message: {
+    error: 'Too many sign-in attempts from this IP. Please try again in 15 minutes.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+});
+
 // Enforce Redis requirement for auth rate limiting in prod/stage
-if (!loginIpStore || !loginAccountStore) {
+if (!loginIpStore || !loginAccountStore || !googleAuthStore) {
   if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'stage') {
     logger.error(
       'FATAL: Redis is required for auth rate limiting in production/stage. ' +

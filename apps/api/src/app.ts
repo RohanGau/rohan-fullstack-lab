@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
 import { API_VERSIONS, HTTP_HEADERS } from '@fullstack-lab/constants';
 import type { ApiRuntimeConfig } from './config/runtime';
+import { assertAuthConfig, type EnvVars } from './config/authConfig';
 import todoRoutes from './routes/todoRoutes';
 import blogRoutes from './routes/blogRoutes';
 import contactRoutes from './routes/contactRoutes';
@@ -176,7 +177,8 @@ function applyErrorHandlers(app: express.Express): void {
   app.use(globalErrorHandler);
 }
 
-export function createApp(config: ApiRuntimeConfig): express.Express {
+export function createApp(config: ApiRuntimeConfig, env: EnvVars = process.env): express.Express {
+  assertAuthConfig(env);
   const app = express();
 
   applyProxyTrust(app, config);

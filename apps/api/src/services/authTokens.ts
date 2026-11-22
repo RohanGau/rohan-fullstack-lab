@@ -14,12 +14,24 @@ type RefreshSession = AuthUser & {
   issuedAt: string;
 };
 
-type MemoryRefreshSession = {
+/**
+ * One sign-in is one session family. Every refresh token descended from it carries
+ * the family id; only the family's current token id is accepted. Presenting any
+ * other (an already-rotated one) means the token leaked, so the family is deleted.
+ */
+type RefreshFamily = {
   session: RefreshSession;
+  currentJti: string;
+};
+
+type MemoryRefreshFamily = {
+  family: RefreshFamily;
   expiresAt: number;
 };
 
-const memoryRefreshSessions = new Map<string, MemoryRefreshSession>();
+const memoryRefreshFamilies = new Map<string, MemoryRefreshFamily>();
+/** Token ids already exchanged, with their expiry. See claimRefreshJti. */
+const memoryClaimedJtis = new Map<string, number>();
 const TOKEN_ISSUER = AUTH_TOKEN_DEFAULTS.ISSUER;
 const TOKEN_AUDIENCE = AUTH_TOKEN_DEFAULTS.AUDIENCE;
 
@@ -46,20 +58,19 @@ function parseTtlToSeconds(raw: string, fallbackSeconds: number): number {
   return amount * 24 * 60 * 60;
 }
 
-function cleanupMemoryRefreshSessions(now = Date.now()) {
-  for (const [key, entry] of memoryRefreshSessions.entries()) {
-    if (entry.expiresAt <= now) memoryRefreshSessions.delete(key);
+function cleanupMemoryRefreshFamilies(now = Date.now()) {
+  for (const [key, entry] of memoryRefreshFamilies.entries()) {
+    if (entry.expiresAt <= now) memoryRefreshFamilies.delete(key);
   }
 }
 
+// Signing secrets come from their own variables only: no fallback to each other or to ADMIN_TOKEN.
 function getAccessSecret(): Secret {
-  return process.env.JWT_ACCESS_SECRET || process.env.ADMIN_TOKEN || '';
+  return process.env.JWT_ACCESS_SECRET || '';
 }
 
 function getRefreshSecret(): Secret {
-  return (
-    process.env.JWT_REFRESH_SECRET || process.env.JWT_ACCESS_SECRET || process.env.ADMIN_TOKEN || ''
-  );
+  return process.env.JWT_REFRESH_SECRET || '';
 }
 
 function ensureSecretsConfigured() {
@@ -86,12 +97,13 @@ function buildAccessToken(user: AuthUser): string {
   return jwt.sign(payload, getAccessSecret(), options);
 }
 
-function buildRefreshToken(user: AuthUser, refreshJti: string): string {
+function buildRefreshToken(user: AuthUser, refreshJti: string, familyId: string): string {
   const payload: RefreshTokenClaims & JwtPayload = {
     sub: user.id,
     role: user.role,
     tokenType: AUTH_TOKEN_TYPES.REFRESH,
     jti: refreshJti,
+    fid: familyId,
   };
 
   const options: SignOptions = {
@@ -103,38 +115,79 @@ function buildRefreshToken(user: AuthUser, refreshJti: string): string {
   return jwt.sign(payload, getRefreshSecret(), options);
 }
 
-function refreshKey(refreshJti: string): string {
-  return `auth:refresh:${refreshJti}`;
+function familyKey(familyId: string): string {
+  return `auth:refresh-family:${familyId}`;
 }
 
-async function storeRefreshSession(refreshJti: string, session: RefreshSession) {
+async function storeFamily(familyId: string, family: RefreshFamily) {
   if (redisRest) {
-    await redisRest.set(refreshKey(refreshJti), session as any, { ex: REFRESH_TOKEN_TTL_SECONDS });
+    await redisRest.set(familyKey(familyId), family as any, { ex: REFRESH_TOKEN_TTL_SECONDS });
     return;
   }
 
-  cleanupMemoryRefreshSessions();
-  memoryRefreshSessions.set(refreshJti, {
-    session,
+  cleanupMemoryRefreshFamilies();
+  memoryRefreshFamilies.set(familyId, {
+    family,
     expiresAt: Date.now() + REFRESH_TOKEN_TTL_SECONDS * 1000,
   });
 }
 
-async function getRefreshSession(refreshJti: string): Promise<RefreshSession | null> {
+async function getFamily(familyId: string): Promise<RefreshFamily | null> {
   if (redisRest) {
-    return (await redisRest.get<RefreshSession>(refreshKey(refreshJti))) ?? null;
+    return (await redisRest.get<RefreshFamily>(familyKey(familyId))) ?? null;
   }
 
-  cleanupMemoryRefreshSessions();
-  return memoryRefreshSessions.get(refreshJti)?.session ?? null;
+  cleanupMemoryRefreshFamilies();
+  return memoryRefreshFamilies.get(familyId)?.family ?? null;
 }
 
-async function deleteRefreshSession(refreshJti: string) {
+async function deleteFamily(familyId: string) {
   if (redisRest) {
-    await redisRest.del(refreshKey(refreshJti));
+    await redisRest.del(familyKey(familyId));
     return;
   }
-  memoryRefreshSessions.delete(refreshJti);
+  memoryRefreshFamilies.delete(familyId);
+}
+
+/**
+ * Atomically marks a refresh token id as exchanged. Only the first caller gets true,
+ * so two simultaneous refreshes with the same token can never both succeed
+ * (Redis SET NX; a plain read-compare-write would let both pass).
+ */
+async function claimRefreshJti(jti: string): Promise<boolean> {
+  if (redisRest) {
+    const result = await redisRest.set(`auth:refresh-claimed:${jti}`, 1, {
+      nx: true,
+      ex: REFRESH_TOKEN_TTL_SECONDS,
+    });
+    return result === 'OK';
+  }
+
+  const now = Date.now();
+  for (const [key, expiresAt] of memoryClaimedJtis.entries()) {
+    if (expiresAt <= now) memoryClaimedJtis.delete(key);
+  }
+  if (memoryClaimedJtis.has(jti)) return false;
+  memoryClaimedJtis.set(jti, now + REFRESH_TOKEN_TTL_SECONDS * 1000);
+  return true;
+}
+
+function verifyRefreshToken(refreshToken: string): RefreshTokenClaims {
+  const decoded = jwt.verify(refreshToken, getRefreshSecret(), {
+    issuer: TOKEN_ISSUER,
+    audience: TOKEN_AUDIENCE,
+  }) as RefreshTokenClaims;
+
+  if (
+    !decoded ||
+    decoded.tokenType !== AUTH_TOKEN_TYPES.REFRESH ||
+    typeof decoded.sub !== 'string' ||
+    !decoded.jti ||
+    !decoded.fid
+  ) {
+    throw new Error('Invalid refresh token');
+  }
+  return decoded;
 }
 
 export function isLegacyAdminToken(token: string): boolean {
@@ -173,19 +226,22 @@ export function verifyAccessToken(token: string): AuthUser {
   };
 }
 
-export async function issueAuthTokens(user: AuthUser): Promise<AuthTokenPair> {
+/** Starts a new session family (a sign-in), or continues one when rotating. */
+export async function issueAuthTokens(
+  user: AuthUser,
+  familyId: string = nanoid()
+): Promise<AuthTokenPair> {
   ensureSecretsConfigured();
   const refreshJti = nanoid();
-  const refreshSession: RefreshSession = {
-    ...user,
-    issuedAt: new Date().toISOString(),
-  };
 
-  await storeRefreshSession(refreshJti, refreshSession);
+  await storeFamily(familyId, {
+    session: { ...user, issuedAt: new Date().toISOString() },
+    currentJti: refreshJti,
+  });
 
   return {
     accessToken: buildAccessToken(user),
-    refreshToken: buildRefreshToken(user, refreshJti),
+    refreshToken: buildRefreshToken(user, refreshJti, familyId),
     tokenType: 'Bearer',
     accessTokenTtlSeconds: ACCESS_TOKEN_TTL_SECONDS,
     refreshTokenTtlSeconds: REFRESH_TOKEN_TTL_SECONDS,
@@ -194,46 +250,27 @@ export async function issueAuthTokens(user: AuthUser): Promise<AuthTokenPair> {
 
 export async function rotateRefreshToken(refreshToken: string): Promise<AuthTokenPair> {
   ensureSecretsConfigured();
+  const decoded = verifyRefreshToken(refreshToken);
 
-  const decoded = jwt.verify(refreshToken, getRefreshSecret(), {
-    issuer: TOKEN_ISSUER,
-    audience: TOKEN_AUDIENCE,
-  }) as RefreshTokenClaims;
-
-  if (
-    !decoded ||
-    decoded.tokenType !== AUTH_TOKEN_TYPES.REFRESH ||
-    typeof decoded.sub !== 'string' ||
-    !decoded.jti
-  ) {
-    throw new Error('Invalid refresh token');
-  }
-
-  const currentSession = await getRefreshSession(decoded.jti);
-  if (!currentSession || currentSession.id !== decoded.sub) {
+  const family = await getFamily(decoded.fid);
+  if (!family || family.session.id !== decoded.sub) {
     throw new Error('Refresh token is revoked or expired');
   }
 
-  await deleteRefreshSession(decoded.jti);
+  if (family.currentJti !== decoded.jti || !(await claimRefreshJti(decoded.jti))) {
+    await deleteFamily(decoded.fid);
+    logger.warn({ familyId: decoded.fid, sub: decoded.sub }, 'Refresh token reuse: family revoked');
+    throw new Error('Refresh token was already used');
+  }
 
-  return issueAuthTokens({
-    id: currentSession.id,
-    role: currentSession.role,
-    email: currentSession.email,
-    username: currentSession.username,
-  });
+  const { id, role, email, username } = family.session;
+  return issueAuthTokens({ id, role, email, username }, decoded.fid);
 }
 
+/** Ends the whole session family the presented token belongs to, rotated or not. */
 export async function revokeRefreshToken(refreshToken: string): Promise<void> {
   try {
-    const decoded = jwt.verify(refreshToken, getRefreshSecret(), {
-      issuer: TOKEN_ISSUER,
-      audience: TOKEN_AUDIENCE,
-    }) as RefreshTokenClaims;
-
-    if (decoded?.jti) {
-      await deleteRefreshSession(decoded.jti);
-    }
+    await deleteFamily(verifyRefreshToken(refreshToken).fid);
   } catch (error) {
     logger.warn({ err: error }, 'Failed to revoke refresh token');
   }
