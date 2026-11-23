@@ -128,6 +128,8 @@ export function fakeAuthApi(
 
   return {
     calls,
+    /** Current caller roles. */
+    currentRoles: () => access.roles,
     /** Refresh requests the API refused, e.g. because the token had already been used. */
     rejectedRefreshCount: () => rejectedRefreshes,
     /** Whether the API would accept this bearer token right now (other fakes use it to answer 401). */

@@ -16,6 +16,8 @@ import {
   GridActionsCellItem,
   type GridColDef,
   type GridSortModel,
+  type GridRenderCellParams,
+  type GridValidRowModel,
 } from '@mui/x-data-grid';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
@@ -40,20 +42,21 @@ declare module '@mui/x-data-grid' {
   }
 }
 
-export interface ResourceColumn<Row> {
+export interface ResourceColumn<Row extends GridValidRowModel = GridValidRowModel> {
   field: keyof Row & string;
   header: string;
   sortable?: boolean;
   flex?: number;
   minWidth?: number;
   format?: (value: Row[keyof Row & string]) => string;
+  renderCell?: (params: GridRenderCellParams<Row>) => ReactNode;
 }
 
 /**
  * What a resource declares; ResourceList does the rest (paging, sorting, filtering on the
  * server, states, view and delete with confirmation, Permission gating).
  */
-export interface ResourceConfig<Row extends { id: string }> {
+export interface ResourceConfig<Row extends { id: string } & GridValidRowModel> {
   title: string;
   /** "message": used in labels like "Delete message from …" and in empty states. */
   noun: { singular: string; plural: string };
@@ -68,19 +71,26 @@ export interface ResourceConfig<Row extends { id: string }> {
   renderDetail?: (row: Row) => ReactNode;
   /** Holders of this Permission see a delete action. */
   deletePermission?: Permission | readonly Permission[];
+  /** Custom row actions rendered into the Actions column. */
+  customActions?: (row: Row) => ReactNode[];
+  actionsWidth?: number;
 }
 
 // The grid measures its own size, which jsdom cannot do, so tests render every row.
 const VIRTUALIZE = import.meta.env.MODE !== 'test';
 
-export function ResourceList<Row extends { id: string }>({
+export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   config,
   state,
   onStateChange,
+  headerActions,
+  customActions,
 }: {
   config: ResourceConfig<Row>;
   state: ListState;
   onStateChange: (next: ListState) => void;
+  headerActions?: ReactNode;
+  customActions?: (row: Row) => ReactNode[];
 }) {
   const { authorizedFetch } = useAuth();
   const { showNotice } = useNotice();
@@ -131,6 +141,8 @@ export function ResourceList<Row extends { id: string }>({
 
   const canDelete = config.deletePermission ? can(config.deletePermission) : false;
   const hasFilters = Object.keys(state.filters).length > 0;
+  const effectiveCustomActions = customActions ?? config.customActions;
+  const hasActions = Boolean(config.renderDetail || canDelete || effectiveCustomActions);
 
   const columns = useMemo<GridColDef<Row>[]>(
     () => [
@@ -142,38 +154,44 @@ export function ResourceList<Row extends { id: string }>({
           flex: column.flex ?? 1,
           minWidth: column.minWidth ?? 120,
           valueFormatter: column.format ? (value) => column.format?.(value) : undefined,
+          renderCell: column.renderCell ? (params) => column.renderCell!(params) : undefined,
         })
       ),
-      {
-        field: 'actions',
-        type: 'actions',
-        headerName: 'Actions',
-        width: 110,
-        getActions: ({ row }) => [
-          ...(config.renderDetail
-            ? [
-                <GridActionsCellItem
-                  key="view"
-                  icon={<ViewIcon />}
-                  label={`View ${config.describeRow(row)}`}
-                  onClick={() => setViewing(row)}
-                />,
-              ]
-            : []),
-          ...(canDelete
-            ? [
-                <GridActionsCellItem
-                  key="delete"
-                  icon={<DeleteIcon />}
-                  label={`Delete ${config.describeRow(row)}`}
-                  onClick={() => setDeleting(row)}
-                />,
-              ]
-            : []),
-        ],
-      },
+      ...(hasActions
+        ? [
+            {
+              field: 'actions',
+              type: 'actions',
+              headerName: 'Actions',
+              width: config.actionsWidth ?? 110,
+              getActions: ({ row }) => [
+                ...(effectiveCustomActions ? effectiveCustomActions(row) : []),
+                ...(config.renderDetail
+                  ? [
+                      <GridActionsCellItem
+                        key="view"
+                        icon={<ViewIcon />}
+                        label={`View ${config.describeRow(row)}`}
+                        onClick={() => setViewing(row)}
+                      />,
+                    ]
+                  : []),
+                ...(canDelete
+                  ? [
+                      <GridActionsCellItem
+                        key="delete"
+                        icon={<DeleteIcon />}
+                        label={`Delete ${config.describeRow(row)}`}
+                        onClick={() => setDeleting(row)}
+                      />,
+                    ]
+                  : []),
+              ],
+            } as GridColDef<Row>,
+          ]
+        : []),
     ],
-    [config, canDelete]
+    [config, canDelete, hasActions, effectiveCustomActions]
   );
 
   // The grid resets to page 1 whenever it is handed a different sort model, so these must be stable.
@@ -199,9 +217,12 @@ export function ResourceList<Row extends { id: string }>({
 
   return (
     <section className={styles.wide}>
-      <Typography variant="h4" component="h1">
-        {config.title}
-      </Typography>
+      <div className={styles.headerRow}>
+        <Typography variant="h4" component="h1">
+          {config.title}
+        </Typography>
+        {headerActions}
+      </div>
       <FilterForm config={config} state={state} onApply={onStateChange} />
 
       {list.isError && !list.data ? (

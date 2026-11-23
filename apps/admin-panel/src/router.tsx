@@ -9,6 +9,7 @@ import { RequirePermission } from './access/permissions';
 import { SECTIONS, type Section } from './access/sections';
 import { SignInPage } from './auth/SignInPage';
 import { contactsListSearch } from './resources/contacts';
+import { operatorsListSearch } from './resources/operators';
 import { Account } from './routes/Account';
 import { Home } from './routes/Home';
 import { NotFound } from './routes/NotFound';
@@ -54,6 +55,13 @@ const contactsRoute = createRoute({
   component: lazyRouteComponent(() => import('./resources/ContactsScreen'), 'ContactsScreen'),
 });
 
+const operatorsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: SECTIONS.operators.path,
+  validateSearch: operatorsListSearch.validate,
+  component: lazyRouteComponent(() => import('./resources/OperatorsScreen'), 'OperatorsScreen'),
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   accountRoute,
@@ -64,7 +72,7 @@ const routeTree = rootRoute.addChildren([
   sectionRoute(SECTIONS.assets),
   contactsRoute,
   sectionRoute(SECTIONS.slots),
-  sectionRoute(SECTIONS.operators),
+  operatorsRoute,
   sectionRoute(SECTIONS.roles),
 ]);
 

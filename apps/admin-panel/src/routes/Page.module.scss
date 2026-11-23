@@ -18,6 +18,13 @@
   padding: 2rem 1.5rem;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
