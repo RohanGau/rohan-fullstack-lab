@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     unoptimized: disableImageOptimization,
     remotePatterns: [
       { protocol: 'https', hostname: 'assets.rohangautam.dev' },
+      { protocol: 'https', hostname: 'assets-stage.rohangautam.dev' },
       { protocol: 'https', hostname: 'pub-92ca52f522664b02af9bc8a7906e3013.r2.dev' },
       { protocol: 'https', hostname: 'cdn.discordapp.com' },
       { protocol: 'https', hostname: 'pelocal.com' },
@@ -39,7 +40,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'", // Next.js requires unsafe-inline for CSS
               "img-src 'self' data: https: blob:", // Allow images from CDNs
               "font-src 'self' data:",
-              "connect-src 'self' https://api.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com", // API (prod + staging) + Turnstile + Cloudflare Analytics + Sentry + Google Analytics
+              "connect-src 'self' https://api.rohangautam.dev https://api-stage.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com", // API (prod + staging) + Turnstile + Cloudflare Analytics + Sentry + Google Analytics
               'frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com', // Cloudflare Turnstile + Google services (Search Console, Maps, etc.)
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",
