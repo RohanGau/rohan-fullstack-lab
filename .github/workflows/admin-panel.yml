@@ -4,15 +4,15 @@ on:
   pull_request:
     branches: [main, develop]
     paths:
-      - "apps/admin-panel/**"
-      - "packages/**"
-      - ".github/workflows/admin-panel.yml"
+      - 'apps/admin-panel/**'
+      - 'packages/**'
+      - '.github/workflows/admin-panel.yml'
   push:
     branches: [main, develop]
     paths:
-      - "apps/admin-panel/**"
-      - "packages/**"
-      - ".github/workflows/admin-panel.yml"
+      - 'apps/admin-panel/**'
+      - 'packages/**'
+      - '.github/workflows/admin-panel.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -114,7 +114,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
