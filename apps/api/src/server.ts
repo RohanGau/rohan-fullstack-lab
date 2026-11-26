@@ -3,11 +3,13 @@ import http from 'http';
 import type { Express } from 'express';
 import mongoose from 'mongoose';
 import { connectDB } from './db';
+import { bootstrapAccessControl } from './services/accessControlBootstrap';
 import logger from './utils/logger';
 import { flushSentry } from './utils/sentry';
 
 export async function startHttpServer(app: Express, port: number): Promise<http.Server> {
   await connectDB();
+  await bootstrapAccessControl();
 
   return await new Promise<http.Server>((resolve, reject) => {
     const server = app.listen(port, () => {

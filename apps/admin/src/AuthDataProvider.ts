@@ -3,7 +3,7 @@ export const ACCESS_TOKEN_KEY = 'admin_access_token';
 export const REFRESH_TOKEN_KEY = 'admin_refresh_token';
 
 function getApiUrl(): string {
-  return process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
+  return process.env.REACT_APP_API_URL || 'https://api-stage.rohangautam.dev';
 }
 
 export function getStoredAccessToken(): string | null {

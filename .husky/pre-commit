@@ -1,4 +1,9 @@
 #!/bin/sh
 
-# Run lint-staged to check staged files
+# Format staged files
 npx lint-staged
+
+# Lint admin-panel whenever its TypeScript files are staged
+if git diff --cached --name-only -- 'apps/admin-panel/*.ts' 'apps/admin-panel/*.tsx' | grep -q .; then
+  pnpm --filter admin-panel lint
+fi

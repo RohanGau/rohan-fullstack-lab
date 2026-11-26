@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import request from 'supertest';
 import { buildTestApp } from './helpers/app';
 import { clearTestDb, startTestDb, stopTestDb } from './helpers/db';
+import Operator from '../src/models/Operator';
 import { bootstrapAccessControl } from '../src/services/accessControlBootstrap';
 import { verifyGoogleIdToken } from '../src/services/googleIdToken';
 
@@ -44,6 +45,72 @@ describe('POST /api/v1/auth/google/nonce', () => {
     expect(typeof first.body.nonce).toBe('string');
     expect(first.body.nonce.length).toBeGreaterThanOrEqual(16);
     expect(second.body.nonce).not.toBe(first.body.nonce);
+  });
+});
+
+describe('a deactivated Operator', () => {
+  async function trySignIn(sub: string) {
+    const nonce = await getNonce();
+    fakeVerify.mockResolvedValue({ sub, email: SUPER_ADMIN_EMAIL, emailVerified: true, nonce });
+    return request(app)
+      .post('/api/v1/auth/google')
+      .send({ idToken: 'fake-google-id-token', nonce });
+  }
+
+  // No deactivate endpoint exists yet (a later ticket), so the state is set up directly.
+  const deactivate = () => Operator.updateOne({ email: SUPER_ADMIN_EMAIL }, { active: false });
+
+  it('is refused even though their Google account is already bound', async () => {
+    expect((await trySignIn('google-sub-owner')).status).toBe(200);
+    await deactivate();
+
+    const res = await trySignIn('google-sub-owner');
+
+    expect(res.status).toBe(401);
+    expect(res.body.accessToken).toBeUndefined();
+  });
+
+  it('is refused on first sign-in, with the same generic answer as an unknown account', async () => {
+    await deactivate();
+
+    const res = await trySignIn('google-sub-owner');
+    const unknown = await (async () => {
+      const nonce = await getNonce();
+      fakeVerify.mockResolvedValue({
+        sub: 'google-sub-stranger',
+        email: 'stranger@example.com',
+        emailVerified: true,
+        nonce,
+      });
+      return request(app).post('/api/v1/auth/google').send({ idToken: 'fake', nonce });
+    })();
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual(unknown.body); // the answer never reveals which check failed
+  });
+});
+
+describe('booting more than once', () => {
+  it('leaves exactly one Super Admin Role and one bootstrap Operator, who still signs in', async () => {
+    await bootstrapAccessControl();
+    await bootstrapAccessControl();
+    const nonce = await getNonce();
+    fakeVerify.mockResolvedValue({
+      sub: 'google-sub-owner',
+      email: SUPER_ADMIN_EMAIL,
+      emailVerified: true,
+      nonce,
+    });
+
+    const signedIn = await request(app)
+      .post('/api/v1/auth/google')
+      .send({ idToken: 'fake-google-id-token', nonce });
+    const me = await request(app)
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${signedIn.body.accessToken}`);
+
+    expect(signedIn.status).toBe(200);
+    expect(me.body.roles).toEqual(['super_admin']);
   });
 });
 

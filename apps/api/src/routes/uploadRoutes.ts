@@ -1,11 +1,12 @@
 import Express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   deleteAsset,
   generateUploadUrl,
   validateDeleteAsset,
   validateGenerateUploadUrl,
 } from '../controllers/uploadController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 
 const router = Express.Router();
 
@@ -55,7 +56,12 @@ const router = Express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/generate-upload-url', requireAdmin, validateGenerateUploadUrl, generateUploadUrl);
+router.post(
+  '/generate-upload-url',
+  requirePermission(PERMISSIONS.UPLOAD_CREATE),
+  validateGenerateUploadUrl,
+  generateUploadUrl
+);
 
 /**
  * @openapi
@@ -82,6 +88,6 @@ router.post('/generate-upload-url', requireAdmin, validateGenerateUploadUrl, gen
  *       500:
  *         description: Server error
  */
-router.delete('/', requireAdmin, validateDeleteAsset, deleteAsset);
+router.delete('/', requirePermission(PERMISSIONS.UPLOAD_DELETE), validateDeleteAsset, deleteAsset);
 
 export default router;

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Entry JavaScript (gzip): what every Operator downloads",
+    "path": "dist/admin/assets/index-*.js",
+    "gzip": true,
+    "limit": "180 kB"
+  },
+  {
+    "name": "Screens loaded on demand, e.g. the data grid (gzip, total)",
+    "path": ["dist/admin/assets/*.js", "!dist/admin/assets/index-*.js"],
+    "gzip": true,
+    "limit": "200 kB"
+  },
+  {
+    "name": "Stylesheets (gzip)",
+    "path": "dist/admin/assets/*.css",
+    "gzip": true,
+    "limit": "20 kB"
+  }
+]

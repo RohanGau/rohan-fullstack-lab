@@ -29,7 +29,7 @@ import { getStoredAccessToken, refreshAccessToken } from './AuthDataProvider';
 import authProvider from './AuthDataProvider';
 import LoginPage from './login';
 
-const apiUrl = process.env.REACT_APP_API_URL || 'https://rohan-backend-api-stage.fly.dev';
+const apiUrl = process.env.REACT_APP_API_URL || 'https://api-stage.rohangautam.dev';
 
 const httpClient = async (url: string, options: any = {}) => {
   if (!options.headers) {

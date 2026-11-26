@@ -86,13 +86,11 @@ export function isAuthConfigured(): boolean {
 }
 
 export function isJwtConfigured(): boolean {
-  return Boolean(process.env.JWT_ACCESS_SECRET || process.env.ADMIN_TOKEN);
+  return Boolean(process.env.JWT_ACCESS_SECRET);
 }
 
 export function isRefreshConfigured(): boolean {
-  return Boolean(
-    process.env.JWT_REFRESH_SECRET || process.env.JWT_ACCESS_SECRET || process.env.ADMIN_TOKEN
-  );
+  return Boolean(process.env.JWT_REFRESH_SECRET);
 }
 
 export function getAuthMode(): 'jwt' | 'legacy' | 'mixed' | 'none' {

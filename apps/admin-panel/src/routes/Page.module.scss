@@ -1,0 +1,68 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-inline-size: 46rem;
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+}
+
+.chip {
+  margin-inline-end: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+
+.wide {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+}
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.empty {
+  display: grid;
+  block-size: 100%;
+  min-block-size: 6rem;
+  place-items: center;
+  color: var(--mui-palette-text-secondary);
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.cardActionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.chipWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

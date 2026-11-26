@@ -1,4 +1,5 @@
 import Express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   createBlog,
   deleteBlog,
@@ -8,7 +9,7 @@ import {
   validateBlogUpdate,
   validateBlogCreate,
 } from '../controllers/blogController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 
 const router = Express.Router();
 
@@ -268,7 +269,7 @@ router.get('/:id', getBlogById);
  *             schema:
  *               $ref: '#/components/schemas/ValidationError'
  */
-router.post('/', requireAdmin, validateBlogCreate, createBlog);
+router.post('/', requirePermission(PERMISSIONS.BLOG_CREATE), validateBlogCreate, createBlog);
 
 /**
  * @openapi
@@ -330,7 +331,7 @@ router.post('/', requireAdmin, validateBlogCreate, createBlog);
  *       404:
  *         description: Blog not found
  */
-router.put('/:id', requireAdmin, validateBlogUpdate, updateBlog);
+router.put('/:id', requirePermission(PERMISSIONS.BLOG_UPDATE), validateBlogUpdate, updateBlog);
 
 /**
  * @openapi
@@ -350,6 +351,6 @@ router.put('/:id', requireAdmin, validateBlogUpdate, updateBlog);
  *       404:
  *         description: Blog not found
  */
-router.delete('/:id', requireAdmin, deleteBlog);
+router.delete('/:id', requirePermission(PERMISSIONS.BLOG_DELETE), deleteBlog);
 
 export default router;
