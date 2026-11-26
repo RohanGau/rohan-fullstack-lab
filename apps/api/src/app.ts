@@ -22,7 +22,7 @@ import agentRoutes from './routes/agentRoutes';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
 import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
-import { allowedOrigins } from './utils/constant';
+import { allowedOrigins, isAllowedOrigin } from './utils/constant';
 import { sentryErrorHandler } from './utils/sentry';
 import { createRedisRateLimitStore } from './lib/redis-rest';
 import { requestContextMiddleware, requestLoggingMiddleware } from './middleware/requestContext';
@@ -97,7 +97,7 @@ function applySecurityAndCoreMiddleware(app: express.Express, config: ApiRuntime
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (isAllowedOrigin(origin) || allowedOrigins.includes(origin)) return callback(null, true);
         logger.warn({ origin }, 'CORS blocked request from origin');
         return callback(new Error('Not allowed by CORS'), false);
       },

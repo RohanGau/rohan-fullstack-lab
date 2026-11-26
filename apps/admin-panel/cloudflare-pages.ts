@@ -12,8 +12,8 @@ export function buildHeaders(apiUrl: string): string {
     "default-src 'self'",
     "script-src 'self' https://accounts.google.com/gsi/client",
     "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
-    "img-src 'self'",
-    `connect-src 'self' ${apiOrigin} https://accounts.google.com/gsi/`,
+    "img-src 'self' https: data: blob:",
+    `connect-src 'self' ${apiOrigin} https://accounts.google.com/gsi/ https://*.r2.cloudflarestorage.com`,
     'frame-src https://accounts.google.com/gsi/',
     "base-uri 'self'",
     "form-action 'self'",
@@ -33,8 +33,9 @@ export function buildHeaders(apiUrl: string): string {
   ].join('\n');
 }
 
-/** Deep links under /admin resolve to the app; real files win over this rule. */
-export const REDIRECTS = '/admin/* /admin/index.html 200\n';
+/** Root lands on /admin/, and deep links under /admin resolve to the SPA entry; real files win. */
+export const REDIRECTS =
+  ['/ /admin/ 302', '/admin /admin/ 301', '/admin/* /admin/index.html 200'].join('\n') + '\n';
 
 /**
  * The Worker route forwards /admin/* to the Pages project unchanged, so the app

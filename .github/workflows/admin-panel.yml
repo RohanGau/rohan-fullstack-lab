@@ -13,7 +13,16 @@ on:
       - "apps/admin-panel/**"
       - "packages/**"
       - ".github/workflows/admin-panel.yml"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target Cloudflare Pages environment
+        required: true
+        default: stage
+        type: choice
+        options:
+          - stage
+          - production
 
 concurrency:
   group: admin-panel-${{ github.ref }}
@@ -84,7 +93,13 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "main" ]; then
             echo "name=production" >> "$GITHUB_OUTPUT"
             echo "branch=main" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.environment }}" = "production" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+            echo "branch=main" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "develop" ]; then
+            echo "name=stage" >> "$GITHUB_OUTPUT"
+            echo "branch=develop" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "name=stage" >> "$GITHUB_OUTPUT"
             echo "branch=develop" >> "$GITHUB_OUTPUT"
           else
@@ -107,13 +122,48 @@ jobs:
       - run: pnpm build:packages
 
       - name: Build with environment values
-        # Production uses the production values; stage and previews use the stage values.
+        # Production uses production values; stage and previews default to stage values (.env.* overridable by GitHub vars).
+        run: |
+          if [ "${{ steps.target.outputs.name }}" = "production" ]; then
+            ENV_FILE="apps/admin-panel/.env.production"
+            VAR_API="${{ vars.ADMIN_PANEL_API_URL_PROD }}"
+            VAR_GOOGLE="${{ vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_PROD }}"
+          else
+            ENV_FILE="apps/admin-panel/.env.stage"
+            VAR_API="${{ vars.ADMIN_PANEL_API_URL_STAGE }}"
+            VAR_GOOGLE="${{ vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_STAGE }}"
+          fi
+
+          set -a
+          # shellcheck disable=SC1090
+          source "$ENV_FILE"
+          set +a
+
+          if [ -n "$VAR_API" ]; then export VITE_API_URL="$VAR_API"; fi
+          if [ -n "$VAR_GOOGLE" ]; then export VITE_GOOGLE_CLIENT_ID="$VAR_GOOGLE"; fi
+
+          pnpm --filter admin-panel build
+
+      - name: Ensure Cloudflare Pages project exists
         env:
-          VITE_API_URL: ${{ steps.target.outputs.name == 'production' && vars.ADMIN_PANEL_API_URL_PROD || vars.ADMIN_PANEL_API_URL_STAGE }}
-          VITE_GOOGLE_CLIENT_ID: ${{ steps.target.outputs.name == 'production' && vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_PROD || vars.ADMIN_PANEL_GOOGLE_CLIENT_ID_STAGE }}
-        run: pnpm --filter admin-panel build
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set +e
+          CREATE_OUT=$(npx wrangler pages project create "$PAGES_PROJECT" --production-branch=main 2>&1)
+          STATUS=$?
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            if echo "$CREATE_OUT" | grep -qiE "already exists|8000007"; then
+              echo "Cloudflare Pages project '$PAGES_PROJECT' already exists."
+            else
+              echo "$CREATE_OUT" >&2
+              exit "$STATUS"
+            fi
+          fi
 
       - name: Deploy
+        id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -122,4 +172,11 @@ jobs:
           npx wrangler pages deploy dist \
             --project-name="$PAGES_PROJECT" \
             --branch="${{ steps.target.outputs.branch }}" \
-            --commit-dirty=true
+            --commit-dirty=true | tee deploy.log
+          DEPLOY_URL=$(grep -Eo 'https://[^ ]+\.pages\.dev' deploy.log | tail -n 1 || true)
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+            echo "### Admin Panel (${{ steps.target.outputs.name }})" >> "$GITHUB_STEP_SUMMARY"
+            echo "Deployed: ${DEPLOY_URL}/admin/" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          rm -f deploy.log

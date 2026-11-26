@@ -35,12 +35,11 @@ describe('Overview telemetry and quick navigation', () => {
 });
 
 describe('Blogs management', () => {
-  it('lists, filters, views, creates, edits, and deletes blogs with server error reporting', async () => {
+  it('lists, filters by status, and opens blog details in a dialog', async () => {
     const user = userEvent.setup();
-    const { content } = openScreen('content_manager', '/admin/blogs');
+    openScreen('content_manager', '/admin/blogs');
     await screen.findByText('Designing Clean Monorepos');
 
-    // Filter by Status = Published
     await user.click(screen.getByLabelText('Status'));
     await user.click(await screen.findByRole('option', { name: 'Published' }));
     await user.click(screen.getByRole('button', { name: 'Apply filters' }));
@@ -50,15 +49,19 @@ describe('Blogs management', () => {
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(await screen.findByText('Edge Caching Draft')).toBeInTheDocument();
 
-    // View detail
     await user.click(screen.getByRole('button', { name: 'View blog "Designing Clean Monorepos"' }));
     const detail = await screen.findByRole('dialog');
     expect(
       within(detail).getByText('Full article body about monorepos and shared contracts.')
     ).toBeInTheDocument();
     await user.click(within(detail).getByRole('button', { name: 'Close' }));
+  });
 
-    // Create flow with server validation error recovery
+  it('creates, edits, and deletes blogs with server field validation recovery', async () => {
+    const user = userEvent.setup();
+    const { content } = openScreen('content_manager', '/admin/blogs');
+    await screen.findByText('Designing Clean Monorepos');
+
     content.failNextBlogCreate('Validation failed', [
       { field: 'slug', message: 'Slug already taken' },
     ]);
@@ -69,7 +72,7 @@ describe('Blogs management', () => {
     await user.type(within(createDialog).getByLabelText(/^Author/i), 'Rohan');
     await user.type(
       within(createDialog).getByLabelText(/^Content/i),
-      'Workers, backoff strategies, and idempotency keys.'
+      'Queue workers and backoff strategies.'
     );
     await user.type(within(createDialog).getByLabelText(/Add tags/i), 'Queues{Enter}');
     expect(within(createDialog).getByText('queues')).toBeInTheDocument();
@@ -84,7 +87,6 @@ describe('Blogs management', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(await screen.findByText('Scaling Queues')).toBeInTheDocument();
 
-    // Edit & Delete
     await user.click(screen.getByRole('button', { name: 'Edit blog "Scaling Queues"' }));
     const editDialog = await screen.findByRole('dialog', { name: 'Edit Blog: Scaling Queues' });
     const titleBox = within(editDialog).getByLabelText(/^Title/i);

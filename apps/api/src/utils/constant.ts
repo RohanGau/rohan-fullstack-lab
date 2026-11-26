@@ -16,12 +16,30 @@ export const allowedOrigins = [
   process.env.FRONTEND_ORIGIN,
   process.env.BACKEND_ORIGIN,
   process.env.NEXT_ORIGIN,
+  process.env.ADMIN_ORIGIN,
+  'https://rohan-admin-panel.pages.dev',
+  'https://admin.rohangautam.dev',
   'http://localhost:3000',
   ...(process.env.NODE_ENV !== 'production'
-    ? ['http://localhost:5174', 'https://local.rohangautam.dev']
+    ? [
+        'http://localhost:5174',
+        'https://local.rohangautam.dev',
+        'https://develop.rohan-admin-panel.pages.dev',
+        'https://admin-stage.rohangautam.dev',
+      ]
     : []),
   'http://localhost:5050',
-].filter(Boolean);
+].filter(Boolean) as string[];
+
+const ADMIN_PAGES_PREVIEW_RE = /^https:\/\/([a-z0-9-]+\.)?rohan-admin-panel\.pages\.dev$/;
+
+export function isAllowedOrigin(origin: string): boolean {
+  if (allowedOrigins.includes(origin)) return true;
+  if (process.env.NODE_ENV !== 'production' && ADMIN_PAGES_PREVIEW_RE.test(origin)) {
+    return true;
+  }
+  return false;
+}
 
 export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Validation Error',
