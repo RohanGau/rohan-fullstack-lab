@@ -99,7 +99,7 @@ export function fakeOperatorsApi(
   initial?: OperatorRow[],
   auth?: { acceptsAccessToken(token: string): boolean; currentRoles?: () => string[] }
 ) {
-  let rows = initial ? [...initial] : makeOperators();
+  const rows = initial ? [...initial] : makeOperators();
   const roles = makeRoles();
   let listFailure: { status: number; remaining: number } | null = null;
   let deactivateFailure: { status: number; remaining: number } | null = null;

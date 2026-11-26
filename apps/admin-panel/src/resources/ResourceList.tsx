@@ -1,5 +1,6 @@
 import type { Permission } from '@fullstack-lab/constants';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/EditOutlined';
 import ViewIcon from '@mui/icons-material/VisibilityOutlined';
 import {
   Alert,
@@ -8,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
@@ -15,8 +17,8 @@ import {
   DataGrid,
   GridActionsCellItem,
   type GridColDef,
-  type GridSortModel,
   type GridRenderCellParams,
+  type GridSortModel,
   type GridValidRowModel,
 } from '@mui/x-data-grid';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,14 +26,16 @@ import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import { useCan } from '../access/permissions';
 import { ForbiddenError, describeApiError } from '../auth/authApi';
 import { useAuth } from '../auth/AuthProvider';
-import { useNotice } from '../shell/notice';
+import { parseApiError } from '../lib/apiErrors';
 import styles from '../routes/Page.module.scss';
+import { useNotice } from '../shell/notice';
 import { ConfirmDialog } from './ConfirmDialog';
 import {
   PAGE_SIZE,
   defaultListState,
   pageCount,
   toListParams,
+  type FilterValueType,
   type ListState,
   type SortSpec,
 } from './listState';
@@ -52,9 +56,17 @@ export interface ResourceColumn<Row extends GridValidRowModel = GridValidRowMode
   renderCell?: (params: GridRenderCellParams<Row>) => ReactNode;
 }
 
+export interface ResourceFilter {
+  field: string;
+  label: string;
+  exactMatch?: boolean;
+  valueType?: FilterValueType;
+  options?: readonly { value: string; label: string }[];
+}
+
 /**
  * What a resource declares; ResourceList does the rest (paging, sorting, filtering on the
- * server, states, view and delete with confirmation, Permission gating).
+ * server, states, view, edit and delete with confirmation, Permission gating).
  */
 export interface ResourceConfig<Row extends { id: string } & GridValidRowModel> {
   title: string;
@@ -62,8 +74,8 @@ export interface ResourceConfig<Row extends { id: string } & GridValidRowModel> 
   noun: { singular: string; plural: string };
   endpoint: string;
   columns: ResourceColumn<Row>[];
-  /** Exact-match filters the API supports. */
-  filters: { field: keyof Row & string; label: string }[];
+  /** Filters the API supports. */
+  filters: ResourceFilter[];
   defaultSort: SortSpec & { field: keyof Row & string };
   /** "message from Ada": names a row for assistive technology and dialogs. */
   describeRow: (row: Row) => string;
@@ -71,6 +83,8 @@ export interface ResourceConfig<Row extends { id: string } & GridValidRowModel> 
   renderDetail?: (row: Row) => ReactNode;
   /** Holders of this Permission see a delete action. */
   deletePermission?: Permission | readonly Permission[];
+  /** Holders of this Permission see an edit action when `onEdit` is provided. */
+  editPermission?: Permission | readonly Permission[];
   /** Custom row actions rendered into the Actions column. */
   customActions?: (row: Row) => ReactNode[];
   actionsWidth?: number;
@@ -79,18 +93,26 @@ export interface ResourceConfig<Row extends { id: string } & GridValidRowModel> 
 // The grid measures its own size, which jsdom cannot do, so tests render every row.
 const VIRTUALIZE = import.meta.env.MODE !== 'test';
 
+class ApiRequestError extends Error {}
+
 export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   config,
   state,
   onStateChange,
   headerActions,
   customActions,
+  onEdit,
+  editDisabledReason,
+  deleteDisabledReason,
 }: {
   config: ResourceConfig<Row>;
   state: ListState;
   onStateChange: (next: ListState) => void;
   headerActions?: ReactNode;
   customActions?: (row: Row) => ReactNode[];
+  onEdit?: (row: Row) => void;
+  editDisabledReason?: (row: Row) => string | undefined;
+  deleteDisabledReason?: (row: Row) => string | undefined;
 }) {
   const { authorizedFetch } = useAuth();
   const { showNotice } = useNotice();
@@ -99,10 +121,20 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   const [viewing, setViewing] = useState<Row | null>(null);
   const [deleting, setDeleting] = useState<Row | null>(null);
 
+  const filterTypes = useMemo(() => {
+    const map: Record<string, FilterValueType> = {};
+    for (const f of config.filters) {
+      if (f.valueType) map[f.field] = f.valueType;
+    }
+    return map;
+  }, [config.filters]);
+
   const list = useQuery({
     queryKey: [config.endpoint, state],
     queryFn: async () => {
-      const response = await authorizedFetch(`${config.endpoint}?${toListParams(state)}`);
+      const response = await authorizedFetch(
+        `${config.endpoint}?${toListParams(state, filterTypes)}`
+      );
       if (!response.ok) throw new Error(`List failed (${response.status})`);
       const rows = (await response.json()) as Row[];
       // Without a usable total (a proxy dropped the header) say at least what we can see.
@@ -119,13 +151,19 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   const remove = useMutation({
     mutationFn: async (row: Row) => {
       const response = await authorizedFetch(`${config.endpoint}/${row.id}`, { method: 'DELETE' });
-      if (!response.ok && response.status !== 404)
-        throw new Error(`Delete failed (${response.status})`);
+      if (!response.ok && response.status !== 404) {
+        const parsed = await parseApiError(response, 'Delete failed');
+        throw new ApiRequestError(parsed.message);
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [config.endpoint] }),
     onError: (error) => {
       // A 403 is already explained by the panel-wide notice.
-      if (!(error instanceof ForbiddenError)) showNotice(describeApiError(error));
+      if (error instanceof ApiRequestError) {
+        showNotice(error.message);
+      } else if (!(error instanceof ForbiddenError)) {
+        showNotice(describeApiError(error));
+      }
     },
     onSettled: () => setDeleting(null),
   });
@@ -140,9 +178,10 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   }, [list.isFetching, rows, total, state, onStateChange]);
 
   const canDelete = config.deletePermission ? can(config.deletePermission) : false;
+  const canEdit = Boolean(onEdit && (config.editPermission ? can(config.editPermission) : true));
   const hasFilters = Object.keys(state.filters).length > 0;
   const effectiveCustomActions = customActions ?? config.customActions;
-  const hasActions = Boolean(config.renderDetail || canDelete || effectiveCustomActions);
+  const hasActions = Boolean(config.renderDetail || canEdit || canDelete || effectiveCustomActions);
 
   const columns = useMemo<GridColDef<Row>[]>(
     () => [
@@ -163,35 +202,62 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
               field: 'actions',
               type: 'actions',
               headerName: 'Actions',
-              width: config.actionsWidth ?? 110,
-              getActions: ({ row }) => [
-                ...(effectiveCustomActions ? effectiveCustomActions(row) : []),
-                ...(config.renderDetail
-                  ? [
-                      <GridActionsCellItem
-                        key="view"
-                        icon={<ViewIcon />}
-                        label={`View ${config.describeRow(row)}`}
-                        onClick={() => setViewing(row)}
-                      />,
-                    ]
-                  : []),
-                ...(canDelete
-                  ? [
-                      <GridActionsCellItem
-                        key="delete"
-                        icon={<DeleteIcon />}
-                        label={`Delete ${config.describeRow(row)}`}
-                        onClick={() => setDeleting(row)}
-                      />,
-                    ]
-                  : []),
-              ],
+              width: config.actionsWidth ?? 130,
+              getActions: ({ row }) => {
+                const editReason = editDisabledReason?.(row);
+                const deleteReason = deleteDisabledReason?.(row);
+                return [
+                  ...(effectiveCustomActions ? effectiveCustomActions(row) : []),
+                  ...(config.renderDetail
+                    ? [
+                        <GridActionsCellItem
+                          key="view"
+                          icon={<ViewIcon />}
+                          label={`View ${config.describeRow(row)}`}
+                          onClick={() => setViewing(row)}
+                        />,
+                      ]
+                    : []),
+                  ...(canEdit && onEdit
+                    ? [
+                        <GridActionsCellItem
+                          key="edit"
+                          icon={<EditIcon />}
+                          label={`Edit ${config.describeRow(row)}`}
+                          title={editReason ?? `Edit ${config.describeRow(row)}`}
+                          disabled={Boolean(editReason)}
+                          onClick={() => onEdit(row)}
+                        />,
+                      ]
+                    : []),
+                  ...(canDelete
+                    ? [
+                        <GridActionsCellItem
+                          key="delete"
+                          icon={<DeleteIcon />}
+                          label={`Delete ${config.describeRow(row)}`}
+                          title={deleteReason ?? `Delete ${config.describeRow(row)}`}
+                          disabled={Boolean(deleteReason)}
+                          onClick={() => setDeleting(row)}
+                        />,
+                      ]
+                    : []),
+                ];
+              },
             } as GridColDef<Row>,
           ]
         : []),
     ],
-    [config, canDelete, hasActions, effectiveCustomActions]
+    [
+      config,
+      canDelete,
+      canEdit,
+      onEdit,
+      hasActions,
+      effectiveCustomActions,
+      editDisabledReason,
+      deleteDisabledReason,
+    ]
   );
 
   // The grid resets to page 1 whenever it is handed a different sort model, so these must be stable.
@@ -223,7 +289,9 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
         </Typography>
         {headerActions}
       </div>
-      <FilterForm config={config} state={state} onApply={onStateChange} />
+      {config.filters.length > 0 && (
+        <FilterForm config={config} state={state} onApply={onStateChange} />
+      )}
 
       {list.isError && !list.data ? (
         <Alert
@@ -270,7 +338,7 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
 
       {viewing && config.renderDetail && (
         <DetailDialog
-          title={`${capitalise(config.describeRow(viewing))}`}
+          title={capitalise(config.describeRow(viewing))}
           onClose={() => setViewing(null)}
         >
           {config.renderDetail(viewing)}
@@ -291,7 +359,7 @@ export function ResourceList<Row extends { id: string } & GridValidRowModel>({
   );
 }
 
-function FilterForm<Row extends { id: string }>({
+function FilterForm<Row extends { id: string } & GridValidRowModel>({
   config,
   state,
   onApply,
@@ -319,15 +387,34 @@ function FilterForm<Row extends { id: string }>({
         onApply({ ...state, page: 1, filters });
       }}
     >
-      {config.filters.map((filter) => (
-        <TextField
-          key={filter.field}
-          size="small"
-          label={`${filter.label} (exact match)`}
-          value={draft[filter.field] ?? ''}
-          onChange={(event) => setDraft({ ...draft, [filter.field]: event.target.value })}
-        />
-      ))}
+      {config.filters.map((filter) =>
+        filter.options ? (
+          <TextField
+            key={filter.field}
+            select
+            size="small"
+            label={filter.label}
+            value={draft[filter.field] ?? ''}
+            onChange={(event) => setDraft({ ...draft, [filter.field]: event.target.value })}
+            sx={{ minWidth: 150 }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {filter.options.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : (
+          <TextField
+            key={filter.field}
+            size="small"
+            label={filter.exactMatch === false ? filter.label : `${filter.label} (exact match)`}
+            value={draft[filter.field] ?? ''}
+            onChange={(event) => setDraft({ ...draft, [filter.field]: event.target.value })}
+          />
+        )
+      )}
       <Button type="submit" variant="outlined">
         Apply filters
       </Button>
@@ -359,9 +446,9 @@ function DetailDialog({
 }) {
   const titleId = useId();
   return (
-    <Dialog open onClose={onClose} aria-labelledby={titleId} fullWidth maxWidth="sm">
+    <Dialog open onClose={onClose} aria-labelledby={titleId} maxWidth="sm" fullWidth>
       <DialogTitle id={titleId}>{title}</DialogTitle>
-      <DialogContent>{children}</DialogContent>
+      <DialogContent dividers>{children}</DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
       </DialogActions>
@@ -370,9 +457,9 @@ function DetailDialog({
 }
 
 function NoRows({ message }: { message?: string }) {
-  return <div className={styles.empty}>{message}</div>;
+  return <Typography className={styles.empty}>{message ?? 'Nothing here yet.'}</Typography>;
 }
 
 function capitalise(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+  return text ? text[0]!.toUpperCase() + text.slice(1) : text;
 }

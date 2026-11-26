@@ -122,7 +122,6 @@ export function PreRegisterOperatorDialog({
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
           {serverError && <Alert severity="error">{serverError}</Alert>}
           <TextField
-            autoFocus
             label="Email"
             type="email"
             value={email}

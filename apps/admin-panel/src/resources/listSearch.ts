@@ -1,3 +1,4 @@
+import type { GridValidRowModel } from '@mui/x-data-grid';
 import type { ResourceConfig } from './ResourceList';
 import { defaultListState, type ListState } from './listState';
 
@@ -19,7 +20,9 @@ export type ListSearch = {
  * from the address, the state that implies, and the shortest address for a state.
  * Anything the config does not declare is ignored, whatever the address says.
  */
-export function createListSearch<Row extends { id: string }>(config: ResourceConfig<Row>) {
+export function createListSearch<Row extends { id: string } & GridValidRowModel>(
+  config: ResourceConfig<Row>
+) {
   const sortable = config.columns.filter((column) => column.sortable).map((column) => column.field);
   const filterFields = config.filters.map((filter) => filter.field);
   const base = defaultListState(config.defaultSort);

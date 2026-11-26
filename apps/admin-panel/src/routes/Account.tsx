@@ -1,4 +1,4 @@
-import { Alert, Button, Chip, Typography } from '@mui/material';
+import { Alert, Button, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { ForbiddenError, describeApiError } from '../auth/authApi';
 import { useAuth } from '../auth/AuthProvider';
@@ -35,20 +35,43 @@ export function Account() {
       <Typography variant="h4" component="h1">
         Account
       </Typography>
-      <Typography>{operator.email}</Typography>
-      <div>
-        {operator.roles.map((role) => (
-          <Chip key={role} label={role} size="small" className={styles.chip} />
-        ))}
-      </div>
-      <Typography color="text.secondary">
-        {count} {count === 1 ? 'permission' : 'permissions'}
-      </Typography>
-      <div>
-        <Button variant="outlined" onClick={() => void reload()} disabled={busy}>
-          Reload access
-        </Button>
-      </div>
+      <Card>
+        <CardContent>
+          <Stack spacing={2}>
+            <div>
+              <Typography variant="overline" color="text.secondary">
+                Signed-in Operator
+              </Typography>
+              <Typography variant="h6">{operator.email ?? operator.id}</Typography>
+            </div>
+            <div>
+              <Typography variant="overline" color="text.secondary" display="block" gutterBottom>
+                Assigned Roles
+              </Typography>
+              <div className={styles.chipWrap}>
+                {operator.roles.map((role) => (
+                  <Chip key={role} label={role} size="small" color="primary" variant="outlined" />
+                ))}
+              </div>
+            </div>
+            <div>
+              <Typography color="text.secondary" gutterBottom>
+                {count} {count === 1 ? 'permission' : 'permissions'}
+              </Typography>
+              <div className={styles.chipWrap}>
+                {operator.permissions.map((perm) => (
+                  <Chip key={perm} label={perm} size="small" />
+                ))}
+              </div>
+            </div>
+            <div>
+              <Button variant="outlined" onClick={() => void reload()} disabled={busy}>
+                Reload access
+              </Button>
+            </div>
+          </Stack>
+        </CardContent>
+      </Card>
       {outcome?.kind === 'done' && (
         <Alert severity="success" role="status">
           Access reloaded.
