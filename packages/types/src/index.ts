@@ -11,3 +11,5 @@ export * from './mcp';
 export * from './agent';
 export * from './json';
 export * from './access';
+export * from './media';
+export * from './health';

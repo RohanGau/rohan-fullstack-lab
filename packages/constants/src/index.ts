@@ -8,4 +8,6 @@ export * from './http';
 export * from './audit';
 export * from './agent';
 export * from './mcp';
+export * from './project';
+export * from './upload';
 export * from './utils';

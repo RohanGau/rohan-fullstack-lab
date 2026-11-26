@@ -1,3 +1,13 @@
+export const SLOT_STATUS = Object.freeze({
+  BOOKED: 'booked',
+  CANCELLED: 'cancelled',
+} as const);
+
+export const SLOT_STATUS_VALUES = Object.freeze([
+  SLOT_STATUS.BOOKED,
+  SLOT_STATUS.CANCELLED,
+] as const);
+
 export const SLOT_EVENT_TYPES = Object.freeze({
   BOOKED: 'SLOT_BOOKED',
   UPDATED: 'SLOT_UPDATED',

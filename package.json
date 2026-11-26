@@ -29,6 +29,7 @@
     "web:deploy:prod": "cd apps/web && npx wrangler pages deploy .vercel/output/static --project-name=rohan-fullstack-lab",
     "------------ ADMIN PANEL ------------": "",
     "admin-panel:dev": "pnpm --filter admin-panel dev",
+    "admin-panel:proxy": "caddy run --config Caddyfile.local",
     "admin-panel:test": "pnpm --filter admin-panel test",
     "------------ WORKER EMAIL ------------": "",
     "worker:email:dev": "pnpm build:packages && cd apps/worker-email && npx wrangler dev",

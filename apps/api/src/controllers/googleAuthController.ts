@@ -3,6 +3,7 @@ import Operator from '../models/Operator';
 import { issueAuthTokens } from '../services/authTokens';
 import { verifyGoogleIdToken } from '../services/googleIdToken';
 import { consumeGoogleNonce, issueGoogleNonce } from '../services/googleNonce';
+import logger from '../utils/logger';
 
 const REFUSED = { message: 'Sign-in refused' };
 
@@ -14,6 +15,7 @@ export async function signInWithGoogle(req: Request, res: Response): Promise<voi
   }
 
   if (!(await consumeGoogleNonce(nonce))) {
+    logger.warn('Google sign-in refused: invalid or expired nonce');
     res.status(401).json(REFUSED);
     return;
   }
@@ -21,12 +23,17 @@ export async function signInWithGoogle(req: Request, res: Response): Promise<voi
   let identity;
   try {
     identity = await verifyGoogleIdToken(idToken);
-  } catch {
+  } catch (error) {
+    logger.warn({ err: error }, 'Google sign-in refused: ID token verification failed');
     res.status(401).json(REFUSED);
     return;
   }
 
   if (!identity.emailVerified || identity.nonce !== nonce) {
+    logger.warn(
+      { emailVerified: identity.emailVerified, nonceMatched: identity.nonce === nonce },
+      'Google sign-in refused: unverified email or nonce mismatch'
+    );
     res.status(401).json(REFUSED);
     return;
   }
@@ -42,6 +49,10 @@ export async function signInWithGoogle(req: Request, res: Response): Promise<voi
       { new: true }
     ));
   if (!operator) {
+    logger.warn(
+      { email: identity.email.toLowerCase() },
+      'Google sign-in refused: unregistered or deactivated Operator'
+    );
     res.status(401).json(REFUSED);
     return;
   }

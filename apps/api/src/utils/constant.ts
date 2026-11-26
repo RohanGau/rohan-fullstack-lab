@@ -17,6 +17,9 @@ export const allowedOrigins = [
   process.env.BACKEND_ORIGIN,
   process.env.NEXT_ORIGIN,
   'http://localhost:3000',
+  ...(process.env.NODE_ENV !== 'production'
+    ? ['http://localhost:5174', 'https://local.rohangautam.dev']
+    : []),
   'http://localhost:5050',
 ].filter(Boolean);
 

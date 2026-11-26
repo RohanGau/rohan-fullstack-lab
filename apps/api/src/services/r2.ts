@@ -1,4 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { UPLOAD_ALLOWED_MIME_TYPES } from '@fullstack-lab/constants';
 import crypto from 'crypto';
 import { env } from '../config/env';
 
@@ -13,13 +14,7 @@ export const s3 = new S3Client({
 
 export const BUCKET = env.r2.bucket;
 
-export const ALLOWED_MIME = new Set([
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/avif',
-  'application/pdf',
-]);
+export const ALLOWED_MIME = new Set<string>(UPLOAD_ALLOWED_MIME_TYPES);
 
 export function sanitizeBaseName(name: string) {
   return name
