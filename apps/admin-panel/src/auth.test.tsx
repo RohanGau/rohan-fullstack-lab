@@ -308,6 +308,36 @@ describe('When things go wrong around the session', () => {
     expect(api.calls.refresh[1]?.body?.refreshToken).toBe('refresh-other-tab');
   });
 
+  it('reads the rotated token inside the cross-tab lock before sending POST /refresh', async () => {
+    installFakeGoogle();
+    const api = fakeAuthApi();
+    const staleToken = api.seedRefreshToken();
+    leaveStoredSession(staleToken);
+    const newerToken = api.seedRefreshToken();
+
+    const lockStub = {
+      request: vi.fn(async (_name: string, callback: () => Promise<unknown>) => {
+        // Simulate another tab winning the lock and storing its new refresh token before releasing.
+        leaveStoredSession(newerToken);
+        return callback();
+      }),
+    };
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: lockStub,
+    });
+
+    try {
+      renderPanelAt('/admin/account');
+      expect(await screen.findByRole('heading', { name: /^account$/i })).toBeInTheDocument();
+      expect(lockStub.request).toHaveBeenCalled();
+      expect(api.calls.refresh).toHaveLength(1);
+      expect(api.calls.refresh[0]?.body?.refreshToken).toBe(newerToken);
+    } finally {
+      Object.defineProperty(navigator, 'locks', { configurable: true, value: undefined });
+    }
+  });
+
   describe('while the access token is being refreshed in the background', () => {
     async function openAccountWithShortLivedToken() {
       installFakeGoogle();

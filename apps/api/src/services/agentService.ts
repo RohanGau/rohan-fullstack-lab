@@ -44,7 +44,7 @@ export async function executeAgentChat(
 ): Promise<IAgentChatResponse> {
   const { payload, context } = input;
   const toolInput = payload.toolInput ?? {};
-  const decision = evaluateAgentPolicy(payload.toolName, context.user);
+  const decision = evaluateAgentPolicy(payload.toolName, context.user, context.permissions);
 
   if (decision.action === AGENT_POLICY_ACTIONS.DENY) {
     return withChatRequestId(

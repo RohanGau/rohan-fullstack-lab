@@ -15,15 +15,7 @@ import {
 } from '@mui/material';
 import { useEffect, useId, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
-import { isSuperAdmin, type Operator } from './operators';
-
-const ALL_ROLES: readonly string[] = [
-  SEEDED_ROLES.SUPER_ADMIN,
-  SEEDED_ROLES.ADMIN,
-  SEEDED_ROLES.CONTENT_MANAGER,
-  SEEDED_ROLES.INBOX_MANAGER,
-  SEEDED_ROLES.VIEWER,
-];
+import { isSuperAdmin, useAssignableRoles, type Operator } from './operators';
 
 export function AssignRolesDialog({
   operator,
@@ -41,6 +33,7 @@ export function AssignRolesDialog({
   const { authorizedFetch } = useAuth();
   const titleId = useId();
   const callerIsSuperAdmin = isSuperAdmin(callerRoles);
+  const availableRoles = useAssignableRoles(open, operator?.roles);
 
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -118,7 +111,7 @@ export function AssignRolesDialog({
           <Box>
             <FormLabel component="legend">Roles</FormLabel>
             <FormGroup sx={{ mt: 1 }}>
-              {ALL_ROLES.map((role) => {
+              {availableRoles.map((role) => {
                 const isProtected = PROTECTED_ROLE_NAMES.includes(role);
                 let disabled = busy || disableAllChanges;
                 let reason: string | null = null;

@@ -94,6 +94,10 @@ jobs:
             echo "name=production" >> "$GITHUB_OUTPUT"
             echo "branch=main" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.environment }}" = "production" ]; then
+            if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+              echo "Production workflow_dispatch must run on branch 'main' (current ref: ${{ github.ref }})." >&2
+              exit 1
+            fi
             echo "name=production" >> "$GITHUB_OUTPUT"
             echo "branch=main" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "develop" ]; then

@@ -1,5 +1,6 @@
 import express from 'express';
-import { requireAuth } from '../middleware/requireAuth';
+import { PERMISSIONS } from '@fullstack-lab/constants';
+import { requirePermission } from '../middleware/requirePermission';
 import {
   handleAgentChat,
   handleAgentConfirm,
@@ -8,8 +9,9 @@ import {
 } from '../controllers/agentController';
 
 const router = express.Router();
+const canUseAgent = requirePermission(PERMISSIONS.AGENT_USE);
 
-router.post('/chat', requireAuth, validateAgentChat, handleAgentChat);
-router.post('/confirm', requireAuth, validateAgentConfirm, handleAgentConfirm);
+router.post('/chat', canUseAgent, validateAgentChat, handleAgentChat);
+router.post('/confirm', canUseAgent, validateAgentConfirm, handleAgentConfirm);
 
 export default router;

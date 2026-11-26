@@ -1,4 +1,9 @@
-import { AGENT_POLICY_ACTIONS, MCP_TOOL_NAMES } from '@fullstack-lab/constants';
+import {
+  AGENT_POLICY_ACTIONS,
+  MCP_TOOL_NAMES,
+  PERMISSIONS,
+  type Permission,
+} from '@fullstack-lab/constants';
 import type { AgentToolName, AuthUser, IAgentPolicyInfo } from '@fullstack-lab/types';
 
 const READ_TOOLS = new Set<AgentToolName>([
@@ -22,7 +27,18 @@ const ALL_SUPPORTED_TOOLS = new Set<AgentToolName>([
   ...CONFIRM_REQUIRED_TOOLS,
 ]);
 
-export function evaluateAgentPolicy(toolName: string, user?: AuthUser): IAgentPolicyInfo {
+const TOOL_PERMISSION: Partial<Record<AgentToolName, Permission>> = {
+  [MCP_TOOL_NAMES.BLOGS_CREATE_DRAFT]: PERMISSIONS.BLOG_CREATE,
+  [MCP_TOOL_NAMES.BLOGS_UPDATE_DRAFT]: PERMISSIONS.BLOG_UPDATE,
+  [MCP_TOOL_NAMES.BLOGS_DELETE_DRAFT]: PERMISSIONS.BLOG_DELETE,
+  [MCP_TOOL_NAMES.BLOGS_PUBLISH_BLOG]: PERMISSIONS.BLOG_UPDATE,
+};
+
+export function evaluateAgentPolicy(
+  toolName: string,
+  user?: AuthUser,
+  permissions?: readonly string[]
+): IAgentPolicyInfo {
   if (!user) {
     return {
       action: AGENT_POLICY_ACTIONS.DENY,
@@ -30,10 +46,11 @@ export function evaluateAgentPolicy(toolName: string, user?: AuthUser): IAgentPo
     };
   }
 
-  if (user.role !== 'admin' && user.role !== 'editor') {
+  const held = new Set(permissions ?? []);
+  if (!held.has(PERMISSIONS.AGENT_USE)) {
     return {
       action: AGENT_POLICY_ACTIONS.DENY,
-      reason: 'Only admin/editor roles can execute agent tools',
+      reason: `Missing required permission: ${PERMISSIONS.AGENT_USE}`,
     };
   }
 
@@ -44,10 +61,18 @@ export function evaluateAgentPolicy(toolName: string, user?: AuthUser): IAgentPo
     };
   }
 
+  const requiredPermission = TOOL_PERMISSION[toolName as AgentToolName];
+  if (requiredPermission && !held.has(requiredPermission)) {
+    return {
+      action: AGENT_POLICY_ACTIONS.DENY,
+      reason: `Missing required permission for ${toolName}: ${requiredPermission}`,
+    };
+  }
+
   if (READ_TOOLS.has(toolName as AgentToolName) || WRITE_TOOLS.has(toolName as AgentToolName)) {
     return {
       action: AGENT_POLICY_ACTIONS.ALLOW,
-      reason: 'Policy allows this tool for the current role',
+      reason: 'Policy allows this tool for the current permissions',
     };
   }
 

@@ -1,10 +1,47 @@
-import { API_PATHS, SEEDED_ROLES } from '@fullstack-lab/constants';
-import type { IOperatorDto, Jsonified } from '@fullstack-lab/types';
+import { API_PATHS, PERMISSIONS, SEEDED_ROLES } from '@fullstack-lab/constants';
+import type { IOperatorDto, IRoleDto, Jsonified } from '@fullstack-lab/types';
 import { Chip, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { useCan } from '../access/permissions';
+import { useAuth } from '../auth/AuthProvider';
 import { createListSearch } from './listSearch';
 import type { ResourceConfig } from './ResourceList';
 
 export type Operator = Jsonified<IOperatorDto>;
+
+export const SEEDED_ROLE_LIST: readonly string[] = [
+  SEEDED_ROLES.SUPER_ADMIN,
+  SEEDED_ROLES.ADMIN,
+  SEEDED_ROLES.CONTENT_MANAGER,
+  SEEDED_ROLES.INBOX_MANAGER,
+  SEEDED_ROLES.VIEWER,
+];
+
+/**
+ * Fetches all Roles (including custom Roles) when the caller has role:manage,
+ * falling back to the seeded role constants otherwise.
+ */
+export function useAssignableRoles(open: boolean, extraRoles: readonly string[] = []): string[] {
+  const { authorizedFetch } = useAuth();
+  const canManageRoles = useCan()(PERMISSIONS.ROLE_MANAGE);
+
+  const query = useQuery({
+    queryKey: [API_PATHS.ROLES, 'assignable'],
+    enabled: open && canManageRoles,
+    staleTime: 30_000,
+    queryFn: async (): Promise<string[]> => {
+      const response = await authorizedFetch(
+        `${API_PATHS.ROLES}?range=${encodeURIComponent('[0,99]')}&sort=${encodeURIComponent('["name","ASC"]')}&filter=${encodeURIComponent('{}')}`
+      );
+      if (!response.ok) return [...SEEDED_ROLE_LIST];
+      const rows = (await response.json()) as Jsonified<IRoleDto>[];
+      return rows.map((r) => r.name);
+    },
+  });
+
+  const combined = new Set<string>([...SEEDED_ROLE_LIST, ...(query.data ?? []), ...extraRoles]);
+  return Array.from(combined);
+}
 
 const formatDate = (value: unknown) =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(

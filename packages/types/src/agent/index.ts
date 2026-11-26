@@ -57,6 +57,7 @@ export interface IAgentConfirmResponse {
 
 export interface IAgentRequestContext {
   user: AuthUser;
+  permissions?: readonly string[];
   requestId?: string;
 }
 

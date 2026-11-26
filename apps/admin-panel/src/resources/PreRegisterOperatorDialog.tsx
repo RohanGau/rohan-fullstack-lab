@@ -1,4 +1,4 @@
-import { API_PATHS, PROTECTED_ROLE_NAMES, SEEDED_ROLES } from '@fullstack-lab/constants';
+import { API_PATHS, PROTECTED_ROLE_NAMES } from '@fullstack-lab/constants';
 import {
   Alert,
   Box,
@@ -16,15 +16,7 @@ import {
 } from '@mui/material';
 import { useId, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
-import { isSuperAdmin } from './operators';
-
-const ALL_ROLES: readonly string[] = [
-  SEEDED_ROLES.SUPER_ADMIN,
-  SEEDED_ROLES.ADMIN,
-  SEEDED_ROLES.CONTENT_MANAGER,
-  SEEDED_ROLES.INBOX_MANAGER,
-  SEEDED_ROLES.VIEWER,
-];
+import { isSuperAdmin, useAssignableRoles } from './operators';
 
 export function PreRegisterOperatorDialog({
   open,
@@ -40,6 +32,7 @@ export function PreRegisterOperatorDialog({
   const { authorizedFetch } = useAuth();
   const titleId = useId();
   const callerIsSuperAdmin = isSuperAdmin(callerRoles);
+  const availableRoles = useAssignableRoles(open);
 
   const [email, setEmail] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -144,7 +137,7 @@ export function PreRegisterOperatorDialog({
           <Box>
             <FormLabel component="legend">Roles</FormLabel>
             <FormGroup sx={{ mt: 1 }}>
-              {ALL_ROLES.map((role) => {
+              {availableRoles.map((role) => {
                 const isProtected = PROTECTED_ROLE_NAMES.includes(role);
                 const disabled = isProtected && !callerIsSuperAdmin;
                 const reason = disabled

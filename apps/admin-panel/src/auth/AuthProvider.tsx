@@ -23,6 +23,15 @@ import {
 import { currentGoogleIdentity } from './googleIdentity';
 import { clearStoredRefreshToken, readStoredRefreshToken, storeRefreshToken } from './session';
 
+const REFRESH_LOCK_NAME = 'admin-panel.refresh-token';
+
+async function withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
+  if (typeof navigator !== 'undefined' && navigator.locks?.request) {
+    return navigator.locks.request(REFRESH_LOCK_NAME, task);
+  }
+  return task();
+}
+
 type AuthState =
   | { status: 'restoring' }
   | { status: 'signedOut' }
@@ -100,9 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!readStoredRefreshToken()) return Promise.resolve(null);
 
     const startedIn = generation.current;
-    const request: Promise<string | null> = (async () => {
+    const request: Promise<string | null> = withRefreshLock(async () => {
       let token = readStoredRefreshToken();
-      // A second attempt exists only for the case where another tab got there first.
+      if (!token) return null;
+      // Read inside the cross-tab lock so if another tab just rotated, we already pick up the new token
+      // instead of submitting the spent token (which revokes the whole session family on the server).
+      // Keeping the post-401 storage retry covers browsers where Web Locks API is unavailable.
       for (let attempt = 0; attempt < 2 && token; attempt += 1) {
         try {
           const tokens = await refreshTokens(token);
@@ -130,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       return null;
-    })().finally(() => {
+    }).finally(() => {
       if (inFlightRefresh.current === request) inFlightRefresh.current = null;
     });
     inFlightRefresh.current = request;

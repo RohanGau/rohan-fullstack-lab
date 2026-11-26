@@ -97,10 +97,11 @@ export function makeRoles(): IRoleDto[] {
 
 export function fakeOperatorsApi(
   initial?: OperatorRow[],
-  auth?: { acceptsAccessToken(token: string): boolean; currentRoles?: () => string[] }
+  auth?: { acceptsAccessToken(token: string): boolean; currentRoles?: () => string[] },
+  extraRoles: IRoleDto[] = []
 ) {
   const rows = initial ? [...initial] : makeOperators();
-  const roles = makeRoles();
+  const roles = [...makeRoles(), ...extraRoles];
   let listFailure: { status: number; remaining: number } | null = null;
   let deactivateFailure: { status: number; remaining: number } | null = null;
   let nextId = 100;

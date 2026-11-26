@@ -1,4 +1,5 @@
 import Express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   createSlot,
   deleteSlot,
@@ -8,7 +9,7 @@ import {
   validateSlotCreate,
   validateSlotUpdate,
 } from '../controllers/slotController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 import { requireCaptcha } from '../middleware/requireCaptcha';
 
 const router = Express.Router();
@@ -121,7 +122,7 @@ const router = Express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Slot'
  */
-router.get('/', requireAdmin, getAllSlots);
+router.get('/', requirePermission(PERMISSIONS.SLOT_READ), getAllSlots);
 
 /**
  * @openapi
@@ -145,7 +146,7 @@ router.get('/', requireAdmin, getAllSlots);
  *       404:
  *         description: Slot booking not found
  */
-router.get('/:id', requireAdmin, getSlotById);
+router.get('/:id', requirePermission(PERMISSIONS.SLOT_READ), getSlotById);
 
 /**
  * @openapi
@@ -256,7 +257,7 @@ router.post('/', requireCaptcha, validateSlotCreate, createSlot);
  *       404:
  *         description: Slot not found
  */
-router.put('/:id', requireAdmin, validateSlotUpdate, updateSlot);
+router.put('/:id', requirePermission(PERMISSIONS.SLOT_UPDATE), validateSlotUpdate, updateSlot);
 
 /**
  * @openapi
@@ -276,6 +277,6 @@ router.put('/:id', requireAdmin, validateSlotUpdate, updateSlot);
  *       404:
  *         description: Slot not found
  */
-router.delete('/:id', requireAdmin, deleteSlot);
+router.delete('/:id', requirePermission(PERMISSIONS.SLOT_DELETE), deleteSlot);
 
 export default router;

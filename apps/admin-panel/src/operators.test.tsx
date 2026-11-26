@@ -13,11 +13,24 @@ function openOperators(
     rows?: OperatorRow[];
     path?: string;
     failFirstListWith?: number;
+    extraRoles?: { name: string; permissions?: string[] }[];
   } = {}
 ) {
   installFakeGoogle();
   const auth = fakeAuthApi({ access: ROLE_ACCESS[role] });
-  const operators = fakeOperatorsApi(options.rows ?? makeOperators(), auth);
+  const now = '2025-01-05T00:00:00.000Z';
+  const operators = fakeOperatorsApi(
+    options.rows ?? makeOperators(),
+    auth,
+    (options.extraRoles ?? []).map((r, i) => ({
+      id: `custom-role-${i}`,
+      name: r.name,
+      isProtected: false,
+      permissions: r.permissions ?? [],
+      createdAt: now,
+      updatedAt: now,
+    }))
+  );
   if (options.failFirstListWith) operators.failNextList(options.failFirstListWith);
   leaveStoredSession(auth.seedRefreshToken());
   const rendered = renderPanelAt(options.path ?? '/admin/operators');
@@ -193,6 +206,35 @@ describe('Operator administration', () => {
         'title',
         "Only a Super Admin can change a Super Admin's Roles"
       );
+    });
+
+    it('loads custom Roles from GET /roles into both Pre-register and Assign Roles dialogs', async () => {
+      const user = userEvent.setup();
+      openOperators('super_admin', {
+        extraRoles: [{ name: 'release_editor', permissions: ['blog:create'] }],
+      });
+      await waitForRows();
+
+      await user.click(screen.getByRole('button', { name: 'Pre-register operator' }));
+      const preReg = await screen.findByRole('dialog', { name: 'Pre-register Operator' });
+      expect(await within(preReg).findByRole('checkbox', { name: 'release_editor' })).toBeEnabled();
+      await user.click(within(preReg).getByRole('button', { name: 'Cancel' }));
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Assign roles to content@example.com' })
+      );
+      const assign = await screen.findByRole('dialog', {
+        name: 'Assign Roles: content@example.com',
+      });
+      const customBox = await within(assign).findByRole('checkbox', { name: 'release_editor' });
+      await user.click(customBox);
+      await user.click(within(assign).getByRole('button', { name: 'Save roles' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+      const contentRow = screen
+        .getByText('content@example.com')
+        .closest('[role="row"]') as HTMLElement;
+      expect(within(contentRow).getByText('release_editor')).toBeInTheDocument();
     });
   });
 
