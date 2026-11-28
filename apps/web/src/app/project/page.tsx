@@ -3,32 +3,21 @@ import ProjectListContent from '@/components/project/list/ProjectListContent';
 import { getProjectList } from '@/lib/server/projectApi';
 import type { ProjectsQueryRequired } from '@/types/project';
 import { siteUrl } from '@/lib/constant';
+import { parsePositiveInt, pickSearchParam, type SearchParamsRecord } from '@/lib/query';
 
-type SearchParamValue = string | string[] | undefined;
-type SearchParams = Record<string, SearchParamValue>;
-
-function pickOne(value: SearchParamValue): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parsePositiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
-}
-
-function parseProjectSearchParams(searchParams: SearchParams): ProjectsQueryRequired {
-  const page = parsePositiveInt(pickOne(searchParams.page), 1);
-  const perPage = parsePositiveInt(pickOne(searchParams.perPage), 9);
-  const search = pickOne(searchParams.q)?.trim() || undefined;
-  const featuredRaw = pickOne(searchParams.featured);
+function parseProjectSearchParams(searchParams: SearchParamsRecord): ProjectsQueryRequired {
+  const page = parsePositiveInt(pickSearchParam(searchParams.page), 1);
+  const perPage = parsePositiveInt(pickSearchParam(searchParams.perPage), 9);
+  const search = pickSearchParam(searchParams.q)?.trim() || undefined;
+  const featuredRaw = pickSearchParam(searchParams.featured);
   const isFeatured = featuredRaw === 'true' ? true : featuredRaw === 'false' ? false : undefined;
-  const sortFieldRaw = pickOne(searchParams.sortField);
+  const sortFieldRaw = pickSearchParam(searchParams.sortField);
   const sortField =
     sortFieldRaw === 'updatedAt' || sortFieldRaw === 'year' || sortFieldRaw === 'title'
       ? sortFieldRaw
       : 'createdAt';
-  const sortOrder = pickOne(searchParams.sortOrder) === 'ASC' ? 'ASC' : 'DESC';
-  const typesRaw = pickOne(searchParams.types);
+  const sortOrder = pickSearchParam(searchParams.sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+  const typesRaw = pickSearchParam(searchParams.types);
   const types = typesRaw
     ? typesRaw
         .split(',')
@@ -52,16 +41,16 @@ export const runtime = 'edge';
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<SearchParamsRecord>;
 }): Promise<Metadata> {
   const params = await searchParams;
-  const page = Number(pickOne(params.page)) || 1;
+  const page = Number(pickSearchParam(params.page)) || 1;
   const hasFilters = params.types || params.q || params.featured || params.sortField;
 
   // Build title
   let title = 'Projects';
   if (page > 1) title += ` - Page ${page}`;
-  if (params.types) title += ` - ${pickOne(params.types)}`;
+  if (params.types) title += ` - ${pickSearchParam(params.types)}`;
 
   return {
     title,
@@ -87,7 +76,7 @@ export async function generateMetadata({
 export default async function ProjectListPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<SearchParamsRecord>;
 }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery = parseProjectSearchParams(resolvedSearchParams);

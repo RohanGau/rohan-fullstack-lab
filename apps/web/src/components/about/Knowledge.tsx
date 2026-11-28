@@ -10,11 +10,13 @@ export function Knowledge({ areas }: { areas: { title: string; topics: string[] 
         {(areas || []).map((area) => (
           <div key={area.title} className="mb-2">
             <div className="font-bold text-primary text-sm sm:text-base mb-1">{area.title}</div>
-            <ul className="flex flex-wrap gap-1">
+            <ul className="flex flex-wrap gap-1 list-none p-0">
               {area.topics.map((topic) => (
-                <Badge key={topic} variant="outline" className="text-xs sm:text-sm">
-                  {topic}
-                </Badge>
+                <li key={topic}>
+                  <Badge variant="outline" className="text-xs sm:text-sm">
+                    {topic}
+                  </Badge>
+                </li>
               ))}
             </ul>
           </div>

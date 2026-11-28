@@ -1,19 +1,89 @@
-name: Web Deploy (Cloudflare Pages)
+name: Web CI & Deploy (Cloudflare Pages)
 
 on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - '.github/workflows/web-cloudflare.yml'
   push:
     branches: [main, develop]
     paths:
-      - "apps/web/**"
-      - "packages/**"
+      - 'apps/web/**'
+      - 'packages/**'
+      - '.github/workflows/web-cloudflare.yml'
   workflow_dispatch: {}
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
 
 jobs:
+  quality:
+    name: Headers, Lint, Typecheck, Unit Tests, E2E & Lighthouse
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://api.example.com
+      NEXT_PUBLIC_SITE_URL: https://rohangautam.dev
+      NEXT_PUBLIC_CDN_URL: https://assets.rohangautam.dev
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm build:packages
+
+      - name: Check security headers sync
+        run: pnpm --filter web check:headers
+
+      - name: Lint
+        run: pnpm --filter web lint
+
+      - name: Typecheck
+        run: pnpm --filter web typecheck
+
+      - name: Unit & component tests
+        run: pnpm --filter web test
+
+      - name: Build Next.js app
+        run: pnpm --filter web build
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E & Axe accessibility checks
+        run: pnpm --filter web test:e2e
+
+      - name: Run Lighthouse CI quality & CWV budgets
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: apps/web/lighthouserc.json
+          temporaryPublicStorage: true
+
   build-and-deploy:
+    name: Build & Deploy to Cloudflare Pages
+    needs: quality
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     env:
       PAGES_PROJECT: rohan-fullstack-lab
@@ -79,8 +149,8 @@ jobs:
       # ─────────────────────────────────────────────────────────────
       # BUILD
       # ─────────────────────────────────────────────────────────────
-      - name: Build shared types
-        run: pnpm build:types
+      - name: Build shared packages
+        run: pnpm build:packages
 
       - name: Clean previous build
         run: rm -rf apps/web/.vercel apps/web/.next apps/web/.wrangler
@@ -113,7 +183,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           cd apps/web
-          
+
           if [ "${{ steps.env.outputs.DEPLOY_ENV }}" = "production" ]; then
             echo "🚀 Deploying to PRODUCTION"
             npx wrangler pages deploy .vercel/output/static \

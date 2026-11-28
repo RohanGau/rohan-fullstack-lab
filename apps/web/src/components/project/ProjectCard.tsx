@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IProjectDto } from '@fullstack-lab/types';
-import { stripMarkdown, pickPrimaryLink, truncate } from '@/lib/utils';
+import { pickPrimaryLink, stripMarkdown, truncate } from '@fullstack-lab/constants';
 import { trackEvent } from '@/components/monitoring/GoogleAnalytics';
 
 export function ProjectCard({
@@ -16,7 +16,7 @@ export function ProjectCard({
   project: IProjectDto;
   onCardClick?: () => void;
 }) {
-  const primary = pickPrimaryLink(project);
+  const primary = pickPrimaryLink(project.links);
   const desc = truncate(stripMarkdown(project.description || ''), 220);
 
   const types = project.types?.slice(0, 3) || [];

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getBlogDetailCached } from '@/lib/server/blogApi';
-import { stripMarkdown } from '@/lib/utils';
+import { stripMarkdown } from '@fullstack-lab/constants';
 import { BlogDetailPageProps } from '@/types/blog';
 
 export const runtime = 'edge';

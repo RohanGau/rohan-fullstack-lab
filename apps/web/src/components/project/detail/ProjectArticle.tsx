@@ -1,23 +1,13 @@
-'use client';
-
+import Image from 'next/image';
 import type { IProjectDto } from '@fullstack-lab/types';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { MarkdownRenderer } from '@/components/blog/MarkdownRenderer';
+import { BackToProjectsButton } from '@/components/project/BackToProjectsButton';
 
 function ProjectArticle({ project }: { project: IProjectDto }) {
-  const router = useRouter();
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 space-y-6">
-      <Button
-        variant="outline"
-        onClick={() => (history.length > 1 ? router.back() : router.push('/project'))}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
+      <BackToProjectsButton />
 
       <h1 className="text-3xl font-bold leading-tight">{project.title}</h1>
 
@@ -44,8 +34,16 @@ function ProjectArticle({ project }: { project: IProjectDto }) {
       ) : null}
 
       {project.thumbnailUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={project.thumbnailUrl} alt={project.title} className="rounded-xl w-full" />
+        <div className="relative w-full aspect-[16/9] overflow-hidden rounded-xl border bg-muted">
+          <Image
+            src={project.thumbnailUrl}
+            alt={project.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority
+          />
+        </div>
       ) : null}
 
       {project.description ? <MarkdownRenderer markdown={project.description} /> : null}

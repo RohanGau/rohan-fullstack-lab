@@ -1,39 +1,26 @@
 import type { Metadata } from 'next';
+import { BLOG_STATUS, BLOG_STATUS_VALUES, isOneOf } from '@fullstack-lab/constants';
 import BlogListContent from '@/components/blog/list/BlogListContent';
 import { getBlogList } from '@/lib/server/blogApi';
 import type { BlogsQueryRequired } from '@/types/blog';
 import { siteUrl } from '@/lib/constant';
+import { parsePositiveInt, pickSearchParam, type SearchParamsRecord } from '@/lib/query';
 
-type SearchParamValue = string | string[] | undefined;
-type SearchParams = Record<string, SearchParamValue>;
-
-function pickOne(value: SearchParamValue): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parsePositiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
-}
-
-function parseBlogSearchParams(searchParams: SearchParams): BlogsQueryRequired {
-  const page = parsePositiveInt(pickOne(searchParams.page), 1);
-  const perPage = parsePositiveInt(pickOne(searchParams.perPage), 9);
-  const search = pickOne(searchParams.q)?.trim() || undefined;
-  const statusRaw = pickOne(searchParams.status);
-  const status =
-    statusRaw === 'draft' || statusRaw === 'archived' || statusRaw === 'published'
-      ? statusRaw
-      : 'published';
-  const featuredRaw = pickOne(searchParams.featured);
+function parseBlogSearchParams(searchParams: SearchParamsRecord): BlogsQueryRequired {
+  const page = parsePositiveInt(pickSearchParam(searchParams.page), 1);
+  const perPage = parsePositiveInt(pickSearchParam(searchParams.perPage), 9);
+  const search = pickSearchParam(searchParams.q)?.trim() || undefined;
+  const statusRaw = pickSearchParam(searchParams.status);
+  const status = isOneOf(BLOG_STATUS_VALUES, statusRaw) ? statusRaw : BLOG_STATUS.PUBLISHED;
+  const featuredRaw = pickSearchParam(searchParams.featured);
   const isFeatured = featuredRaw === 'true' ? true : featuredRaw === 'false' ? false : undefined;
-  const sortFieldRaw = pickOne(searchParams.sortField);
+  const sortFieldRaw = pickSearchParam(searchParams.sortField);
   const sortField =
     sortFieldRaw === 'createdAt' || sortFieldRaw === 'updatedAt' || sortFieldRaw === 'title'
       ? sortFieldRaw
       : 'publishedAt';
-  const sortOrder = pickOne(searchParams.sortOrder) === 'ASC' ? 'ASC' : 'DESC';
-  const tagsRaw = pickOne(searchParams.tags);
+  const sortOrder = pickSearchParam(searchParams.sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+  const tagsRaw = pickSearchParam(searchParams.tags);
   const tags = tagsRaw
     ? tagsRaw
         .split(',')
@@ -58,17 +45,17 @@ export const runtime = 'edge';
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<SearchParamsRecord>;
 }): Promise<Metadata> {
   const params = await searchParams;
-  const page = Number(pickOne(params.page)) || 1;
+  const page = Number(pickSearchParam(params.page)) || 1;
   const hasFilters =
     params.tags || params.q || params.status || params.featured || params.sortField;
 
   // Build title
   let title = 'Blog';
   if (page > 1) title += ` - Page ${page}`;
-  if (params.tags) title += ` - ${pickOne(params.tags)}`;
+  if (params.tags) title += ` - ${pickSearchParam(params.tags)}`;
 
   return {
     title,
@@ -96,7 +83,7 @@ export async function generateMetadata({
 export default async function BlogListPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<SearchParamsRecord>;
 }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery = parseBlogSearchParams(resolvedSearchParams);

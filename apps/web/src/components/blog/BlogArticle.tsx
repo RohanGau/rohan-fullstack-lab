@@ -2,7 +2,7 @@ import { Separator } from '@/components/ui/separator';
 import { BackToBlogButton } from '@/components/blog/BackToBlogButton';
 import { MarkdownRenderer } from '@/components/blog/MarkdownRenderer';
 import type { IBlogDto } from '@fullstack-lab/types';
-import { BlogCover } from './ BlogCover';
+import { BlogCover } from './BlogCover';
 import { BlogHeader } from './BlogHeader';
 import { BlogLinks } from './BlogLinks';
 

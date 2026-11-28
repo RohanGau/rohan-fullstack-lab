@@ -1,8 +1,9 @@
 import { cache } from 'react';
+import { BLOG_STATUS, isMongoId } from '@fullstack-lab/constants';
 import { IBlogDto } from '@fullstack-lab/types';
 import { apiFetchWithMeta, apiFetch } from '../apiClient';
 import { API } from '../constant';
-import { isMongoId, makeBlogQueryString } from '../utils';
+import { makeBlogQueryString } from '../query';
 import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
 
 function normalizeBlogQuery(input: BlogsQuery = {}): BlogsQueryRequired {
@@ -16,7 +17,7 @@ function normalizeBlogQuery(input: BlogsQuery = {}): BlogsQueryRequired {
     page,
     perPage,
     sort,
-    status: input.status ?? 'published',
+    status: input.status ?? BLOG_STATUS.PUBLISHED,
   };
 }
 

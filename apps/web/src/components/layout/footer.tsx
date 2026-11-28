@@ -1,14 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CONTACTS } from '@/lib/constant';
 import { useProfileStore } from '@/lib/store';
 import { SocialLinks } from '../custom/SocialLinks';
-import { MapPin } from 'lucide-react';
-import { FooterMap } from '../custom/FooterMap';
 
 export function Footer() {
   const { profile } = useProfileStore();
@@ -20,7 +18,7 @@ export function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-10">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
-            <h3 className="text-lg font-semibold tracking-tight">Rohan Kumar</h3>
+            <p className="text-lg font-semibold tracking-tight">Rohan Kumar</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Senior Software Engineer. Building clean, scalable web experiences.
             </p>
@@ -31,7 +29,7 @@ export function Footer() {
               </div>
             )}
             <div className="mt-4">
-              <SocialLinks user={{ ...user, ...CONTACTS }} ariaLabel="Social links" />
+              <SocialLinks user={{ ...CONTACTS, ...user }} ariaLabel="Social links" />
             </div>
           </div>
 
@@ -58,19 +56,19 @@ export function Footer() {
 
           <div className="flex items-start justify-start md:justify-end">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className="rounded-full"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              <ArrowUp className="mr-2 h-4 w-4" />
+              <ArrowUp className="mr-2 h-4 w-4" aria-hidden="true" />
               Back to top
             </Button>
           </div>
         </div>
       </div>
 
-      <FooterMap location={user?.location} zoom={13} />
       <Separator className="opacity-50" />
 
       <div className="mx-auto max-w-5xl px-4 py-6 text-center text-xs text-muted-foreground">

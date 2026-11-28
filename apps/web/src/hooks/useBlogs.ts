@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetchWithMeta } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
 import { useBlogStore } from '@/lib/store/blogStore';
+import { getErrorMessage, isAbortError } from '@fullstack-lab/constants';
 import type { IBlogDto } from '@fullstack-lab/types';
 import type { BlogsQuery, BlogsQueryRequired } from '@/types/blog';
-import { makeBlogQueryString, blogKeyFromQuery, isAbort, getErrorMessage } from '@/lib/utils';
+import { makeBlogQueryString, blogKeyFromQuery } from '@/lib/query';
 
 type InitialBlogsResult = {
   query: BlogsQueryRequired;
@@ -75,7 +76,7 @@ export function useBlogs(initial?: BlogsQuery, initialResult?: InitialBlogsResul
     setLoading(true);
     fetcher(c.signal)
       .catch((err: unknown) => {
-        if (!isAbort(err)) setError(getErrorMessage(err));
+        if (!isAbortError(err)) setError(getErrorMessage(err));
       })
       .finally(() => setLoading(false));
   }, [fetcher]);
@@ -93,7 +94,7 @@ export function useBlogs(initial?: BlogsQuery, initialResult?: InitialBlogsResul
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
         fetcher(c.signal).catch((err: unknown) => {
-          if (!isAbort(err)) setError(getErrorMessage(err));
+          if (!isAbortError(err)) setError(getErrorMessage(err));
         });
         return () => c.abort();
       }
@@ -105,7 +106,7 @@ export function useBlogs(initial?: BlogsQuery, initialResult?: InitialBlogsResul
     setLoading(true);
     fetcher(c.signal)
       .catch((err: unknown) => {
-        if (!isAbort(err)) setError(getErrorMessage(err));
+        if (!isAbortError(err)) setError(getErrorMessage(err));
       })
       .finally(() => setLoading(false));
     return () => c.abort();

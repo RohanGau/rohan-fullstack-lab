@@ -1,14 +1,20 @@
-'use client';
+import AboutContent from '@/components/about/AboutContent';
+import { getProfilesCached, pickAboutProfile } from '@/lib/server/profileApi';
+import { getErrorMessage } from '@fullstack-lab/constants';
 
-import { AboutSkeleton } from '@/components/about/AboutSkeleton';
-import { ErrorMessage } from '@/components/profile/ErrorMessage';
-import { withClientFallback } from '@/lib/hoc/withClientFallback';
+export const runtime = 'edge';
+export const revalidate = 60;
 
-const AboutContent = withClientFallback(() => import('@/components/about/AboutContent'), {
-  fallback: <AboutSkeleton />,
-  errorFallback: <ErrorMessage message="Failed to load about page." />,
-});
+export default async function AboutPage() {
+  let user = null;
+  let error: string | null = null;
 
-export default function AboutPage() {
-  return <AboutContent />;
+  try {
+    const profiles = await getProfilesCached();
+    user = pickAboutProfile(profiles);
+  } catch (err) {
+    error = getErrorMessage(err);
+  }
+
+  return <AboutContent user={user} error={error} />;
 }
