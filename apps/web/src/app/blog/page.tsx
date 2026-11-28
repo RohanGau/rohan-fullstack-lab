@@ -87,7 +87,16 @@ export default async function BlogListPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery = parseBlogSearchParams(resolvedSearchParams);
-  const { data, total } = await getBlogList(initialQuery);
+  let data: Awaited<ReturnType<typeof getBlogList>>['data'] = [];
+  let total = 0;
+  try {
+    const res = await getBlogList(initialQuery);
+    data = res.data;
+    total = res.total;
+  } catch {
+    data = [];
+    total = 0;
+  }
 
   return <BlogListContent initialQuery={initialQuery} initialResult={{ data, total }} />;
 }

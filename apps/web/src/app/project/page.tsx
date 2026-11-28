@@ -80,7 +80,16 @@ export default async function ProjectListPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery = parseProjectSearchParams(resolvedSearchParams);
-  const { data, total } = await getProjectList(initialQuery);
+  let data: Awaited<ReturnType<typeof getProjectList>>['data'] = [];
+  let total = 0;
+  try {
+    const res = await getProjectList(initialQuery);
+    data = res.data;
+    total = res.total;
+  } catch {
+    data = [];
+    total = 0;
+  }
 
   return <ProjectListContent initialQuery={initialQuery} initialResult={{ data, total }} />;
 }
