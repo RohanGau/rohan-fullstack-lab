@@ -21,7 +21,7 @@ export function SortSelect<F extends string>({
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={widthClass}>
+      <SelectTrigger className={widthClass} aria-label="Sort by">
         <SelectValue placeholder="Sort by" />
       </SelectTrigger>
       <SelectContent>
@@ -46,7 +46,7 @@ export function FeaturedSelect({
 }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as any)}>
-      <SelectTrigger className={widthClass}>
+      <SelectTrigger className={widthClass} aria-label="Filter by featured">
         <SelectValue placeholder="Featured" />
       </SelectTrigger>
       <SelectContent>
@@ -71,7 +71,7 @@ export function PerPageSelect({
 }) {
   return (
     <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
-      <SelectTrigger className={widthClass}>
+      <SelectTrigger className={widthClass} aria-label="Items per page">
         <SelectValue placeholder="Per page" />
       </SelectTrigger>
       <SelectContent>
