@@ -43,6 +43,29 @@ function applySecurityAndCoreMiddleware(app: express.Express, config: ApiRuntime
   app.use(auditLogMiddleware);
   app.use(helmet());
 
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (isAllowedOrigin(origin) || allowedOrigins.includes(origin)) return callback(null, true);
+        logger.warn({ origin }, 'CORS blocked request from origin');
+        return callback(null, false);
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Idempotency-Key', 'X-Request-Id'],
+      exposedHeaders: [
+        'X-Total-Count',
+        'Content-Range',
+        HTTP_HEADERS.REQUEST_ID,
+        'X-Idempotency-Key',
+        HTTP_HEADERS.IDEMPOTENCY_STATUS,
+        HTTP_HEADERS.API_VERSION,
+        'Deprecation',
+        'Link',
+      ],
+    })
+  );
+
   const generalRateLimitStore = createRedisRateLimitStore({
     prefix: 'rate-limit:general:',
     windowMs: config.rateLimitWindowMs,
@@ -74,6 +97,7 @@ function applySecurityAndCoreMiddleware(app: express.Express, config: ApiRuntime
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => {
+      if (req.method === 'OPTIONS') return true;
       if (req.path.startsWith('/health')) return true;
       if (!config.isProduction && req.headers.origin?.includes('localhost')) return true;
       return false;
@@ -92,29 +116,6 @@ function applySecurityAndCoreMiddleware(app: express.Express, config: ApiRuntime
 
   app.use(generalLimiter as unknown as RequestHandler);
   app.use(writeLimiter as unknown as RequestHandler);
-
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (isAllowedOrigin(origin) || allowedOrigins.includes(origin)) return callback(null, true);
-        logger.warn({ origin }, 'CORS blocked request from origin');
-        return callback(new Error('Not allowed by CORS'), false);
-      },
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'Idempotency-Key', 'X-Request-Id'],
-      exposedHeaders: [
-        'X-Total-Count',
-        'Content-Range',
-        HTTP_HEADERS.REQUEST_ID,
-        'X-Idempotency-Key',
-        HTTP_HEADERS.IDEMPOTENCY_STATUS,
-        HTTP_HEADERS.API_VERSION,
-        'Deprecation',
-        'Link',
-      ],
-    })
-  );
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
