@@ -56,16 +56,14 @@ class UpstashRateLimitStore implements Store {
 
     const prefixedKey = this.prefixedKey(key);
     const totalHits = Number(await redisRest.incr(prefixedKey));
+    let ttlMs = Number(await redisRest.pttl(prefixedKey));
 
-    if (totalHits === 1) {
+    if (totalHits === 1 || ttlMs <= 0) {
       await redisRest.pexpire(prefixedKey, this.windowMs);
+      ttlMs = this.windowMs;
     }
 
-    const ttlMs = Number(await redisRest.pttl(prefixedKey));
-    const resetTime =
-      Number.isFinite(ttlMs) && ttlMs > 0
-        ? new Date(Date.now() + ttlMs)
-        : new Date(Date.now() + this.windowMs);
+    const resetTime = new Date(Date.now() + ttlMs);
 
     return { totalHits, resetTime };
   }
@@ -96,9 +94,15 @@ export function createRedisRateLimitStore(
 ): UpstashRateLimitStore | undefined {
   if (!redisRest) return undefined;
 
+  const envScope = process.env.NODE_ENV || 'development';
+  const scopedOptions: RateLimitStoreOptions = {
+    ...options,
+    prefix: `${envScope}:${options.prefix}`,
+  };
+
   logger.info(
-    { prefix: options.prefix, windowMs: options.windowMs },
+    { prefix: scopedOptions.prefix, windowMs: scopedOptions.windowMs },
     'Using Upstash Redis store for rate limiting'
   );
-  return new UpstashRateLimitStore(options);
+  return new UpstashRateLimitStore(scopedOptions);
 }

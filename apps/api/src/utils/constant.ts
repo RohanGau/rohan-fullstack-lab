@@ -12,24 +12,38 @@ export const TODO_ERROR_MESSAGES = {
   INVALID_ID_FOND: 'Invalid ID found',
 };
 
-export const allowedOrigins = [
-  process.env.FRONTEND_ORIGIN,
-  process.env.BACKEND_ORIGIN,
-  process.env.NEXT_ORIGIN,
-  process.env.ADMIN_ORIGIN,
-  'https://rohan-admin-panel.pages.dev',
-  'https://admin.rohangautam.dev',
-  'http://localhost:3000',
-  ...(process.env.NODE_ENV !== 'production'
-    ? [
-        'http://localhost:5174',
-        'https://local.rohangautam.dev',
-        'https://develop.rohan-admin-panel.pages.dev',
-        'https://admin-stage.rohangautam.dev',
-      ]
-    : []),
-  'http://localhost:5050',
-].filter(Boolean) as string[];
+function parseEnvOrigins(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+export const allowedOrigins = Array.from(
+  new Set([
+    ...parseEnvOrigins(process.env.FRONTEND_ORIGIN),
+    ...parseEnvOrigins(process.env.BACKEND_ORIGIN),
+    ...parseEnvOrigins(process.env.NEXT_ORIGIN),
+    ...parseEnvOrigins(process.env.ADMIN_ORIGIN),
+    ...parseEnvOrigins(process.env.ALLOWED_ORIGIN),
+    'https://rohangautam.dev',
+    'https://www.rohangautam.dev',
+    'https://rohan-admin-panel.pages.dev',
+    'https://admin.rohangautam.dev',
+    'http://localhost:3000',
+    ...(process.env.NODE_ENV !== 'production'
+      ? [
+          'https://stage.rohangautam.dev',
+          'http://localhost:5174',
+          'https://local.rohangautam.dev',
+          'https://develop.rohan-admin-panel.pages.dev',
+          'https://admin-stage.rohangautam.dev',
+        ]
+      : []),
+    'http://localhost:5050',
+  ])
+);
 
 const ADMIN_PAGES_PREVIEW_RE = /^https:\/\/([a-z0-9-]+\.)?rohan-admin-panel\.pages\.dev$/;
 
