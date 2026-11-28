@@ -1,11 +1,12 @@
 import express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   createContact,
   deleteContact,
   getContacts,
   validateContactCreate,
 } from '../controllers/contactController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 import { requireCaptcha } from '../middleware/requireCaptcha';
 
 const router = express.Router();
@@ -120,7 +121,7 @@ router.post('/', requireCaptcha, validateContactCreate, createContact);
  *       500:
  *         description: Server error
  */
-router.get('/', requireAdmin, getContacts);
+router.get('/', requirePermission(PERMISSIONS.CONTACT_READ), getContacts);
 
 /**
  * @swagger
@@ -143,6 +144,6 @@ router.get('/', requireAdmin, getContacts);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', requireAdmin, deleteContact);
+router.delete('/:id', requirePermission(PERMISSIONS.CONTACT_DELETE), deleteContact);
 
 export default router;

@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
 import { API_VERSIONS, HTTP_HEADERS } from '@fullstack-lab/constants';
 import type { ApiRuntimeConfig } from './config/runtime';
+import { assertAuthConfig, type EnvVars } from './config/authConfig';
 import todoRoutes from './routes/todoRoutes';
 import blogRoutes from './routes/blogRoutes';
 import contactRoutes from './routes/contactRoutes';
@@ -14,12 +15,14 @@ import projectRoutes from './routes/projectRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import slotRoutes from './routes/slotRoutes';
 import healthRoutes from './routes/healthRoutes';
+import operatorRoutes from './routes/operatorRoutes';
+import roleRoutes from './routes/roleRoutes';
 import authRoutes from './routes/authRoutes';
 import agentRoutes from './routes/agentRoutes';
 import { globalErrorHandler, jsonErrorHandler } from './utils';
 import logger from './utils/logger';
 import swaggerSpec from './swagger/swagger';
-import { allowedOrigins } from './utils/constant';
+import { allowedOrigins, isAllowedOrigin } from './utils/constant';
 import { sentryErrorHandler } from './utils/sentry';
 import { createRedisRateLimitStore } from './lib/redis-rest';
 import { requestContextMiddleware, requestLoggingMiddleware } from './middleware/requestContext';
@@ -94,7 +97,7 @@ function applySecurityAndCoreMiddleware(app: express.Express, config: ApiRuntime
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (isAllowedOrigin(origin) || allowedOrigins.includes(origin)) return callback(null, true);
         logger.warn({ origin }, 'CORS blocked request from origin');
         return callback(new Error('Not allowed by CORS'), false);
       },
@@ -145,6 +148,8 @@ function registerRoutes(app: express.Express, config: ApiRuntimeConfig): void {
 
   const apiV1Router = express.Router();
   apiV1Router.use('/auth', authRoutes);
+  apiV1Router.use('/operators', operatorRoutes);
+  apiV1Router.use('/roles', roleRoutes);
 
   if (config.agentGatewayEnabled) {
     apiV1Router.use('/agent', agentRoutes);
@@ -176,7 +181,8 @@ function applyErrorHandlers(app: express.Express): void {
   app.use(globalErrorHandler);
 }
 
-export function createApp(config: ApiRuntimeConfig): express.Express {
+export function createApp(config: ApiRuntimeConfig, env: EnvVars = process.env): express.Express {
+  assertAuthConfig(env);
   const app = express();
 
   applyProxyTrust(app, config);

@@ -1,4 +1,5 @@
 import Express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   createProject,
   getAllProjects,
@@ -8,7 +9,7 @@ import {
   validateProjectCreate,
   validateProjectUpdate,
 } from '../controllers/projectController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 
 const router = Express.Router();
 
@@ -146,7 +147,12 @@ const router = Express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/', requireAdmin, validateProjectCreate, createProject);
+router.post(
+  '/',
+  requirePermission(PERMISSIONS.PROJECT_CREATE),
+  validateProjectCreate,
+  createProject
+);
 
 /**
  * @openapi
@@ -248,7 +254,12 @@ router.get('/:id', getProjectById);
  *       404:
  *         description: Project not found
  */
-router.put('/:id', requireAdmin, validateProjectUpdate, updateProject);
+router.put(
+  '/:id',
+  requirePermission(PERMISSIONS.PROJECT_UPDATE),
+  validateProjectUpdate,
+  updateProject
+);
 
 /**
  * @openapi
@@ -269,6 +280,6 @@ router.put('/:id', requireAdmin, validateProjectUpdate, updateProject);
  *       404:
  *         description: Project not found
  */
-router.delete('/:id', requireAdmin, deleteProject);
+router.delete('/:id', requirePermission(PERMISSIONS.PROJECT_DELETE), deleteProject);
 
 export default router;

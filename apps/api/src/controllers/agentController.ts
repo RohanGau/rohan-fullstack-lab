@@ -32,6 +32,7 @@ export async function handleAgentChat(req: Request, res: Response): Promise<Resp
     payload,
     context: {
       user: req.user,
+      permissions: req.operator?.permissions,
       requestId: req.requestId,
     },
   });
@@ -47,6 +48,7 @@ export async function handleAgentConfirm(req: Request, res: Response): Promise<R
   const payload = (req.validatedBody ?? req.body) as IAgentConfirmRequest;
   const response = await confirmAgentIntent(payload, {
     user: req.user,
+    permissions: req.operator?.permissions,
     requestId: req.requestId,
   });
 

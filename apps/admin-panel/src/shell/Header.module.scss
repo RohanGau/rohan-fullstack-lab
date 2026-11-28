@@ -1,0 +1,16 @@
+.bar {
+  border-bottom: 1px solid var(--mui-palette-divider);
+}
+
+.toolbar {
+  gap: 1rem;
+}
+
+.title {
+  color: inherit;
+  text-decoration: none;
+}
+
+.spacer {
+  flex: 1;
+}

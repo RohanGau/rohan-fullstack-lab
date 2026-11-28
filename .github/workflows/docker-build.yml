@@ -30,9 +30,9 @@ jobs:
       - name: 📝 Write .env for React Admin
         run: |
           if [ "$NODE_ENV" = "production" ]; then
-            echo "REACT_APP_API_URL=https://rohan-backend-api.fly.dev" > ./apps/admin/.env
+            echo "REACT_APP_API_URL=https://api.rohangautam.dev" > ./apps/admin/.env
           else
-            echo "REACT_APP_API_URL=https://rohan-backend-api-stage.fly.dev" > ./apps/admin/.env
+            echo "REACT_APP_API_URL=https://api-stage.rohangautam.dev" > ./apps/admin/.env
           fi
 
       - name: 🔧 Set up Docker Buildx

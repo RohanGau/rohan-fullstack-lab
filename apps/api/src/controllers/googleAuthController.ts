@@ -1,0 +1,68 @@
+import type { Request, Response } from 'express';
+import Operator from '../models/Operator';
+import { issueAuthTokens } from '../services/authTokens';
+import { verifyGoogleIdToken } from '../services/googleIdToken';
+import { consumeGoogleNonce, issueGoogleNonce } from '../services/googleNonce';
+import logger from '../utils/logger';
+
+const REFUSED = { message: 'Sign-in refused' };
+
+export async function signInWithGoogle(req: Request, res: Response): Promise<void> {
+  const { idToken, nonce } = req.body ?? {};
+  if (typeof idToken !== 'string' || !idToken || typeof nonce !== 'string' || !nonce) {
+    res.status(400).json({ message: 'idToken and nonce are required' });
+    return;
+  }
+
+  if (!(await consumeGoogleNonce(nonce))) {
+    logger.warn('Google sign-in refused: invalid or expired nonce');
+    res.status(401).json(REFUSED);
+    return;
+  }
+
+  let identity;
+  try {
+    identity = await verifyGoogleIdToken(idToken);
+  } catch (error) {
+    logger.warn({ err: error }, 'Google sign-in refused: ID token verification failed');
+    res.status(401).json(REFUSED);
+    return;
+  }
+
+  if (!identity.emailVerified || identity.nonce !== nonce) {
+    logger.warn(
+      { emailVerified: identity.emailVerified, nonceMatched: identity.nonce === nonce },
+      'Google sign-in refused: unverified email or nonce mismatch'
+    );
+    res.status(401).json(REFUSED);
+    return;
+  }
+
+  // Known Google account first; otherwise claim an Operator that has no account bound yet.
+  // The claim is one atomic update so two first logins can't both bind. A deactivated
+  // Operator matches neither lookup, so they are refused exactly like an unknown account.
+  const operator =
+    (await Operator.findOne({ googleSub: identity.sub, active: true })) ??
+    (await Operator.findOneAndUpdate(
+      { email: identity.email.toLowerCase(), googleSub: { $exists: false }, active: true },
+      { $set: { googleSub: identity.sub } },
+      { new: true }
+    ));
+  if (!operator) {
+    logger.warn(
+      { email: identity.email.toLowerCase() },
+      'Google sign-in refused: unregistered or deactivated Operator'
+    );
+    res.status(401).json(REFUSED);
+    return;
+  }
+
+  // TODO(cycle 5): resolve real Role names; 'admin' is a stopgap until AuthUser carries Roles.
+  const tokens = await issueAuthTokens({ id: operator.id, role: 'admin', email: operator.email });
+  res.status(200).json(tokens);
+}
+
+export async function createGoogleNonce(_req: Request, res: Response): Promise<void> {
+  const nonce = await issueGoogleNonce();
+  res.status(200).json({ nonce });
+}

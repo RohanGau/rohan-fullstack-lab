@@ -1,4 +1,5 @@
 import Express from 'express';
+import { PERMISSIONS } from '@fullstack-lab/constants';
 import {
   createProfile,
   deleteProfile,
@@ -8,7 +9,7 @@ import {
   validateProfileCreate,
   validateProfileUpdate,
 } from '../controllers/profileController';
-import { requireAdmin } from '../middleware/requireAuth';
+import { requirePermission } from '../middleware/requirePermission';
 
 const router = Express.Router();
 
@@ -130,7 +131,12 @@ const router = Express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/', requireAdmin, validateProfileCreate, createProfile);
+router.post(
+  '/',
+  requirePermission(PERMISSIONS.PROFILE_CREATE),
+  validateProfileCreate,
+  createProfile
+);
 
 /**
  * @openapi
@@ -224,7 +230,12 @@ router.get('/:id', getProfileById);
  *       404:
  *         description: Profile not found
  */
-router.put('/:id', requireAdmin, validateProfileUpdate, updateProfile);
+router.put(
+  '/:id',
+  requirePermission(PERMISSIONS.PROFILE_UPDATE),
+  validateProfileUpdate,
+  updateProfile
+);
 
 /**
  * @openapi
@@ -245,6 +256,6 @@ router.put('/:id', requireAdmin, validateProfileUpdate, updateProfile);
  *       404:
  *         description: Profile not found
  */
-router.delete('/:id', requireAdmin, deleteProfile);
+router.delete('/:id', requirePermission(PERMISSIONS.PROFILE_DELETE), deleteProfile);
 
 export default router;
