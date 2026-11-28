@@ -98,7 +98,7 @@ export function BlogCard({
 
         <Link
           href={href}
-          aria-label={`Read: ${blog.title}`}
+          aria-label={`Read More: ${blog.title}`}
           className="inline-block text-primary text-sm underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
           onClick={handleClick}
         >

@@ -14,6 +14,7 @@ function Calendar({
   captionLayout = 'label',
   buttonVariant = 'ghost',
   formatters,
+  labels,
   components,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
@@ -34,6 +35,20 @@ function Calendar({
       formatters={{
         formatMonthDropdown: (date) => date.toLocaleString('default', { month: 'short' }),
         ...formatters,
+      }}
+      labels={{
+        labelDayButton: (date, modifiers) => {
+          const base = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          });
+          if (modifiers.today) return `Today, ${base}`;
+          if (modifiers.selected) return `${base}, selected`;
+          return base;
+        },
+        ...labels,
       }}
       classNames={{
         root: cn('w-fit', defaultClassNames.root),
