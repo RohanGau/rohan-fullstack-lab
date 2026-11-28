@@ -66,6 +66,7 @@ rohan-fullstack-lab/
    - Decouple heavy side-effects (like transactional emails) through queue publishing or circuit breakers.
 
 2. **Frontend Conventions (Next.js 15)**:
+   - **Web Portal Standards**: For any feature, migration, or refactor in `apps/web`, follow [`.claude/skills/web-portal-standards/SKILL.md`](file:///Users/rohankumar/work/rohan-fullstack-lab/.claude/skills/web-portal-standards/SKILL.md) (RSC-first, Core Web Vitals, SEO/GEO, Security/CSP, Accessibility, and End-to-End Verification Gates).
    - **Default to React Server Components (RSC)**. Do not mark pages with `'use client'` unless client-side state, browser events, or window APIs are strictly required.
    - Keep data fetching on the server where possible for fast TTFB and search engine pre-rendering.
    - Use Radix UI primitives with Tailwind CSS for accessible, consistent UI components.
