@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API } from '@/lib/constant';
 import { apiFetchWithMeta } from '@/lib/apiClient';
 import { useProjectStore } from '@/lib/store/projectStore';
+import { getErrorMessage, isAbortError } from '@fullstack-lab/constants';
 import type { IProjectDto } from '@fullstack-lab/types';
 import type { ProjectsQuery, ProjectsQueryRequired } from '@/types/project';
-import { makeProjectQueryString, projectKeyFromQuery, getErrorMessage, isAbort } from '@/lib/utils';
+import { makeProjectQueryString, projectKeyFromQuery } from '@/lib/query';
 
 type InitialProjectsResult = {
   query: ProjectsQueryRequired;
@@ -76,7 +77,7 @@ export function useProjects(initial?: ProjectsQuery, initialResult?: InitialProj
     setLoading(true);
     fetcher(c.signal)
       .catch((e: unknown) => {
-        if (!isAbort(e)) setError(getErrorMessage(e));
+        if (!isAbortError(e)) setError(getErrorMessage(e));
       })
       .finally(() => setLoading(false));
   }, [fetcher]);
@@ -92,7 +93,7 @@ export function useProjects(initial?: ProjectsQuery, initialResult?: InitialProj
         revalidatedKeysRef.current.add(cacheKey);
         const c = new AbortController();
         fetcher(c.signal).catch((e: unknown) => {
-          if (!isAbort(e)) setError(getErrorMessage(e));
+          if (!isAbortError(e)) setError(getErrorMessage(e));
         });
         return () => c.abort();
       }
@@ -103,7 +104,7 @@ export function useProjects(initial?: ProjectsQuery, initialResult?: InitialProj
     setLoading(true);
     fetcher(c.signal)
       .catch((e: unknown) => {
-        if (!isAbort(e)) setError(getErrorMessage(e));
+        if (!isAbortError(e)) setError(getErrorMessage(e));
       })
       .finally(() => setLoading(false));
     return () => c.abort();

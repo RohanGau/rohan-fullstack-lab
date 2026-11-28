@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { extractApiErrors } from '@fullstack-lab/constants';
 import { apiFetch } from '@/lib/apiClient';
-import { extractApiErrors } from '@/lib/utils';
+import { API } from '@/lib/constant';
 
 export function useContactSubmit() {
   const [submitting, setSubmitting] = useState(false);
@@ -19,7 +20,7 @@ export function useContactSubmit() {
     setFieldErrors({});
     setGlobalError(null);
     try {
-      await apiFetch('/api/contact', {
+      await apiFetch(API.CONTACT, {
         method: 'POST',
         body: JSON.stringify({ ...data, captchaToken }),
         headers: { 'Content-Type': 'application/json' },

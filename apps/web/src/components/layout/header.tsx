@@ -7,7 +7,7 @@ import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { isActive } from '@/lib/utils';
+import { isActive } from '@/lib/navigation';
 import { logoUrl, navItems } from '@/lib/constant';
 import Image from 'next/image';
 import { ThemeToggle } from '../theme/theme-toggle';

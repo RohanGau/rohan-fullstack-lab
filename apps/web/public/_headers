@@ -1,24 +1,12 @@
-# Cloudflare Pages Security Headers
-# https://developers.cloudflare.com/pages/configuration/headers/
+# Cloudflare Pages Security Headers (AUTO-GENERATED — do not edit directly)
+# Source of truth: apps/web/security-headers.mjs
+# Regenerate with: pnpm --filter web sync:headers
 
 /*
-  # HSTS: Force HTTPS for 1 year, including subdomains
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-
-  # CSP: Content Security Policy to prevent XSS
-   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.rohangautam.dev https://api-stage.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
-
-  # X-Frame-Options: Prevent clickjacking (legacy, CSP frame-ancestors is preferred)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://assets.rohangautam.dev https://assets-stage.rohangautam.dev https://pub-92ca52f522664b02af9bc8a7906e3013.r2.dev https://cdn.discordapp.com https://pelocal.com https://avatars.githubusercontent.com https://www.google-analytics.com https://www.googletagmanager.com; font-src 'self' data:; connect-src 'self' https://api.rohangautam.dev https://api-stage.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Frame-Options: DENY
-
-  # X-Content-Type-Options: Prevent MIME sniffing
   X-Content-Type-Options: nosniff
-
-  # Referrer-Policy: Control referrer information
   Referrer-Policy: strict-origin-when-cross-origin
-
-  # Permissions-Policy: Restrict browser features
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-
-  # X-XSS-Protection: Legacy XSS protection (modern browsers use CSP)
-  X-XSS-Protection: 1; mode=block
+  Cross-Origin-Opener-Policy: same-origin-allow-popups

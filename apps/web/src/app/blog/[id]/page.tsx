@@ -1,7 +1,7 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import BlogDetail from '@/components/blog/detail';
 import { getBlogDetailCached, getRelatedPostsCached } from '@/lib/server/blogApi';
-import { stripMarkdown } from '@/lib/utils';
+import { stripMarkdown } from '@fullstack-lab/constants';
 import { siteUrl } from '@/lib/constant';
 import { BlogDetailPageProps } from '@/types/blog';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
@@ -10,6 +10,8 @@ import { BlogReadingTracker } from '@/components/blog/BlogReadingTracker';
 // Required for Cloudflare Pages deployment
 export const runtime = 'edge';
 export const revalidate = 60;
+
+export { generateMetadata } from './generateMetadata';
 
 export default async function BlogDetailPage(props: BlogDetailPageProps) {
   const { id } = await props.params;

@@ -1,13 +1,14 @@
-'use client';
-
 import Link from 'next/link';
+import type { IBlogDto } from '@fullstack-lab/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { BlogCard, BlogCardSkeleton } from '@/components/blog/card';
-import { useFeaturedBlogs } from '@/hooks/useFeaturedBlogs';
+import { BlogCard } from '@/components/blog/card';
 
-export default function BlogsPreview() {
-  const { featureBlogs, loading, error } = useFeaturedBlogs(3);
+interface BlogsPreviewProps {
+  blogs: IBlogDto[];
+  error?: string | null;
+}
 
+export default function BlogsPreview({ blogs, error }: BlogsPreviewProps) {
   return (
     <section aria-labelledby="featured-blogs">
       <div className="flex items-center justify-between mb-6">
@@ -19,36 +20,24 @@ export default function BlogsPreview() {
         </Link>
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[0, 1, 2].map((i) => (
-            <BlogCardSkeleton key={i} />
-          ))}
-        </div>
-      )}
-
-      {/* Error */}
-      {!loading && error && (
+      {error && (
         <Alert variant="destructive">
           <AlertTitle>Failed to load blogs</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Empty */}
-      {!loading && !error && (!featureBlogs || featureBlogs.length === 0) && (
+      {!error && blogs.length === 0 && (
         <div className="text-center text-muted-foreground py-12">No featured blogs found.</div>
       )}
 
-      {/* List */}
-      {!loading && !error && featureBlogs && featureBlogs.length > 0 && (
+      {!error && blogs.length > 0 && (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {featureBlogs.map((blog, idx) => (
+          {blogs.map((blog, idx) => (
             <BlogCard
               key={blog.id}
               blog={blog}
-              priorityImage={idx === 0} // boost LCP for first card
+              priorityImage={idx === 0}
               variant="default"
               showStatus={false}
             />

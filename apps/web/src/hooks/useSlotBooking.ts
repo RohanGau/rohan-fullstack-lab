@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { addMinutes, setHours, setMinutes } from 'date-fns';
 import { apiFetch } from '@/lib/apiClient';
+import { API } from '@/lib/constant';
 
 export function useSlotBooking() {
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -46,7 +47,7 @@ export function useSlotBooking() {
         status: 'booked',
         captchaToken,
       };
-      await apiFetch('/api/slots', {
+      await apiFetch(API.SLOTS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -1,19 +1,26 @@
-import { Hero } from './Hero';
-import { useProfile } from '@/hooks/useProfile';
 import Image from 'next/image';
+import type { IProfileDto } from '@fullstack-lab/types';
 import { Card, CardContent } from '@/components/ui/card';
+import { Hero } from './Hero';
 import { SkillsSection } from '../custom/Skills';
 import { Knowledge } from './Knowledge';
 import { Separator } from '../ui/separator';
 import { Philosophy } from './Philosophy';
 import { SocialLinksContainer } from './SocialLinks';
+import { ErrorMessage } from '../profile/ErrorMessage';
 
-export default function AboutContent() {
-  const { profile } = useProfile();
+interface AboutContentProps {
+  user: IProfileDto | null;
+  error?: string | null;
+}
 
-  const user = profile?.find((item) => item.id !== '688a63c9e76b322b8c0b5814') ?? null;
-
-  if (!user) return null;
+export default function AboutContent({ user, error }: AboutContentProps) {
+  if (error) {
+    return <ErrorMessage message="Failed to load about page." detail={error} />;
+  }
+  if (!user) {
+    return <ErrorMessage message="Profile information is currently unavailable." />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
@@ -34,10 +41,10 @@ export default function AboutContent() {
         <Image
           src={user.avatarUrl ?? '/profile.jpg'}
           alt={user.name}
-          width={250}
-          height={250}
-          className="rounded-xl drop-shadow w-full max-w-md border"
-          style={{ objectFit: 'cover' }}
+          width={448}
+          height={448}
+          sizes="(max-width: 768px) 100vw, 448px"
+          className="rounded-xl drop-shadow w-full max-w-md border object-cover"
           priority
         />
       </div>

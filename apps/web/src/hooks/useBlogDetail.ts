@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { isMongoId } from '@fullstack-lab/constants';
 import { IBlogDto } from '@fullstack-lab/types';
 import { API } from '@/lib/constant';
 import { apiFetch, apiFetchWithMeta } from '@/lib/apiClient';
 import { useBlogStore } from '@/lib/store/blogStore';
-
-const isMongoId = (s: string) => /^[a-f\d]{24}$/i.test(s);
 
 export function useBlogDetailParam(param: string) {
   const { detailsById, detailsBySlug, setDetailById, setDetailBySlug } = useBlogStore();

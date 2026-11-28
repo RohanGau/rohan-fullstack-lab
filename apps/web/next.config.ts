@@ -1,11 +1,13 @@
 import type { NextConfig } from 'next';
 import createBundleAnalyzer from '@next/bundle-analyzer';
+import { getSecurityHeaders } from './security-headers.mjs';
 
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
 const disableImageOptimization = process.env.NEXT_DISABLE_IMAGE_OPTIMIZATION === 'true';
+const isDev = process.env.NODE_ENV !== 'production';
 
 const nextConfig: NextConfig = {
   images: {
@@ -18,57 +20,12 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'pelocal.com' },
     ],
   },
-  // SECURITY: Add security headers for defense-in-depth
+  // SECURITY: Single-source security headers shared with public/_headers
   async headers() {
     return [
       {
-        // Apply security headers to all routes
         source: '/:path*',
-        headers: [
-          // HSTS: Force HTTPS for 1 year, including subdomains
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
-          },
-          // CSP: Content Security Policy to prevent XSS
-          // Allows Next.js inline scripts, same-origin resources, and trusted CDNs
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com", // Next.js requires unsafe-inline/eval; Cloudflare Turnstile + Web Analytics + Google Analytics
-              "style-src 'self' 'unsafe-inline'", // Next.js requires unsafe-inline for CSS
-              "img-src 'self' data: https: blob:", // Allow images from CDNs
-              "font-src 'self' data:",
-              "connect-src 'self' https://api.rohangautam.dev https://api-stage.rohangautam.dev https://rohan-backend-api-stage.fly.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com", // API (prod + staging) + Turnstile + Cloudflare Analytics + Sentry + Google Analytics
-              'frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com https://accounts.google.com https://content.googleapis.com https://apis.google.com', // Cloudflare Turnstile + Google services (Search Console, Maps, etc.)
-              "frame-ancestors 'none'", // Prevent clickjacking
-              "base-uri 'self'",
-              "form-action 'self'",
-              "object-src 'none'",
-            ].join('; '),
-          },
-          // X-Frame-Options: Prevent clickjacking (legacy, CSP frame-ancestors is preferred)
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          // X-Content-Type-Options: Prevent MIME sniffing
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          // Referrer-Policy: Control referrer information
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          // Permissions-Policy: Restrict browser features
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=()',
-          },
-        ],
+        headers: getSecurityHeaders({ isDev }),
       },
     ];
   },

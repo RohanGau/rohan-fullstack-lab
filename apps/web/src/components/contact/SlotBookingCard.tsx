@@ -109,25 +109,36 @@ function SlotBookingCard() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Your name</Label>
+                  <Label htmlFor="booking-name">Your name</Label>
                   <Input
+                    id="booking-name"
+                    name="name"
+                    autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Jane Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label htmlFor="booking-email">Email</Label>
                   <Input
+                    id="booking-email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="jane@doe.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Message (optional)</Label>
+                  <Label htmlFor="booking-message">Message (optional)</Label>
                   <Textarea
+                    id="booking-message"
+                    name="message"
                     rows={4}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}

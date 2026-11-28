@@ -2,7 +2,7 @@ import { cache } from 'react';
 import type { IProjectDto } from '@fullstack-lab/types';
 import { apiFetch, apiFetchWithMeta } from '../apiClient';
 import { API } from '../constant';
-import { makeProjectQueryString } from '../utils';
+import { makeProjectQueryString } from '../query';
 import type { ProjectsQuery, ProjectsQueryRequired } from '@/types/project';
 
 function normalizeProjectQuery(input: ProjectsQuery = {}): ProjectsQueryRequired {
@@ -44,6 +44,8 @@ export async function getProjectById(
     throw error;
   }
 }
+
+export const getProjectByIdCached = cache(getProjectById);
 
 /**
  * Get related projects based on shared types/tech stack

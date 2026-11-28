@@ -60,7 +60,7 @@ function ContactCard() {
       </CardHeader>
       <CardContent className="p-6">
         {success ? (
-          <p className="text-center text-green-600 font-medium">
+          <p className="text-center text-green-600 font-medium" role="status" aria-live="polite">
             Thanks for reaching out! I&apos;ll get back to you soon.
           </p>
         ) : (
@@ -72,42 +72,75 @@ function ContactCard() {
               </Alert>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-2">
+              <Label htmlFor="contact-name">
+                Name <span aria-hidden="true">*</span>
+              </Label>
               <Input
+                id="contact-name"
                 name="name"
                 type="text"
+                autoComplete="name"
                 placeholder="Your Name"
                 required
+                aria-invalid={Boolean(fieldErrors.name)}
+                aria-describedby={fieldErrors.name ? 'contact-name-error' : undefined}
                 value={formData.name}
                 onChange={handleChange}
               />
-              {fieldErrors.name && <p className="text-sm text-destructive">{fieldErrors.name}</p>}
+              {fieldErrors.name && (
+                <p id="contact-name-error" className="text-sm text-destructive" role="alert">
+                  {fieldErrors.name}
+                </p>
+              )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
+              <Label htmlFor="contact-email">
+                Email <span aria-hidden="true">*</span>
+              </Label>
               <Input
+                id="contact-email"
                 name="email"
                 type="email"
+                autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 placeholder="Your Email"
                 required
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? 'contact-email-error' : undefined}
                 value={formData.email}
                 onChange={handleChange}
               />
-              {fieldErrors.email && <p className="text-sm text-destructive">{fieldErrors.email}</p>}
+              {fieldErrors.email && (
+                <p id="contact-email-error" className="text-sm text-destructive" role="alert">
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
+              <Label htmlFor="contact-message">
+                Message <span aria-hidden="true">*</span>
+              </Label>
               <Textarea
+                id="contact-message"
                 name="message"
                 placeholder="Your Message"
                 rows={6}
                 minLength={10}
                 required
+                aria-invalid={Boolean(fieldErrors.message)}
+                aria-describedby={fieldErrors.message ? 'contact-message-error' : undefined}
                 value={formData.message}
                 onChange={handleChange}
               />
               {fieldErrors.message && (
-                <p className="text-sm text-destructive">{fieldErrors.message}</p>
+                <p id="contact-message-error" className="text-sm text-destructive" role="alert">
+                  {fieldErrors.message}
+                </p>
               )}
             </div>
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { useEffectiveTheme } from '@/hooks/useEffectiveTheme';
 import { siGmail, siGithub, siTelegram, siDiscord } from 'simple-icons/icons';
 import { Linkedin } from 'lucide-react';
 
@@ -21,98 +20,64 @@ function IconSVG({
 }
 
 export function SocialLinks({ user, ariaLabel }: { user: any; ariaLabel: string }) {
-  const theme = useEffectiveTheme();
-  const isDark = theme === 'dark';
-
   return (
     <div className="flex gap-4 justify-center sm:justify-start" aria-label={ariaLabel}>
-      {user.gmail &&
-        (isDark ? (
-          <a href={`mailto:${user.gmail}`} className="text-muted-foreground hover:text-[#EA4335]">
-            <IconSVG path={siGmail.path} />
-          </a>
-        ) : (
-          <a href={`mailto:${user.gmail}`} className="text-muted-foreground hover:text-foreground">
-            <IconSVG path={siGmail.path} fill="#D14836" />
-          </a>
-        ))}
+      {user.gmail && (
+        <a
+          href={`mailto:${user.gmail}`}
+          aria-label="Email"
+          className="text-[#D14836] hover:text-foreground dark:text-muted-foreground dark:hover:text-[#EA4335] transition-colors"
+        >
+          <IconSVG path={siGmail.path} />
+        </a>
+      )}
       {user.linkedinUrl && (
         <a
           href={user.linkedinUrl}
           target="_blank"
           rel="noreferrer"
           aria-label="LinkedIn"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          <Linkedin className="w-5 h-5" />
+          <Linkedin className="w-5 h-5" aria-hidden="true" />
         </a>
       )}
-      {user.githubUrl &&
-        (isDark ? (
-          <Link
-            href={user.githubUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-white"
-            aria-label="GitHub"
-          >
-            <IconSVG path={siGithub.path} />
-          </Link>
-        ) : (
-          <Link
-            href={user.githubUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="GitHub"
-          >
-            <IconSVG path={siGithub.path} fill={`#${siGithub.hex}`} />
-          </Link>
-        ))}
-      {user.telegramUrl &&
-        (isDark ? (
-          <Link
-            href={user.telegramUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-[#26A5E4]"
-            aria-label="Telegram"
-          >
-            <IconSVG path={siTelegram.path} />
-          </Link>
-        ) : (
-          <Link
-            href={user.telegramUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Telegram"
-          >
-            <IconSVG path={siTelegram.path} fill={`#${siTelegram.hex}`} />
-          </Link>
-        ))}
-      {user.discordUrl &&
-        (isDark ? (
-          <Link
-            href={user.discordUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-[#5865F2]"
-            aria-label="Discord"
-          >
-            <IconSVG path={siDiscord.path} />
-          </Link>
-        ) : (
-          <Link
-            href={user.discordUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Discord"
-          >
-            <IconSVG path={siDiscord.path} fill={`#${siDiscord.hex}`} />
-          </Link>
-        ))}
+      {user.githubUrl && (
+        <Link
+          href={user.githubUrl}
+          target="_blank"
+          rel="noreferrer"
+          style={{ ['--brand-light' as any]: `#${siGithub.hex}` }}
+          className="text-[var(--brand-light)] hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors"
+          aria-label="GitHub"
+        >
+          <IconSVG path={siGithub.path} />
+        </Link>
+      )}
+      {user.telegramUrl && (
+        <Link
+          href={user.telegramUrl}
+          target="_blank"
+          rel="noreferrer"
+          style={{ ['--brand-light' as any]: `#${siTelegram.hex}` }}
+          className="text-[var(--brand-light)] hover:text-foreground dark:text-muted-foreground dark:hover:text-[#26A5E4] transition-colors"
+          aria-label="Telegram"
+        >
+          <IconSVG path={siTelegram.path} />
+        </Link>
+      )}
+      {user.discordUrl && (
+        <Link
+          href={user.discordUrl}
+          target="_blank"
+          rel="noreferrer"
+          style={{ ['--brand-light' as any]: `#${siDiscord.hex}` }}
+          className="text-[var(--brand-light)] hover:text-foreground dark:text-muted-foreground dark:hover:text-[#5865F2] transition-colors"
+          aria-label="Discord"
+        >
+          <IconSVG path={siDiscord.path} />
+        </Link>
+      )}
     </div>
   );
 }

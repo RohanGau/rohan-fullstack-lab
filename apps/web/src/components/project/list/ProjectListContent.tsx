@@ -12,7 +12,7 @@ import { Pager } from '@/components/list/Pager';
 import { ResultsMeta } from '@/components/list/ResultsMeta';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BlogCardSkeleton } from '@/components/blog/card';
-import { arrToCsv, csvToArr } from '@/lib/utils';
+import { arrToCsv, csvToArr } from '@fullstack-lab/constants';
 import type { ProjectsQueryRequired } from '@/types/project';
 import type { IProjectDto } from '@fullstack-lab/types';
 

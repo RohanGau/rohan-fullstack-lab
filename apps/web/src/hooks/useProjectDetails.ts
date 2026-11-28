@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
 import { API } from '@/lib/constant';
+import { isMongoId } from '@fullstack-lab/constants';
 import type { IProjectDto } from '@fullstack-lab/types';
 import { useProjectStore } from '@/lib/store/projectStore';
-import { isMongoId } from '@/lib/utils';
 
 export function useProjectDetail(param: string) {
   const { detailById, setDetailById } = useProjectStore();

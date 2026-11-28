@@ -3,7 +3,8 @@ import Script from 'next/script';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import { AUTHOR_PROFILE } from '@fullstack-lab/constants';
 import { logoUrl, siteUrl } from '@/lib/constant';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { CloudflareWebAnalytics } from '@/components/monitoring/CloudflareWebAnalytics';
@@ -14,6 +15,14 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '600', '800'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -67,7 +76,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    creator: '@yourhandle', // ← replace with your real handle
     title: 'Rohan Kumar – Senior Frontend Engineer',
     description: 'Frontend architecture, performance, and design systems.',
     images: [
@@ -104,10 +112,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn('min-h-screen flex flex-col bg-background text-foreground', inter.className)}
-      >
+    <html lang="en" className={cn(inter.variable, jetbrainsMono.variable)} suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
         <ThemeProvider>
           <Header />
           <main id="content" className="flex-1 container max-w-5xl px-4 mx-auto">
@@ -123,11 +129,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Person',
-              name: 'Rohan Kumar',
+              name: AUTHOR_PROFILE.NAME,
               url: siteUrl,
               logo: logoUrl,
               jobTitle: 'Senior Software Engineer (Frontend)',
-              sameAs: ['https://github.com/rohan', 'https://www.linkedin.com/in/rohan-gautam'],
+              sameAs: [AUTHOR_PROFILE.GITHUB_URL, AUTHOR_PROFILE.LINKEDIN_URL],
             }),
           }}
         />
@@ -141,12 +147,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               '@type': 'WebSite',
               url: siteUrl,
               logo: logoUrl,
-              name: 'Rohan Kumar Portfolio',
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: `${siteUrl}/search?q={query}`,
-                'query-input': 'required name=query',
-              },
+              name: `${AUTHOR_PROFILE.NAME} Portfolio`,
             }),
           }}
         />
@@ -158,23 +159,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Rohan Kumar',
+              name: AUTHOR_PROFILE.NAME,
               url: siteUrl,
               logo: logoUrl,
               description:
                 'Senior Software Engineer specializing in frontend architecture, performance, and scalable design systems.',
               founder: {
                 '@type': 'Person',
-                name: 'Rohan Kumar',
+                name: AUTHOR_PROFILE.NAME,
                 jobTitle: 'Senior Software Engineer (Frontend)',
               },
               contactPoint: {
                 '@type': 'ContactPoint',
                 contactType: 'General Inquiries',
-                email: 'security@rohangautam.dev',
+                email: AUTHOR_PROFILE.SECURITY_EMAIL,
                 url: `${siteUrl}/contact`,
               },
-              sameAs: ['https://github.com/rohan', 'https://www.linkedin.com/in/rohan-gautam'],
+              sameAs: [AUTHOR_PROFILE.GITHUB_URL, AUTHOR_PROFILE.LINKEDIN_URL],
             }),
           }}
         />
@@ -188,25 +189,25 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               '@graph': [
                 {
                   '@type': 'SiteNavigationElement',
-                  '@id': `${siteUrl}/#navigation`,
+                  '@id': `${siteUrl}/#nav-about`,
                   name: 'About',
                   url: `${siteUrl}/about`,
                 },
                 {
                   '@type': 'SiteNavigationElement',
-                  '@id': `${siteUrl}/#navigation`,
+                  '@id': `${siteUrl}/#nav-blog`,
                   name: 'Blog',
                   url: `${siteUrl}/blog`,
                 },
                 {
                   '@type': 'SiteNavigationElement',
-                  '@id': `${siteUrl}/#navigation`,
+                  '@id': `${siteUrl}/#nav-project`,
                   name: 'Projects',
                   url: `${siteUrl}/project`,
                 },
                 {
                   '@type': 'SiteNavigationElement',
-                  '@id': `${siteUrl}/#navigation`,
+                  '@id': `${siteUrl}/#nav-contact`,
                   name: 'Contact',
                   url: `${siteUrl}/contact`,
                 },
