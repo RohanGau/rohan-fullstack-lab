@@ -39,15 +39,9 @@ export default defineConfig(({ mode, command }) => {
             groups: [
               {
                 name: 'index',
-                test: /node_modules[\\/](react|react-dom|scheduler|@emotion|@tanstack|clsx|@popperjs|@mui[\\/](system|utils|private-theming|styled-engine|icons-material|material[\\/](?:esm[\\/])?(AppBar|Backdrop|Box|Button|ButtonBase|Card|CardActions|CardContent|Chip|CircularProgress|ClickAwayListener|CssBaseline|Dialog|DialogActions|DialogContent|DialogTitle|Divider|Drawer|Fade|Grow|IconButton|List|ListItem|ListItemButton|ListItemIcon|ListItemText|Modal|Paper|Popover|Popper|Portal|Slide|Stack|SvgIcon|Toolbar|Tooltip|Typography|Alert|Zoom|styles|utils|useTheme)))|packages[\\/](constants|types)[\\/]|src[\\/](access|routes|shell|auth|config|theme|lib|main|App)/,
+                test: /src[\\/]main\.tsx$/,
                 minSize: 0,
-                includeDependenciesRecursively: false,
-              },
-              {
-                name: 'data-grid',
-                test: /@mui[\\/]x-data-grid|src[\\/]resources[\\/]ResourceList/,
-                minSize: 0,
-                includeDependenciesRecursively: false,
+                includeDependenciesRecursively: true,
               },
             ],
           },
