@@ -10,10 +10,10 @@ export function buildHeaders(apiUrl: string): string {
   const apiOrigin = new URL(apiUrl).origin;
   const csp = [
     "default-src 'self'",
-    "script-src 'self' https://accounts.google.com/gsi/client",
+    "script-src 'self' https://accounts.google.com/gsi/client https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
     "img-src 'self' https: data: blob:",
-    `connect-src 'self' ${apiOrigin} https://accounts.google.com/gsi/ https://*.r2.cloudflarestorage.com`,
+    `connect-src 'self' ${apiOrigin} https://accounts.google.com/gsi/ https://*.r2.cloudflarestorage.com https://cloudflareinsights.com`,
     'frame-src https://accounts.google.com/gsi/',
     "base-uri 'self'",
     "form-action 'self'",
